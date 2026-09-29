@@ -48,7 +48,7 @@
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-    return Math.max(base, Math.ceil(ctx.measureText(title.textContent).width + bar.querySelector('button').getBoundingClientRect().width + parseFloat(bs.paddingLeft) + parseFloat(bs.paddingRight) + 16));
+    return Math.max(base, Math.ceil(ctx.measureText(title.dataset.defaultTitle ?? title.textContent).width + (bar.querySelector('[data-edit]') || bar.querySelector('button')).getBoundingClientRect().width + parseFloat(bs.paddingLeft) + parseFloat(bs.paddingRight) + 16));
   }
   function minimums() {
     return [minimumWidth(cards.timetable, 220), minimumWidth(cards.morning, 280), minimumWidth(cards.meal, 230)];

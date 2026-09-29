@@ -1,0 +1,18 @@
+const test=require('node:test'),assert=require('node:assert/strict'),B=require('./backup-core.js');
+const store=init=>{const m=new Map(Object.entries(init));return {getItem:k=>m.has(k)?m.get(k):null,setItem(k,v){if(this.fail&&k===this.fail)throw Error('quota');m.set(k,String(v));},removeItem:k=>m.delete(k),map:m};};
+const sample=()=>store({settings:JSON.stringify({grade:'6',classroom:'2',apiKey:'SECRET',school:{SCHUL_NM:'x'},startup:true}),morningDefault:JSON.stringify('책 읽기'),boardTitles:JSON.stringify({morning:'오늘 할 일'}),classTimer:JSON.stringify({duration:60000,remaining:1000,deadline:Date.now()+1000,state:'running'}),cache:JSON.stringify({a:1}),lastLocation:JSON.stringify({lat:1,lon:2}),'weather:auto:1':'{}',ddayEvents:'[]',whiteboardContents:JSON.stringify({strokes:[],blocks:[{id:'a',x:.1,y:.2,text:'준비물',fontSize:40}]})});
+test('backup keeps user data, drops caches, location and secrets',async()=>{const b=await B.create(sample().getItem,{appVersion:'1.8.2',now:new Date('2026-09-30T00:00:00Z')});
+ assert.equal(b.schemaVersion,1);assert.equal(b.format,B.FORMAT);assert.deepEqual(b.data.settings,{grade:'6',classroom:'2'});assert.equal(b.data.cache,undefined);assert.equal(b.data.lastLocation,undefined);assert.equal(JSON.stringify(b).includes('SECRET'),false);
+ assert.deepEqual(b.data.classTimer,{duration:60000,remaining:60000,deadline:null,state:'idle'});assert.equal(b.data.whiteboardContents.blocks[0].text,'준비물');assert.equal(b.grade,'6');});
+test('restore validates format, version and checksum',async()=>{const b=await B.create(sample().getItem);const text=JSON.stringify(b);
+ const {entries}=await B.parse(text);assert.ok(entries.some(([k])=>k==='boardTitles'));
+ await assert.rejects(B.parse('not json'),/백업 파일이 아닙니다/);await assert.rejects(B.parse(JSON.stringify({...b,format:'x'})),/백업 파일이 아닙니다/);
+ await assert.rejects(B.parse(JSON.stringify({...b,schemaVersion:99})),/새로운 버전/);
+ const tampered=JSON.parse(text);tampered.data.morningDefault='변조';await assert.rejects(B.parse(JSON.stringify(tampered)),/손상/);
+ const reordered={...b,data:Object.fromEntries(Object.entries(b.data).reverse())};await B.parse(JSON.stringify(reordered,null,2));});
+test('restore is all-or-nothing',async()=>{const b=await B.create(sample().getItem);const {entries}=await B.parse(JSON.stringify(b));
+ const s=store({morningDefault:JSON.stringify('기존'),boardTitles:JSON.stringify({notices:'기존'})});s.fail='whiteboardContents';
+ assert.throws(()=>B.apply(s,entries));assert.equal(s.getItem('morningDefault'),JSON.stringify('기존'));assert.equal(s.getItem('settings'),null);assert.equal(s.getItem('boardTitles'),JSON.stringify({notices:'기존'}));
+ s.fail=null;B.apply(s,entries);assert.equal(s.getItem('morningDefault'),JSON.stringify('책 읽기'));});
+test('backup file name',()=>{assert.equal(B.fileName(new Date('2026-09-29T16:00:00Z')),'옥구초_학급대시보드_백업_2026-09-30.json');});
+test('restore keeps settings that are never backed up',async()=>{const b=await B.create(sample().getItem);const {entries}=await B.parse(JSON.stringify(b));const s=store({settings:JSON.stringify({grade:'3',classroom:'4',apiKey:'LOCAL'})});B.apply(s,entries);assert.deepEqual(JSON.parse(s.getItem('settings')),{grade:'6',classroom:'2',apiKey:'LOCAL'});});

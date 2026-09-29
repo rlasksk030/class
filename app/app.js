@@ -1,6 +1,6 @@
 const $=id=>document.getElementById(id);
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
-const put=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{$('globalStatus').textContent='저장 공간을 확인해 주세요. 이번 변경은 재실행 후 유지되지 않을 수 있습니다.';return false;}};
+const put=(key,value)=>{if(window.dashboardRestoring)return false;try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{$('globalStatus').textContent='저장 공간을 확인해 주세요. 이번 변경은 재실행 후 유지되지 않을 수 있습니다.';return false;}};
 let settings=read('settings',{}),cache=read('cache',{}),overrides=read('overrides',{}),notes=read('notes',{}),day=Core.dateKey(),generation=0,schools=[],chosenSchool=null,editing=null;
 settings.school=OKGU_SCHOOL;
 let morningText=Core.morningDefault(read('morningDefault',null),notes,day);
@@ -45,13 +45,13 @@ function render(){
  $('morning').textContent=morningText||'아침활동을 저장하면 매일 자동으로 표시됩니다.';
  $('notices').textContent=notes[day]?.notices||'';
  for(const kind of ['timetable','meal']){const el=$(kind);el.replaceChildren();if(!settings.school){textLine(el,'설정에서 학교를 선택해 주세요.','empty');continue;}const key=Core.dataKey(settings,day,kind),entry=cache[key],value=Core.display(overrides[key],entry);
- if(value===undefined)textLine(el,errors[kind]||'오늘 정보를 불러오고 있습니다.','empty');else if(!value.length)textLine(el,kind==='meal'?'오늘 등록된 급식이 없습니다.':'오늘 등록된 수업이 없습니다.','empty');else if(kind==='meal')el.textContent=value.join('\n');else value.forEach((v,i)=>{const row=textLine(el,'','lesson');const n=document.createElement('b');n.textContent=v.period||i+1;row.append(n);const sub=document.createElement('span');sub.textContent=v.subject;row.append(sub);});
+ if(value===undefined)textLine(el,errors[kind]||'오늘 정보를 불러오고 있습니다.','empty');else if(!value.length)textLine(el,kind==='meal'?'오늘은 급식이 없습니다.':'오늘은 등록된 수업이 없습니다.','empty');else if(kind==='meal')el.textContent=value.join('\n');else value.forEach((v,i)=>{const row=textLine(el,'','lesson');const n=document.createElement('b');n.textContent=v.period||i+1;row.append(n);const sub=document.createElement('span');sub.textContent=v.subject;row.append(sub);});
  $(kind+'Status').textContent=overrides[key]!==undefined?'직접 수정한 오늘의 정보':entry?`${errors[kind]?'연결 실패 · 저장된 정보':'자동 조회'} · ${new Date(entry.time).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}`:'';
  }
 }
 async function refreshSchool(){if(!settings.grade||!settings.classroom)return;const s=structuredClone(settings),d=day,g=generation;
  const endpoints={'초등학교':'elsTimetable','중학교':'misTimetable','고등학교':'hisTimetable','특수학교':'spsTimetable'};
- await Promise.allSettled(['timetable','meal'].map(async kind=>{try{const ep=kind==='meal'?'mealServiceDietInfo':endpoints[s.school.SCHUL_KND_SC_NM];if(!ep)throw Error('지원하지 않는 학교 종류입니다');const params={ATPT_OFCDC_SC_CODE:s.school.ATPT_OFCDC_SC_CODE,SD_SCHUL_CODE:s.school.SD_SCHUL_CODE,...(kind==='meal'?{MLSV_YMD:d.replaceAll('-',''),MMEAL_SC_CODE:'2'}:{ALL_TI_YMD:d.replaceAll('-',''),GRADE:s.grade,CLASS_NM:s.classroom})};const rows=await neis(ep,params,s);const data=kind==='meal'?rows.flatMap(r=>r.DDISH_NM.split(/<br\s*\/?\s*>/i).map(x=>x.replace(/<[^>]*>/g,'').trim()).filter(Boolean)):rows.sort((a,b)=>Number(a.PERIO)-Number(b.PERIO)).map(r=>({period:r.PERIO,subject:r.ITRT_CNTNT}));cache[Core.dataKey(s,d,kind)]={data,time:Date.now()};pruneCache();put('cache',cache);if(g===generation){delete errors[kind];render();}}catch(e){if(g===generation){errors[kind]=`${kind==='meal'?'급식':'시간표'} 정보를 불러오지 못했습니다`;render();}}}));
+ await Promise.allSettled(['timetable','meal'].map(async kind=>{try{const ep=kind==='meal'?'mealServiceDietInfo':endpoints[s.school.SCHUL_KND_SC_NM];if(!ep)throw Error('지원하지 않는 학교 종류입니다');const params={ATPT_OFCDC_SC_CODE:s.school.ATPT_OFCDC_SC_CODE,SD_SCHUL_CODE:s.school.SD_SCHUL_CODE,...(kind==='meal'?{MLSV_YMD:d.replaceAll('-',''),MMEAL_SC_CODE:'2'}:{ALL_TI_YMD:d.replaceAll('-',''),GRADE:s.grade,CLASS_NM:s.classroom})};const rows=await neis(ep,params,s);const data=kind==='meal'?rows.flatMap(r=>String(r.DDISH_NM??'').split(/<br\s*\/?\s*>/i).map(x=>x.replace(/<[^>]*>/g,'').trim()).filter(Boolean)):rows.sort((a,b)=>Number(a.PERIO)-Number(b.PERIO)).filter(r=>r.PERIO!=null).map(r=>({period:String(r.PERIO),subject:String(r.ITRT_CNTNT??'').trim()}));cache[Core.dataKey(s,d,kind)]={data,time:Date.now()};pruneCache();put('cache',cache);if(g===generation){delete errors[kind];render();}}catch(e){if(g===generation){errors[kind]=`${kind==='meal'?'급식':'시간표'} 정보를 불러오지 못했습니다. 연결되면 자동으로 다시 확인합니다.`;render();}}}));
 }
 function pruneCache(){const cutoff=Date.now()-35*86400000;for(const k of Object.keys(cache))if(cache[k].time<cutoff)delete cache[k];}
 function validPoint(p){return p&&Number.isFinite(p.lat)&&Number.isFinite(p.lon)&&Math.abs(p.lat)<=90&&Math.abs(p.lon)<=180;}
@@ -96,5 +96,7 @@ $('restore').onclick=()=>{if(window.dashboardLocked)return;delete overrides[edit
 $('refresh').onclick=async()=>{$('refresh').disabled=true;await Promise.allSettled([refreshSchool(),refreshWeather()]);$('refresh').disabled=false;};
 $('fullscreen').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen();};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
-tick();render();refreshSchool();refreshWeather();setInterval(tick,1000);setInterval(refreshWeather,45*60*1000);if(!settings.grade||!settings.classroom)openSettings();
+tick();render();refreshSchool();refreshWeather();setInterval(tick,1000);
+// A failed NEIS lookup (not an empty holiday) is retried quietly; saved data stays on screen meanwhile.
+setInterval(()=>{if(errors.meal||errors.timetable)refreshSchool();},10*60*1000);window.addEventListener('online',()=>{if(errors.meal||errors.timetable)refreshSchool();});setInterval(refreshWeather,45*60*1000);if(!settings.grade||!settings.classroom)openSettings();
 

@@ -1,0 +1,7 @@
+/* Backup / restore block inside the existing settings dialog. */
+.backup-settings{margin:18px 0 0;padding:14px;border:1px solid #e5e7eb;border-radius:10px}
+.backup-settings legend{font-size:16px;padding:0 6px}
+.backup-settings p{margin:0 0 10px;font-size:13px;color:#7d8490}
+.backup-actions{display:flex;flex-wrap:wrap;gap:8px}
+.backup-actions button{font-size:15px;min-height:44px;padding:8px 14px}
+#backupStatus{margin:10px 0 0;min-height:20px;color:#303640;font-size:14px}
