@@ -1,0 +1,82 @@
+# Windows validation build (not a release).
+# Builds the NSIS installer from this development branch and keeps it only as a workflow artifact.
+# It never publishes: no tag, no GitHub Release, no public latest.yml, so installed apps see no update.
+name: Windows 검증용 설치 파일
+
+on:
+  push:
+    branches: [feature/class-dashboard-v1.8.2-windows-validation]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: npm ci
+        run: npm ci
+
+      - name: npm run check
+        run: npm run check
+
+      - name: npm test
+        run: npm test
+
+      - name: npm run test:e2e
+        run: npm run test:e2e
+
+      - name: npm run dist:win
+        run: npm run dist:win
+
+      - name: Verify installer
+        shell: pwsh
+        run: |
+          $version = (Get-Content app/package.json -Raw | ConvertFrom-Json).version
+          $setup = "dist/classroom-dashboard-setup-$version.exe"
+          if (-not (Test-Path $setup)) { throw "Installer not found: $setup" }
+          if (-not (Select-String -Path dist/latest.yml -Pattern "^version: $version$" -Quiet)) { throw "latest.yml version mismatch" }
+          $files = @($setup, "$setup.blockmap", "dist/latest.yml")
+          New-Item -ItemType Directory -Force out | Out-Null
+          Copy-Item $files out/
+          Get-ChildItem out | ForEach-Object { "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name } | Set-Content out/SHA256SUMS.txt -Encoding utf8
+          @(
+            "우리 교실 v$version Windows 검증용 설치 파일"
+            "브랜치: $env:GITHUB_REF_NAME"
+            "커밋: $env:GITHUB_SHA"
+            "빌드: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
+            ""
+            "검증 전용입니다. GitHub Release에 올리거나 latest.yml을 공개하지 마세요."
+            "latest.yml은 기록용이며 설치할 때는 classroom-dashboard-setup-$version.exe만 실행합니다."
+          ) | Set-Content out/README-검증용.txt -Encoding utf8
+          Get-ChildItem out | Format-Table Name, Length
+
+      - name: Upload validation installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: 2026-09-30_우리교실_v1.8.2_Windows검증용
+          path: out/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload test output (failure only)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-output-for-debugging
+          path: tests/e2e/.out/shots/
+          if-no-files-found: ignore
+          retention-days: 7

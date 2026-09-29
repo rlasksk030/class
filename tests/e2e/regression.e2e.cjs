@@ -18,7 +18,8 @@ async function launch(){const app=await _electron.launch({executablePath:electro
  let {app,page}=await launch();const d=today(),y=shift(d,-1);
  await page.evaluate(([d,y])=>{localStorage.setItem('settings',JSON.stringify({grade:'6',classroom:'1'}));localStorage.setItem('dashboardLocked','false');localStorage.setItem('notes',JSON.stringify({[y]:{notices:'어제 안내: 우산 챙기기'}}));
   const now=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'})),m=now.getHours()*60+now.getMinutes(),t=x=>String(Math.floor(((x%1440)+1440)%1440/60)).padStart(2,'0')+':'+String(((x%1440)+1440)%1440%60).padStart(2,'0');
-  const start=Math.min(Math.max(m-5,0),1440-7*40-10);localStorage.setItem('periodSchedule',JSON.stringify([0,1,2,3,4,5].map(i=>({period:i+1,start:t(start+i*40),end:t(start+i*40+35)}))));localStorage.setItem('periodHighlightEnabled','true');},[d,y]);
+  // Period 1 always contains the current minute (any time of day); later periods only if they fit before midnight.
+  const start=Math.max(m-5,0),rows=[0,1,2,3,4,5].map(i=>({period:i+1,start:start+i*40,end:Math.min(start+i*40+35,1439)})).filter(r=>r.end>r.start&&r.start<1439);localStorage.setItem('periodSchedule',JSON.stringify(rows.map(r=>({period:r.period,start:t(r.start),end:t(r.end)}))));localStorage.setItem('periodHighlightEnabled','true');},[d,y]);
  await page.reload();await page.waitForTimeout(900);
  // ---------- 시간표 ----------
  ok('시간표 자동 조회',(await page.locator('#timetable .lesson').count())===6);
