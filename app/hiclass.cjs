@@ -1,0 +1,24 @@
+const {app,BrowserWindow,ipcMain,dialog}=require('electron');const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');const adapter=require('./hiclass-adapter.cjs');const navigation=require('./hiclass-navigation.cjs');
+module.exports=function(main){let window,busy=false,connecting=false;const file=path.join(app.getPath('userData'),'hiclass-links.json');const read=async()=>{try{return JSON.parse(await fs.readFile(file,'utf8'));}catch(e){if(e.code==='ENOENT')return {links:{},posts:{}};throw e;}};const save=async data=>{const temp=file+'.tmp';await fs.writeFile(temp,JSON.stringify(data),{mode:0o600});await fs.rename(temp,file);};
+ function open(show=true){if(window&&!window.isDestroyed()){if(show){navigation.reveal(window);}return window;}window=new BrowserWindow({width:1200,height:850,show,title:'하이클래스 연결',webPreferences:{partition:'persist:hiclass-teacher',contextIsolation:true,nodeIntegration:false,sandbox:true}});window.removeMenu();window.webContents.on('did-fail-load',(_event,code,_description,_url,isMainFrame)=>{if(isMainFrame&&code!==-3)window.hiclassLoadFailed=true;});window.webContents.setWindowOpenHandler(({url})=>{try{const u=new URL(url);return u.protocol==='https:'?{action:'allow',overrideBrowserWindowOptions:{webPreferences:{partition:'persist:hiclass-teacher',contextIsolation:true,nodeIntegration:false,sandbox:true}}}:{action:'deny'};}catch{return {action:'deny'};}});window.webContents.on('will-navigate',(e,url)=>{if(!url.startsWith('https://'))e.preventDefault();});return window;}
+ const trusted=event=>event.sender===main()?.webContents;
+ async function connection(action){
+  if(busy||connecting)return {message:'하이클래스 연결 또는 등록이 진행 중입니다.'};
+  connecting=true;
+  try{return await action();}catch{return {status:'error',message:'하이클래스 화면을 불러오지 못했습니다. 인터넷 연결을 확인하고 다시 연결해 주세요. 작성 내용은 유지됩니다.'};}finally{connecting=false;}
+ }
+ ipcMain.handle('diary:connect',async event=>{if(!trusted(event))throw Error('접근 불가');return connection(async()=>{const w=open();await navigation.ready(w,'https://www.hiclass.net');return {message:'하이클래스 창에서 로그인한 뒤 담당 클래스를 열고 학급 연결을 눌러 주세요.'};});});
+ ipcMain.handle('diary:link',async(event,payload)=>{if(!trusted(event))throw Error('접근 불가');return connection(async()=>{
+  const data=await read(),w=open();
+  await navigation.ready(w,data.links[payload.classKey]?.url||'https://www.hiclass.net');
+  const s=await navigation.bounded(()=>adapter.inspect(w));
+  if(s.login)return {message:'하이클래스 창에서 로그인 후 담당 학급의 알림장 게시판을 열어 주세요.'};
+  const url=new URL(s.url);
+  if(url.hostname!=='www.hiclass.net'||!/^\/main\/clazzes\/[a-zA-Z0-9-]+\/note\/[a-zA-Z0-9-]+$/.test(url.pathname)||!s.classTitle)return {message:'로그인 후 담당 클래스의 알림장 게시판을 먼저 열어 주세요.'};
+  const parent=main();navigation.reveal(parent);
+  const confirmation=await dialog.showMessageBox(parent,{type:'question',buttons:['취소','학급 연결'],defaultId:0,cancelId:0,message:`${payload.label}에 연결할까요?`,detail:s.classTitle});
+  if(confirmation.response!==1)return {message:'연결을 취소했습니다.'};
+  data.links[payload.classKey]={url:url.origin+url.pathname,title:s.classTitle};await save(data);return {message:'담당 학급 연결을 저장했습니다.'};
+ });});
+ ipcMain.handle('diary:publish',async(event,payload)=>{if(!trusted(event))throw Error('접근 불가');if(busy||connecting)return {message:'이미 연결 또는 등록 진행 중입니다.'};if(!payload||typeof payload.parents!=='boolean'||typeof payload.students!=='boolean'||typeof payload.title!=='string'||typeof payload.body!=='string'||!payload.title.trim()||!payload.body.trim())return {message:'제목과 본문을 확인해 주세요.'};busy=true;let data,hash,started=false;try{data=await read();const link=data.links[payload.classKey];if(!link)return {message:'현재 학년·반의 하이클래스 학급을 먼저 연결해 주세요.'};hash=crypto.createHash('sha256').update(JSON.stringify([payload.classKey,payload.date,payload.title,payload.body,payload.parents!==false,payload.students!==false])).digest('hex');if(data.posts[hash])return {status:data.posts[hash].status,message:data.posts[hash].status==='success'?'이미 등록한 내용입니다.':data.posts[hash].status==='draft'?'이미 하이클래스에 임시저장한 내용입니다.':'이전 등록 결과가 불확실합니다. 중복 방지를 위해 하이클래스에서 먼저 확인해 주세요.'};const w=open(false);const before=await adapter.prepare(w,link,payload);data.posts[hash]={status:'pending',time:Date.now()};await save(data);started=true;const outcome=await adapter.submit(w,payload,before,link);data.posts[hash]={status:outcome,time:Date.now()};await save(data);return {status:outcome,hash,message:outcome==='success'?'하이클래스 등록 완료':'하이클래스 임시저장 완료 (공개 등록 아님)'};}catch(e){if(window&&!window.isDestroyed()&&/로그인/.test(e.message))window.show();return {status:started?'uncertain':'error',message:started?'등록 여부를 확인하지 못했습니다. 중복 등록 방지를 위해 하이클래스에서 결과를 확인해 주세요.':e.message};}finally{busy=false;}});
+};

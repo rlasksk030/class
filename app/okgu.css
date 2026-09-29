@@ -1,0 +1,103 @@
+@font-face{font-family:'Gowun Batang';src:url('fonts/GowunBatang-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:'Gowun Batang';src:url('fonts/GowunBatang-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
+@font-face{font-family:'Nanum Barun Gothic';src:url('fonts/NanumBarunGothic.woff') format('woff');font-weight:400;font-display:swap}
+@font-face{font-family:'Nanum Barun Gothic';src:url('fonts/NanumBarunGothicBold.woff') format('woff');font-weight:700;font-display:swap}
+:root{font-family:'Gowun Batang',serif}
+h1,#date{font-family:'Gowun Batang','Batang',serif}
+main{grid-template-columns:minmax(190px,.21fr) minmax(260px,.55fr) minmax(220px,.24fr)}
+#timetable{width:90%;min-width:0;display:flex;flex-direction:column}
+.lesson{flex:1;min-height:0;padding:.1em .18em;gap:.45em;align-items:center}
+.lesson-current{font-weight:700}
+#ddayBadge{position:relative;top:auto;left:auto;bottom:auto;display:flex;justify-content:center;align-items:center;gap:12px;max-width:100%;margin:0;padding:0;grid-column:1/-1;grid-row:2;font-family:'Gowun Batang',serif}
+#ddayBadge:empty{display:none}
+#ddayBadge span{background:#f1ebf8;color:#675181;border:1px solid #e1d5ee;border-radius:99px;padding:8px 20px;font-size:clamp(22px,1.65vw,30px);font-weight:700;max-width:48%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header:has(#ddayBadge:not(:empty)){row-gap:12px}
+#timerButton{position:fixed;right:16px;bottom:8px;font-size:13px;padding:6px 12px;border-color:#cbd4e0;background:#f5f7fa}
+.utility-controls{left:calc(50% - 120px)}
+body:not(.whiteboard-active) .size-controls{left:calc(50% - 166px)}
+.whiteboard-active .utility-controls{right:125px;left:auto}
+.dashboard-locked [data-edit],.dashboard-locked #settings,.dashboard-locked .size-controls,.dashboard-locked #screenSettings{visibility:hidden}
+.whiteboard-surface{isolation:isolate}
+#whiteboardCanvas{position:absolute;inset:0;width:100%;height:100%}
+#whiteboardTextLayer{position:absolute;inset:0;touch-action:none}
+#whiteboardTextLayer.ink-mode{pointer-events:none}
+.whiteboard-block{position:absolute;min-width:100px;box-sizing:border-box}
+.whiteboard-block textarea{display:block;width:100%;min-height:0;resize:none;overflow:auto;margin:0;padding:0;border:1px solid transparent;border-radius:0;outline:none;line-height:1.4;background:transparent;font-family:'Gowun Batang',serif;touch-action:auto;color:#262b33}
+.whiteboard-block.selected textarea{border-color:#cbd4e0}
+.textblock-tools{display:none;position:absolute;right:0;bottom:100%;gap:4px;background:white;z-index:3;white-space:nowrap}
+.whiteboard-block.selected .textblock-tools{display:flex}
+.textblock-tools button,.textblock-width{font-size:11px;padding:3px 8px}
+.textblock-move,.textblock-width{touch-action:none;cursor:move}
+.textblock-width{display:none;position:absolute;right:0;bottom:0;cursor:ew-resize}
+.whiteboard-block.selected .textblock-width{display:block}
+@media(min-width:1800px){#morning{--max-font:44}#timetable{--max-font:48}#meal{--max-font:30}#notices{--max-font:32}}
+@media(max-width:1100px){main{grid-template-columns:minmax(190px,.21fr) minmax(260px,.55fr) minmax(220px,.24fr)}#ddayBadge span{font-size:22px;padding:6px 14px}}
+
+/* One bundled typeface across the dashboard and every tool. */
+button,input,select,textarea{font-family:inherit}
+#morning,#notices,#timetable,#ddayBadge{font-weight:700}
+
+/* Keep screen navigation centered in every mode. */
+body .utility-controls{left:auto;right:125px;bottom:8px;transform:none}
+.screen-tabs{position:fixed;left:50%;bottom:8px;transform:translateX(-50%);display:flex;gap:4px;white-space:nowrap;background:white;border-radius:8px;padding:2px}
+body .size-controls,body:not(.whiteboard-active) .size-controls{left:16px;bottom:8px;transform:none}
+/* Give the activity board more room and make the header easier to read. */
+main{grid-template-columns:minmax(220px,21fr) minmax(260px,61fr) minmax(210px,18fr)}
+header{column-gap:24px}
+.weather.card{width:clamp(240px,24vw,340px);max-width:none;padding-left:18px}
+#weather{font-size:16px}
+.weather strong{font-size:30px}
+.weather #weather>.status{font-size:12px}
+#clock{font-size:56px}
+@media(max-width:1100px){header{column-gap:16px}.weather.card{width:250px}#clock{font-size:48px}}
+
+/* Align D-Day with the class title instead of reserving another header row. */
+.class-title-line{display:flex;align-items:center;gap:14px;min-width:0}
+.class-title-line h1{min-width:0;flex:1}
+.date-dday-line #ddayBadge{position:static;display:flex;flex-direction:column;flex-shrink:0;gap:5px;max-width:45%;margin:0;padding:0}
+.date-dday-line #ddayBadge:empty{display:none}
+.date-dday-line #ddayBadge span{max-width:100%;font-size:clamp(16px,1.4vw,25px);padding:5px 12px}
+body.random-active .date-dday-line #ddayBadge{display:none}
+#date{font-size:clamp(21px,1.9vw,30px);font-weight:700}
+
+/* Larger, centered screen tabs with a clear selected state. */
+body{padding-bottom:76px}
+body .screen-tabs{bottom:10px;gap:6px;padding:3px;border:1px solid #dce1e8;box-shadow:0 2px 10px #1823350d}
+body .screen-tabs button{font-size:18px;font-weight:700;min-height:42px;padding:8px 15px;color:#4b5563;border-radius:7px}
+body .screen-tabs button[aria-selected="true"]{background:#354d74;color:#fff;border-color:#354d74}
+body .utility-controls{bottom:19px}
+body .size-controls,body:not(.whiteboard-active) .size-controls{bottom:20px}
+#timerButton{bottom:18px}
+#whiteboardScreen{padding-bottom:72px}
+@media(max-width:1000px){body .utility-controls{right:112px}body .utility-controls>button{padding-inline:5px}body .screen-tabs button{padding-inline:11px;font-size:17px}}
+
+
+/* D-Day badges follow their text length, without truncating event names. */
+.class-title-line{flex-wrap:wrap}
+.class-title-line h1{flex:0 0 auto}
+.date-dday-line #ddayBadge{display:flex;flex-direction:row;flex-wrap:wrap;flex:0 1 auto;gap:8px;width:auto;max-width:100%;align-items:center}
+.date-dday-line #ddayBadge span{display:block;flex:0 1 auto;width:auto;min-width:0;max-width:100%;height:auto;line-height:1.5;padding:5px 12px;font-size:clamp(18px,1.4vw,25px);white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+
+/* Place events beside the date, toward the weather card. */
+.date-dday-line{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;min-width:0}
+.date-dday-line #date{flex:0 0 auto;white-space:nowrap}
+.date-dday-line #ddayBadge{justify-content:flex-end;margin-left:auto;min-width:0}
+@media(max-width:1100px){.date-dday-line{flex-wrap:wrap}}
+.settings-navigation{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px;position:sticky;bottom:-30px;background:#fff;padding:16px 0 4px;margin-top:18px;border-top:1px solid #e5e7eb}
+.settings-navigation button{font-size:16px;min-height:44px}
+#updateDialog #updateStatus{font-size:18px;color:#303640}
+.headerRight nav{flex-wrap:wrap;justify-content:flex-end;max-width:290px}
+
+#periodHighlightStatus{font-size:20px;font-weight:700;padding:12px;border-radius:8px;background:#f0f1f3;color:#4b5563}
+#periodHighlightStatus[data-enabled="true"]{background:#edf3e8;color:#34543a}
+/* Keep lesson content centered as the timetable board is resized. */
+#timetable{width:100%;justify-content:safe center;align-items:stretch;text-align:center}
+#timetable .lesson{flex:0 0 auto;justify-content:center;text-align:center}
+/* Larger clock with one uninterrupted row of header actions. */
+.headerRight nav{flex-wrap:nowrap;max-width:none;white-space:nowrap;justify-content:flex-end}
+#clock{font-size:72px}
+@media(max-width:1100px){#clock{font-size:60px}.headerRight nav{gap:4px}.headerRight nav button{padding:8px 7px;font-size:11px}}
+
+.open-update.update-available{background:#e2f2df;color:#285c32;border-color:#68a875;font-weight:700;animation:update-ready 2.4s ease-in-out infinite}
+@keyframes update-ready{0%,100%{box-shadow:0 0 0 0 #68a87522}50%{box-shadow:0 0 0 5px #68a87544}}
+@media(prefers-reduced-motion:reduce){.open-update.update-available{animation:none}}
