@@ -72,7 +72,7 @@ async function launch(){const app=await _electron.launch({executablePath:electro
  for(const [p,s] of combos){await page.setChecked('#diaryParents',p);await page.setChecked('#diaryStudents',s);const dr=await page.evaluate(()=>Object.values(JSON.parse(localStorage.getItem('diaryDrafts')))[0]);if(dr.parents!==p||dr.students!==s)saved=false;}
  ok('수신대상 4개 조합 초안과 함께 저장',saved);
  await page.click('#diaryPublish');await page.waitForTimeout(300);ok('선택 시 등록 요청 전달·실패해도 초안 유지',(await app.evaluate(()=>globalThis.publishCalls))===1&&(await page.inputValue('#diaryBody'))==='내일 준비물: 리코더');
- await page.click('#diaryConnect');await page.waitForTimeout(300);ok('하이클래스 자동화 실패가 앱을 멈추지 않음',(await page.textContent('#diaryStatus')).includes('작성 내용은 유지')&&await page.isVisible('#diaryTab'));
+ await page.click('#diaryConnect');await page.waitForTimeout(300);ok('하이클래스 자동화 실패가 앱을 멈추지 않음',(await page.textContent('#diaryLinkMessage')).includes('작성 내용은 유지')&&await page.isVisible('#diaryTab')&&(await page.inputValue('#diaryBody'))==='내일 준비물: 리코더');
  await page.fill('#diaryDate',shift(d,1));await page.dispatchEvent('#diaryDate','change');ok('날짜별 초안(새 날짜는 빈 본문)',(await page.inputValue('#diaryBody'))==='');
  await page.fill('#diaryDate',d);await page.dispatchEvent('#diaryDate','change');ok('기존 날짜 초안 복원',(await page.inputValue('#diaryBody'))==='내일 준비물: 리코더');
  // ---------- 화면 잠금 ----------

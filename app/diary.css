@@ -1,3 +1,20 @@
 #diaryScreen{position:fixed;inset:0 0 48px;z-index:5;background:white;padding:22px 5vw;overflow:auto}#diaryScreen[hidden]{display:none}.diary-heading{display:flex;justify-content:space-between;align-items:center;gap:20px}.diary-heading input{width:200px}.diary-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}#diaryScreen button{font-size:18px;min-height:46px}#diaryScreen label{font-size:20px}#diaryTitle{font-size:28px}#diaryBody{height:50vh;font-size:28px;line-height:1.7;resize:vertical}#diaryStatus{flex:1;font-size:17px}#diaryCandidates label{display:flex;align-items:flex-start;gap:12px;white-space:pre-wrap}#diaryCandidates input{width:22px;flex-shrink:0}body.diary-active>.size-controls{visibility:hidden}
 
 #diaryParents,#diaryStudents{width:22px;height:22px;margin-right:8px}
+
+/* HiClass link: one clear state line, one main button, step guide while connecting. */
+.diary-hiclass{margin:14px 0 18px;padding:14px 18px;border:1px solid #dce1e8;border-radius:12px;background:#f7f9fc}
+.diary-hiclass[data-state="linked"]{border-color:#9cc7a4;background:#f1f8f2}
+.diary-hiclass[data-state="expired"]{border-color:#e3b3a6;background:#fcf3f0}
+.diary-hiclass-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#diaryLinkState{flex:1;font-size:20px;font-weight:700;color:#303640}
+.diary-hiclass[data-state="linked"] #diaryLinkState{color:#2f6a3a}
+.diary-hiclass[data-state="expired"] #diaryLinkState{color:#9a4a36}
+#diaryLinkSteps{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0;padding:0;list-style:none;counter-reset:step}
+#diaryLinkSteps[hidden]{display:none}
+#diaryLinkSteps li{counter-increment:step;padding:6px 12px;border-radius:99px;background:#fff;border:1px solid #dce1e8;font-size:16px;color:#737b86}
+#diaryLinkSteps li::before{content:counter(step) ". "}
+#diaryLinkSteps li.done{color:#2f6a3a;border-color:#9cc7a4}
+#diaryLinkSteps li.done::before{content:"✓ "}
+#diaryLinkSteps li.current{color:#fff;background:#354d74;border-color:#354d74;font-weight:700}
+#diaryLinkMessage{margin:10px 0 0;font-size:17px;color:#303640;min-height:1.4em}
