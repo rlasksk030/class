@@ -1,6 +1,7 @@
 # Windows validation build (not a release).
 # Builds the NSIS installer from this development branch and keeps it only as a workflow artifact.
 # It never publishes: no tag, no GitHub Release, no public latest.yml, so installed apps see no update.
+# The teacher-facing artifact is uploaded only after the real-installer update scenarios pass.
 name: Windows 검증용 설치 파일
 
 on:
@@ -21,27 +22,20 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-
       - name: npm ci
         run: npm ci
-
       - name: npm run check
         run: npm run check
-
       - name: npm test
         run: npm test
-
       - name: npm run test:e2e
         run: npm run test:e2e
-
       - name: npm run dist:win
         run: npm run dist:win
-
       - name: Verify installer
         shell: pwsh
         run: |
@@ -63,15 +57,13 @@ jobs:
             "latest.yml은 기록용이며 설치할 때는 classroom-dashboard-setup-$version.exe만 실행합니다."
           ) | Set-Content out/README-검증용.txt -Encoding utf8
           Get-ChildItem out | Format-Table Name, Length
-
-      - name: Upload validation installer
+      - name: Keep build for the installer scenarios (internal)
         uses: actions/upload-artifact@v4
         with:
-          name: 2026-09-30_우리교실_v1.8.2_Windows검증용
+          name: internal-build
           path: out/
           if-no-files-found: error
-          retention-days: 30
-
+          retention-days: 3
       - name: Upload test output (failure only)
         if: failure()
         uses: actions/upload-artifact@v4
@@ -80,3 +72,59 @@ jobs:
           path: tests/e2e/.out/shots/
           if-no-files-found: ignore
           retention-days: 7
+
+  # Real installers on a clean Windows VM: v1.7.8 -> new (updater-style /S /D=), v1.7.8 + v1.8.1 -> new, fresh install.
+  installer-scenarios:
+    needs: build
+    runs-on: windows-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario: [A, B, C]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: npm ci
+        run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: internal-build
+          path: build-out
+      - name: Get published v1.7.8 and v1.8.1 installers
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force setups | Out-Null
+          foreach ($v in @('1.7.8','1.8.1')) { Invoke-WebRequest "https://github.com/rlasksk030/class/releases/download/v$v/classroom-dashboard-setup-$v.exe" -OutFile "setups/setup-$v.exe" }
+          $new = Get-ChildItem build-out -Filter 'classroom-dashboard-setup-*.exe' | Select-Object -First 1
+          Copy-Item $new.FullName setups/setup-new.exe
+          Get-ChildItem setups | Format-Table Name, Length
+      - name: Scenario ${{ matrix.scenario }}
+        run: node tests/windows/installer-scenario.cjs ${{ matrix.scenario }} setups
+      - name: Upload scenario report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-scenario-report-${{ matrix.scenario }}
+          path: tests/windows/.out/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  validation-artifact:
+    needs: [build, installer-scenarios]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: internal-build
+          path: out
+      - name: Upload validation installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: 2026-09-30_우리교실_v1.8.2_Windows검증용
+          path: out/
+          if-no-files-found: error
+          retention-days: 30
