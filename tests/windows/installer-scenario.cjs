@@ -15,14 +15,16 @@ const ps=cmd=>execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-Co
 function uninstallEntries(){
  const out=[];
  for(const hive of ['HKCU','HKLM'])for(const [label,guid] of Object.entries(GUIDS)){
-  try{const txt=execFileSync('reg',['query',`${hive}\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${guid}`],{encoding:'utf8'});
+  try{const txt=execFileSync('reg',['query',`${hive}\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${guid}`],{encoding:'utf8',stdio:['ignore','pipe','ignore']});
    const get=k=>(txt.match(new RegExp('^\\s+'+k+'\\s+REG_\\w+\\s+(.*)$','m'))||[])[1]?.trim();
-   out.push({hive,label,displayName:get('DisplayName'),version:get('DisplayVersion'),installLocation:get('InstallLocation'),uninstall:get('UninstallString')});}catch{}
+   const uninstall=get('UninstallString'),fromUninstall=(uninstall?.match(/^"([^"]+)"/)||[])[1];
+   let installKey;try{installKey=(execFileSync('reg',['query',`${hive}\\Software\\${guid}`,'/v','InstallLocation'],{encoding:'utf8',stdio:['ignore','pipe','ignore']}).match(/InstallLocation\s+REG_\w+\s+(.*)$/m)||[])[1]?.trim();}catch{}
+   out.push({hive,label,displayName:get('DisplayName'),version:get('DisplayVersion'),installLocation:get('InstallLocation')||installKey||(fromUninstall&&path.dirname(fromUninstall)),uninstall});}catch{}
  }
  return out;
 }
 function shortcuts(){
- const script=`$w=New-Object -ComObject WScript.Shell;$dirs=@([Environment]::GetFolderPath('Desktop'),[Environment]::GetFolderPath('CommonDesktopDirectory'),[Environment]::GetFolderPath('Programs'),[Environment]::GetFolderPath('CommonPrograms'));foreach($d in $dirs){if(Test-Path $d){Get-ChildItem $d -Recurse -Filter *.lnk -ErrorAction SilentlyContinue|?{$_.Name -like '*교실*'}|%{ "{0}|{1}" -f $_.FullName,$w.CreateShortcut($_.FullName).TargetPath }}}`;
+ const script=`$sh=New-Object -ComObject Shell.Application;$dirs=@([Environment]::GetFolderPath('Desktop'),[Environment]::GetFolderPath('CommonDesktopDirectory'),[Environment]::GetFolderPath('Programs'),[Environment]::GetFolderPath('CommonPrograms'));foreach($d in $dirs){if(Test-Path $d){Get-ChildItem $d -Recurse -Filter *.lnk -ErrorAction SilentlyContinue|?{$_.Name -like '*교실*'}|%{ "{0}|{1}" -f $_.FullName,$sh.Namespace($_.DirectoryName).ParseName($_.Name).GetLink.Path }}}`;
  return ps(script).split(/\r?\n/).filter(Boolean).map(l=>{const [link,target]=l.split('|');return {link,target};});
 }
 function runKey(){try{return execFileSync('reg',['query','HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'],{encoding:'utf8'}).split(/\r?\n/).filter(l=>/classroom|교실/i.test(l)).map(s=>s.trim());}catch{return [];}}
