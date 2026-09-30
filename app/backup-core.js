@@ -85,10 +85,23 @@
   catch(error){for(const [key,value]of previous){try{if(value===null)storage.removeItem(key);else storage.setItem(key,value);}catch{}}throw error;}
   return previous;
  }
+ // Raw localStorage dumps (the updater's local-storage-backup.json, or a copied profile) use the same allowlist.
+ function fromRaw(raw){
+  if(!isObject(raw))throw Error(INVALID);
+  const data=collect(k=>typeof raw[k]==='string'?raw[k]:null);
+  return {data,entries:Object.entries(data).map(([k,v])=>[k,JSON.stringify(v)])};
+ }
+ const USER_KEYS=['settings','morningDefault','notes','classRosters','ddayEvents','whiteboardContents','boardTitles','diaryDrafts','activityCompletion'];
+ // True when a store holds anything a teacher wrote (not just caches or screen defaults).
+ function hasUserData(data){return USER_KEYS.some(k=>{const v=data?.[k];if(v==null)return false;if(k==='settings')return !!(v.grade&&v.classroom);if(typeof v==='string')return v.trim()!=='';if(Array.isArray(v))return v.length>0;if(k==='whiteboardContents')return (v.blocks?.length||0)+(v.strokes?.length||0)>0;return Object.keys(v).length>0;});}
+ function summary(data){
+  const rosters=Object.values(data.classRosters||{}).map(r=>r?.students?.length||0);
+  return {grade:String(data.settings?.grade||''),classroom:String(data.settings?.classroom||''),morning:String(data.morningDefault||'').split('\n')[0].slice(0,30),students:rosters.length?Math.max(...rosters):0,ddays:(data.ddayEvents||[]).length,notes:Object.keys(data.notes||{}).length,whiteboard:(data.whiteboardContents?.blocks||[]).length,keys:Object.keys(data).length};
+ }
  function fileName(date=new Date(),school='옥구초'){
   const day=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(date);
   return `${school}_학급대시보드_백업_${day}.json`;
  }
- const api={FORMAT,SCHEMA_VERSION,KEYS,INVALID,collect,create,parse,apply,fileName,checksum};
+ const api={FORMAT,SCHEMA_VERSION,KEYS,INVALID,collect,create,parse,apply,fileName,checksum,fromRaw,hasUserData,summary};
  if(typeof module!=='undefined')module.exports=api;else root.BackupCore=api;
 })(globalThis);
