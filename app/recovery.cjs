@@ -45,6 +45,10 @@ module.exports=function setupRecovery(getMain){
    return {format:'raw',data,source};
   }finally{w.destroy();setTimeout(()=>fs.rm(temp,{recursive:true,force:true}).catch(()=>{}),1500);}
  }
+ // Temporary read copies stay locked by the session while the app runs (Windows); remove leftovers at startup,
+ // before any of those sessions is opened. Only our own "recovery-*" copies are touched.
+ const partitions=path.join(userData(),'Partitions');
+ fs.readdir(partitions).then(names=>Promise.all(names.filter(n=>/^recovery-\d+$/.test(n)).map(n=>fs.rm(path.join(partitions,n),{recursive:true,force:true}).catch(()=>{})))).catch(()=>{});
  ipcMain.handle('recovery:scan',async e=>{if(!allowed(e))throw Error('허용되지 않은 요청');return snapshots();});
  ipcMain.handle('recovery:read',async(e,id)=>{if(!allowed(e))throw Error('허용되지 않은 요청');return readSnapshot(id);});
  ipcMain.handle('recovery:folder',async e=>{

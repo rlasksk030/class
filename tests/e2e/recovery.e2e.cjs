@@ -48,7 +48,11 @@ const USER={settings:{grade:'5',classroom:'3'},morningDefault:'복구 확인: �
  ok('가져온 뒤 화면을 실제로 다시 불러옴',(await page.innerText('#morning'))==='복구 확인: 독서 20분'&&await page.evaluate(()=>!window.dashboardRestoring));
  ok('다른 폴더에서 가져오기 → 값 동일',keys.every(k=>now[k]===original[k]),keys.filter(k=>now[k]!==original[k]).join(','));
  ok('원본 폴더는 바뀌지 않음',hashDir(path.join(P('A'),'Local Storage'))===before);
- ok('임시 읽기 파티션 정리',!fs.existsSync(path.join(P('D'),'Partitions'))||!fs.readdirSync(path.join(P('D'),'Partitions')).some(f=>f.startsWith('recovery-')));
+ await app.close();
+ // The temporary read copy may stay locked while the app runs (Windows); it must be gone after the next start.
+ ({app,page}=await launch(P('D')));await page.waitForTimeout(1000);
+ ok('임시 읽기 사본은 다음 실행 때까지 정리',!fs.existsSync(path.join(P('D'),'Partitions'))||!fs.readdirSync(path.join(P('D'),'Partitions')).some(f=>f.startsWith('recovery-')));
+ ok('가져온 데이터 재실행 후 유지',(await page.innerText('#morning'))==='복구 확인: 독서 20분');
  await app.close();
  const f=results.filter(r=>!r[1]);console.log(`\n${results.length-f.length}/${results.length} passed`);process.exit(f.length?1:0);
 })().catch(e=>{console.error(e);process.exit(2);});
