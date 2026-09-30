@@ -82,7 +82,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scenario: [A, B, C, D, E]
+        scenario: [A, B, C, D, E, F]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

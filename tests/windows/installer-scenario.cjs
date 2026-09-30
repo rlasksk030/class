@@ -2,7 +2,8 @@
 // runs the installed app with its real profile (no CLASSROOM_TEST_PROFILE), writes data, installs the next
 // version and records install folders, uninstall entries, shortcuts, userData and stored keys.
 // Usage: node tests/windows/installer-scenario.cjs <A|B|C|D|E>
-// A v1.7.8 -> new (updater: /S /D=)  B v1.7.8 + manual v1.8.1 -> new  C fresh new  D v1.7.8 -> v1.8.1 (updater) -> new  E v1.8.1 only -> new <dir with setup-1.7.8.exe, setup-1.8.1.exe, setup-new.exe>
+// A v1.7.8 -> new (updater: /S /D=)  B v1.7.8 + manual v1.8.1 -> new  C fresh new  D v1.7.8 -> v1.8.1 (updater) -> new  E v1.8.1 only -> new
+// F v1.7.8 + v1.8.1 "all users" (Program Files) -> new setup run by the teacher -> remove the Program Files copy <dir with setup-1.7.8.exe, setup-1.8.1.exe, setup-new.exe>
 const {execFileSync,spawnSync}=require('child_process'),fs=require('fs'),path=require('path');
 const {_electron}=require('playwright-core');
 const [scenario,dir]=process.argv.slice(2);
@@ -62,12 +63,25 @@ async function writeData(page){
 async function main(){
  const setup=v=>path.join(dir,`setup-${v}.exe`);
  let expected=null;
- if(['A','B','D'].includes(scenario)){
+ if(['A','B','D','F'].includes(scenario)){
   await install(setup('1.7.8'),['/S']);const s1=snapshot('v1.7.8 설치 직후');
   ok('v1.7.8 설치 확인',s1.installs.length===1,s1.installs.join(', '));
   let {app,page,info}=await launch(s1.installs[0]);report.v178=info;ok('v1.7.8 실행',info.version==='1.7.8',JSON.stringify(info));
   await writeData(page);expected=await storage(page);ok('v1.7.8 데이터 기록',(await page.innerText('#morning')).includes('P0 검증'));await app.close();await sleep(1500);
   snapshot('v1.7.8 데이터 기록 후');
+  if(scenario==='F'){
+   // The v1.8.1 wizard offers "Anyone who uses this computer": a second copy in Program Files with its own entry.
+   await install(setup('1.8.1'),['/S','/allusers']);const s2=snapshot('v1.8.1 "모든 사용자" 설치 후');
+   const pf=s2.installs.find(d=>!d.toLowerCase().startsWith(process.env.LOCALAPPDATA.toLowerCase()));report.v181PerMachine=pf;
+   ok('v1.8.1 모든 사용자 설치가 별도 폴더에 생김(문제 상태 재현)',!!pf&&s2.installs.length===2,s2.installs.join(', '));
+   if(pf){const r=await launch(pf);const now=await storage(r.page);const same=KEYS.filter(k=>expected[k]===now[k]).length;report.v181PerMachineData={...r.info,sameKeys:same};console.log(`v1.8.1 (Program Files): userData ${r.info.userData}, same keys ${same}/${KEYS.length}`);await r.app.close();await sleep(1500);}
+   // The teacher runs the new setup (one-click, per user): it updates the v1.7.x per-user copy.
+   await install(setup('new'),['/S']);const s3=snapshot('새 설치 파일 실행 후 (Program Files 사본 남음)');
+   ok('새 버전은 v1.7.x 사용자 설치 폴더를 갱신',s3.uninstallEntries.some(e=>e.label.startsWith('v1.7.x')&&e.hive==='HKCU'&&e.version!=='1.7.8'),s3.uninstallEntries.map(e=>`${e.hive} ${e.label} ${e.version}`).join(' / '));
+   // Removing the extra all-users copy (needs administrator) must not touch the per-user app, its shortcuts or data.
+   const kr=s3.uninstallEntries.find(e=>e.hive==='HKLM'&&e.label.startsWith('v1.8.x'));
+   if(kr){const exe=(kr.uninstall.match(/^"([^"]+)"/)||[])[1];await install(exe,['/S','/allusers']);}
+  }
   if(scenario==='B'||scenario==='D'){
    // B: v1.8.1 installed from its setup file (manual install, defaults). D: v1.7.8's own updater path ("/S /D=<install dir>").
    await install(setup('1.8.1'),scenario==='B'?['/S']:['/S','/D='+s1.installs[0]]);const s2=snapshot(scenario==='B'?'v1.8.1 수동 설치(기본값) 후':'v1.8.1 업데이트 경로(/S /D=) 설치 후');
@@ -75,8 +89,7 @@ async function main(){
    for(const d of s2.installs){const r=await launch(d);const now=await storage(r.page);const same=KEYS.filter(k=>expected[k]===now[k]).length;console.log(`v1.8.1 check ${d}: version ${r.info.version}, userData ${r.info.userData}, same keys ${same}/${KEYS.length}`);report['v181_'+d]={...r.info,sameKeys:same};await r.app.close();await sleep(1500);}
   }
   // Emulate the in-app updater: UpdateRecovery runs the new setup with "/S /D=<current install folder>".
-  const target=installs().find(d=>fs.existsSync(path.join(d,EXE)));
-  await install(setup('new'),['/S','/D='+target]);
+  if(scenario!=='F'){const target=installs().find(d=>fs.existsSync(path.join(d,EXE)));await install(setup('new'),['/S','/D='+target]);}
  }else{
   if(scenario==='E'){
    await install(setup('1.8.1'),['/S']);const s1=snapshot('v1.8.1 단독 설치 직후');ok('v1.8.1 설치 확인',s1.installs.length===1,s1.installs.join(', '));
