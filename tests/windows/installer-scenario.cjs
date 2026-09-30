@@ -80,7 +80,12 @@ async function main(){
    ok('새 버전은 v1.7.x 사용자 설치 폴더를 갱신',s3.uninstallEntries.some(e=>e.label.startsWith('v1.7.x')&&e.hive==='HKCU'&&e.version!=='1.7.8'),s3.uninstallEntries.map(e=>`${e.hive} ${e.label} ${e.version}`).join(' / '));
    // Removing the extra all-users copy (needs administrator) must not touch the per-user app, its shortcuts or data.
    const kr=s3.uninstallEntries.find(e=>e.hive==='HKLM'&&e.label.startsWith('v1.8.x'));
-   if(kr){const exe=(kr.uninstall.match(/^"([^"]+)"/)||[])[1];await install(exe,['/S','/allusers']);}
+   if(kr){
+    const exe=(kr.uninstall.match(/^"([^"]+)"/)||[])[1];await install(exe,['/S','/allusers']);
+    // The NSIS uninstaller re-launches itself from %TEMP% and returns at once; wait until its entry is gone.
+    for(let i=0;i<90&&uninstallEntries().some(e=>e.hive==='HKLM'&&e.label.startsWith('v1.8.x'));i++)await sleep(1000);
+    await sleep(2000);snapshot('Program Files 사본 제거 후');
+   }
   }
   if(scenario==='B'||scenario==='D'){
    // B: v1.8.1 installed from its setup file (manual install, defaults). D: v1.7.8's own updater path ("/S /D=<install dir>").

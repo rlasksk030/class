@@ -107,12 +107,13 @@ jobs:
         run: node tests/windows/installer-scenario.cjs ${{ matrix.scenario }} setups
       - name: Diagnose script (read-only) + backup copy
         if: always()
-        shell: powershell
+        # The step itself runs in pwsh (UTF-8); the script runs in Windows PowerShell 5.1 like on a school PC.
+        shell: pwsh
         run: |
           powershell -NoProfile -ExecutionPolicy Bypass -File tools/windows/classroom-diagnose.ps1 -Backup
           New-Item -ItemType Directory -Force tests/windows/.out | Out-Null
-          Copy-Item "$([Environment]::GetFolderPath('Desktop'))\*진단*.txt" tests/windows/.out/
-          Get-ChildItem "$([Environment]::GetFolderPath('MyDocuments'))\우리교실-데이터백업" -Recurse | Select-Object -First 20 | ForEach-Object { $_.FullName }
+          Get-ChildItem ([Environment]::GetFolderPath('Desktop')) -Filter *.txt | Copy-Item -Destination tests/windows/.out/
+          Get-ChildItem ([Environment]::GetFolderPath('MyDocuments')) -Directory | Get-ChildItem -Recurse | Select-Object -First 20 | ForEach-Object { $_.FullName }
       - name: Upload scenario report
         if: always()
         uses: actions/upload-artifact@v4
