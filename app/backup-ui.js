@@ -2,7 +2,7 @@
 (() => {
  const form=document.getElementById('settingsForm');if(!form||!window.BackupCore)return;
  const box=document.createElement('fieldset');box.className='backup-settings';
- box.innerHTML='<legend>백업 / 복원</legend><p>학급 설정과 작성한 내용을 파일 하나로 보관하거나 다른 PC로 옮깁니다. 하이클래스 로그인 정보는 포함되지 않습니다.</p><div class="backup-actions"><button type="button" id="backupCreate">백업 파일 만들기</button><button type="button" id="backupRestore">백업 파일로 복원</button><button type="button" id="recoveryFind">이전 데이터 찾기</button></div><p id="backupStatus" role="status"></p>';
+ box.innerHTML='<legend>백업 / 복원</legend><p>학급 설정과 작성한 내용을 파일 하나로 보관하거나 다른 PC로 옮깁니다. 하이클래스 로그인 정보는 포함되지 않습니다.</p><div class="backup-actions"><button type="button" id="backupCreate">백업 파일 만들기</button><button type="button" id="backupRestore">백업 파일로 복원</button><button type="button" id="recoveryFind">이전 데이터 찾기</button></div><p id="backupStatus" role="status"></p><p id="installNotice" class="install-notice" hidden></p>';
  form.querySelector('.actions').before(box);
  const confirmDialog=document.createElement('dialog');confirmDialog.id='backupConfirmDialog';
  confirmDialog.innerHTML='<form method="dialog"><h2>백업 복원</h2><p id="backupConfirmInfo"></p><p>백업 내용을 복원하면 현재 설정과 작성 내용 일부가 변경됩니다.<br>계속하시겠습니까?</p><div class="actions"><button value="cancel">취소</button><button value="restore" class="primary">복원</button></div></form>';
@@ -84,6 +84,13 @@
   catch{$('recoveryStatus').textContent='선택한 폴더의 데이터를 읽지 못했습니다. 원본은 바뀌지 않았습니다.';}
  };
  $('recoveryClose').onclick=()=>recoveryDialog.close();
+ // Another copy on this PC (e.g. a v1.8.1 "all users" copy): tell the teacher; never remove it automatically.
+ window.desktop?.installOthers?.().then(list=>{
+  if(!list?.length)return;
+  const text=list.map(o=>`${o.dir}${o.version?' (버전 '+o.version+')':''}`).join(', ');
+  const note=`이 PC의 다른 위치에도 우리 교실이 설치되어 있습니다: ${text}. 바로가기나 Windows 시작 시 자동 실행이 그쪽을 열 수 있습니다. 이 화면에서 데이터가 모두 보이는 것을 확인한 뒤, ${list.some(o=>o.allUsers)?'관리자 계정으로 ':''}Windows 설정 > 앱에서 그 위치의 항목만 제거해 주세요.`;
+  $('installNotice').textContent=note;$('installNotice').hidden=false;$('globalStatus').textContent=note;
+ }).catch(()=>{});
  // One-time automatic recovery: only when this profile holds no teacher data at all and the updater left a
  // snapshot with data (e.g. storage lost during an update). Never overwrites existing data.
  (async()=>{

@@ -1,9 +1,9 @@
 // Real Windows installer scenarios (GitHub Actions windows-latest). Installs the published setup files,
 // runs the installed app with its real profile (no CLASSROOM_TEST_PROFILE), writes data, installs the next
 // version and records install folders, uninstall entries, shortcuts, userData and stored keys.
-// Usage: node tests/windows/installer-scenario.cjs <A|B|C|D|E>
+// Usage: node tests/windows/installer-scenario.cjs <A|B|C|D|E|F>
 // A v1.7.8 -> new (updater: /S /D=)  B v1.7.8 + manual v1.8.1 -> new  C fresh new  D v1.7.8 -> v1.8.1 (updater) -> new  E v1.8.1 only -> new
-// F v1.7.8 + v1.8.1 "all users" (Program Files) -> new setup run by the teacher -> remove the Program Files copy <dir with setup-1.7.8.exe, setup-1.8.1.exe, setup-new.exe>
+// F v1.7.8 + v1.8.1 "all users" (Program Files) -> new setup run by the teacher; the Program Files copy stays and the app says so <dir with setup-1.7.8.exe, setup-1.8.1.exe, setup-new.exe>
 const {execFileSync,spawnSync}=require('child_process'),fs=require('fs'),path=require('path');
 const {_electron}=require('playwright-core');
 const [scenario,dir]=process.argv.slice(2);
@@ -78,14 +78,8 @@ async function main(){
    // The teacher runs the new setup (one-click, per user): it updates the v1.7.x per-user copy.
    await install(setup('new'),['/S']);const s3=snapshot('새 설치 파일 실행 후 (Program Files 사본 남음)');
    ok('새 버전은 v1.7.x 사용자 설치 폴더를 갱신',s3.uninstallEntries.some(e=>e.label.startsWith('v1.7.x')&&e.hive==='HKCU'&&e.version!=='1.7.8'),s3.uninstallEntries.map(e=>`${e.hive} ${e.label} ${e.version}`).join(' / '));
-   // Removing the extra all-users copy (needs administrator) must not touch the per-user app, its shortcuts or data.
-   const kr=s3.uninstallEntries.find(e=>e.hive==='HKLM'&&e.label.startsWith('v1.8.x'));
-   if(kr){
-    const exe=(kr.uninstall.match(/^"([^"]+)"/)||[])[1];await install(exe,['/S','/allusers']);
-    // The NSIS uninstaller re-launches itself from %TEMP% and returns at once; wait until its entry is gone.
-    for(let i=0;i<90&&uninstallEntries().some(e=>e.hive==='HKLM'&&e.label.startsWith('v1.8.x'));i++)await sleep(1000);
-    await sleep(2000);snapshot('Program Files 사본 제거 후');
-   }
+   // The v1.8.1 uninstaller does nothing (or hangs) when run silently, and removing an all-users copy needs an
+   // administrator, so the Program Files copy is left alone by design; the new app shows a notice about it instead.
   }
   if(scenario==='B'||scenario==='D'){
    // B: v1.8.1 installed from its setup file (manual install, defaults). D: v1.7.8's own updater path ("/S /D=<install dir>").
@@ -103,15 +97,42 @@ async function main(){
   }else await install(setup('new'),['/S']);
  }
  const final=snapshot('최신 버전 적용 후');
+ const version=JSON.parse(fs.readFileSync(path.join(__dirname,'../../app/package.json'),'utf8')).version;
+ if(scenario==='F')return finishF(final,expected,version);
  const newest=[];for(const d of final.installs){const r=await launch(d);newest.push({dir:d,...r.info,data:await storage(r.page),settingsOpen:!!(await r.page.$('#settingsDialog[open]'))});await r.app.close();await sleep(1500);}
  report.final=newest.map(({data,...x})=>({...x,keys:Object.keys(data).filter(k=>data[k]!=null)}));
- const version=JSON.parse(fs.readFileSync(path.join(__dirname,'../../app/package.json'),'utf8')).version;
  ok('최신 버전이 실행됨',newest.some(n=>n.version===version),newest.map(n=>n.version).join(','));
  ok('우리 교실 제거 항목이 하나(v1.7.x appId)',final.uninstallEntries.length===1&&final.uninstallEntries[0].label.startsWith('v1.7.x'),final.uninstallEntries.map(e=>`${e.hive} ${e.label} ${e.version}`).join(' / '));
  ok('설치된 실행 파일이 하나',final.installs.length===1,final.installs.join(', '));
  ok('바로가기가 모두 같은 실행 파일을 가리킴',new Set(final.shortcuts.map(s=>s.target.toLowerCase())).size<=1,final.shortcuts.map(s=>s.target).join(' | '));
  if(expected){for(const n of newest.filter(n=>n.version===version)){const missing=KEYS.filter(k=>expected[k]!==n.data[k]);ok(`기존 데이터 전부 동일 (${n.dir})`,missing.length===0,missing.length?'다름: '+missing.join(','):KEYS.length+'개 키 동일');ok('학년/반 설정창 재요청 없음',!n.settingsOpen);}}
  else ok('신규 설치: 최초 설정 화면',newest.every(n=>n.settingsOpen));
+ finish();
+}
+// F: the per-user copy is updated and keeps the data; the Program Files copy is untouched and the new app points it out.
+async function finishF(final,expected,version){
+ const local=process.env.LOCALAPPDATA.toLowerCase(),home=process.env.USERPROFILE.toLowerCase();
+ const perUser=final.installs.find(d=>d.toLowerCase().startsWith(local)),pf=final.installs.find(d=>!d.toLowerCase().startsWith(local));
+ ok('사용자 설치 폴더가 남아 있음',!!perUser,final.installs.join(', '));
+ const hkcu=final.uninstallEntries.filter(e=>e.hive==='HKCU');
+ ok('사용자(HKCU) 제거 항목은 v1.7.x 하나, 최신 버전',hkcu.length===1&&hkcu[0].label.startsWith('v1.7.x')&&hkcu[0].version===version,hkcu.map(e=>`${e.label} ${e.version}`).join(' / '));
+ ok('Program Files 사본은 자동으로 제거하지 않음(그대로 남음)',!!pf&&final.uninstallEntries.some(e=>e.hive==='HKLM'&&e.label.startsWith('v1.8.x')),pf||'없음');
+ if(!perUser)return finish();
+ const r=await launch(perUser);
+ await r.page.waitForFunction(()=>!document.getElementById('installNotice')?.hidden,null,{timeout:20000}).catch(()=>{});
+ const notice=await r.page.evaluate(()=>document.getElementById('installNotice')?.textContent||'');
+ const data=await storage(r.page),settingsOpen=!!(await r.page.$('#settingsDialog[open]'));
+ await r.app.close();await sleep(1500);
+ report.final=[{dir:perUser,...r.info,notice,keys:Object.keys(data).filter(k=>data[k]!=null)}];
+ ok('최신 버전이 사용자 설치 폴더에서 실행됨',r.info.version===version,r.info.version);
+ const missing=KEYS.filter(k=>expected[k]!==data[k]);ok('기존 데이터 전부 동일',missing.length===0,missing.length?'다름: '+missing.join(','):KEYS.length+'개 키 동일');
+ ok('학년/반 설정창 재요청 없음',!settingsOpen);
+ ok('다른 위치 설치본 안내 표시',!!pf&&notice.toLowerCase().includes(pf.toLowerCase()),notice);
+ const mine=snapshot('최신 버전 실행 후').shortcuts.filter(s=>s.link.toLowerCase().startsWith(home));
+ ok('사용자 바로가기는 최신(사용자 설치) 실행 파일을 가리킴',mine.every(s=>s.target.toLowerCase()===path.join(perUser,EXE).toLowerCase()),mine.map(s=>s.target).join(' | '));
+ finish();
+}
+function finish(){
  fs.writeFileSync(path.join(OUT,`report-${scenario}.json`),JSON.stringify(report,null,1));
  const f=results.filter(r=>!r[1]);console.log(`\n${results.length-f.length}/${results.length} passed`);process.exit(f.length?1:0);
 }
