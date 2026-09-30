@@ -71,9 +71,10 @@ jobs:
           name: e2e-output-for-debugging
           path: tests/e2e/.out/shots/
           if-no-files-found: ignore
+          include-hidden-files: true
           retention-days: 7
 
-  # Real installers on a clean Windows VM: v1.7.8 -> new (updater-style /S /D=), v1.7.8 + v1.8.1 -> new, fresh install.
+  # Real installers on a clean Windows VM (see tests/windows/installer-scenario.cjs for scenarios A-E).
   installer-scenarios:
     needs: build
     runs-on: windows-latest
@@ -81,7 +82,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scenario: [A, B, C]
+        scenario: [A, B, C, D, E]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -104,6 +105,14 @@ jobs:
           Get-ChildItem setups | Format-Table Name, Length
       - name: Scenario ${{ matrix.scenario }}
         run: node tests/windows/installer-scenario.cjs ${{ matrix.scenario }} setups
+      - name: Diagnose script (read-only) + backup copy
+        if: always()
+        shell: powershell
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File tools/windows/classroom-diagnose.ps1 -Backup
+          New-Item -ItemType Directory -Force tests/windows/.out | Out-Null
+          Copy-Item "$([Environment]::GetFolderPath('Desktop'))\*진단*.txt" tests/windows/.out/
+          Get-ChildItem "$([Environment]::GetFolderPath('MyDocuments'))\우리교실-데이터백업" -Recurse | Select-Object -First 20 | ForEach-Object { $_.FullName }
       - name: Upload scenario report
         if: always()
         uses: actions/upload-artifact@v4
@@ -111,6 +120,7 @@ jobs:
           name: installer-scenario-report-${{ matrix.scenario }}
           path: tests/windows/.out/
           if-no-files-found: ignore
+          include-hidden-files: true
           retention-days: 14
 
   validation-artifact:

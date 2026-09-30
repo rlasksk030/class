@@ -1,7 +1,8 @@
 // Real Windows installer scenarios (GitHub Actions windows-latest). Installs the published setup files,
 // runs the installed app with its real profile (no CLASSROOM_TEST_PROFILE), writes data, installs the next
 // version and records install folders, uninstall entries, shortcuts, userData and stored keys.
-// Usage: node tests/windows/installer-scenario.cjs <A|B|C> <dir with setup-1.7.8.exe, setup-1.8.1.exe, setup-new.exe>
+// Usage: node tests/windows/installer-scenario.cjs <A|B|C|D|E>
+// A v1.7.8 -> new (updater: /S /D=)  B v1.7.8 + manual v1.8.1 -> new  C fresh new  D v1.7.8 -> v1.8.1 (updater) -> new  E v1.8.1 only -> new <dir with setup-1.7.8.exe, setup-1.8.1.exe, setup-new.exe>
 const {execFileSync,spawnSync}=require('child_process'),fs=require('fs'),path=require('path');
 const {_electron}=require('playwright-core');
 const [scenario,dir]=process.argv.slice(2);
@@ -35,7 +36,8 @@ function snapshot(label){const s={label,uninstallEntries:uninstallEntries(),inst
 async function waitForExit(names,ms=180000){const end=Date.now()+ms;while(Date.now()<end){const list=execFileSync('tasklist',['/FO','CSV','/NH'],{encoding:'utf8'});if(!names.some(n=>list.toLowerCase().includes(n.toLowerCase())))return;await sleep(1000);}}
 async function install(file,args){
  console.log(`\n>>> ${path.basename(file)} ${args.join(' ')}`);
- const r=spawnSync(file,args,{stdio:'inherit',windowsHide:true});
+ const r=spawnSync(file,args,{stdio:'inherit',windowsHide:true,timeout:240000});
+ if(r.error||r.signal)console.log(`installer did not finish normally: ${r.error?.message||r.signal}`);
  await waitForExit([path.basename(file),'Un_A.exe','Un_B.exe','Uninstall 우리 교실.exe']);await sleep(2000);
  return r.status;
 }
@@ -60,15 +62,15 @@ async function writeData(page){
 async function main(){
  const setup=v=>path.join(dir,`setup-${v}.exe`);
  let expected=null;
- if(scenario==='A'||scenario==='B'){
+ if(['A','B','D'].includes(scenario)){
   await install(setup('1.7.8'),['/S']);const s1=snapshot('v1.7.8 설치 직후');
   ok('v1.7.8 설치 확인',s1.installs.length===1,s1.installs.join(', '));
   let {app,page,info}=await launch(s1.installs[0]);report.v178=info;ok('v1.7.8 실행',info.version==='1.7.8',JSON.stringify(info));
   await writeData(page);expected=await storage(page);ok('v1.7.8 데이터 기록',(await page.innerText('#morning')).includes('P0 검증'));await app.close();await sleep(1500);
   snapshot('v1.7.8 데이터 기록 후');
-  if(scenario==='B'){
-   // Reproduce the reported state: v1.8.1 installed from its setup file like a manual install.
-   await install(setup('1.8.1'),['/S']);const s2=snapshot('v1.8.1 수동 설치(기본값) 후');
+  if(scenario==='B'||scenario==='D'){
+   // B: v1.8.1 installed from its setup file (manual install, defaults). D: v1.7.8's own updater path ("/S /D=<install dir>").
+   await install(setup('1.8.1'),scenario==='B'?['/S']:['/S','/D='+s1.installs[0]]);const s2=snapshot(scenario==='B'?'v1.8.1 수동 설치(기본값) 후':'v1.8.1 업데이트 경로(/S /D=) 설치 후');
    report.v181Installs=s2.installs;
    for(const d of s2.installs){const r=await launch(d);const now=await storage(r.page);const same=KEYS.filter(k=>expected[k]===now[k]).length;console.log(`v1.8.1 check ${d}: version ${r.info.version}, userData ${r.info.userData}, same keys ${same}/${KEYS.length}`);report['v181_'+d]={...r.info,sameKeys:same};await r.app.close();await sleep(1500);}
   }
@@ -76,14 +78,18 @@ async function main(){
   const target=installs().find(d=>fs.existsSync(path.join(d,EXE)));
   await install(setup('new'),['/S','/D='+target]);
  }else{
-  await install(setup('new'),['/S']);
+  if(scenario==='E'){
+   await install(setup('1.8.1'),['/S']);const s1=snapshot('v1.8.1 단독 설치 직후');ok('v1.8.1 설치 확인',s1.installs.length===1,s1.installs.join(', '));
+   let {app,page,info}=await launch(s1.installs[0]);ok('v1.8.1 실행',info.version==='1.8.1',JSON.stringify(info));await writeData(page);expected=await storage(page);await app.close();await sleep(1500);
+   await install(setup('new'),['/S','/D='+s1.installs[0]]);
+  }else await install(setup('new'),['/S']);
  }
  const final=snapshot('최신 버전 적용 후');
  const newest=[];for(const d of final.installs){const r=await launch(d);newest.push({dir:d,...r.info,data:await storage(r.page),settingsOpen:!!(await r.page.$('#settingsDialog[open]'))});await r.app.close();await sleep(1500);}
  report.final=newest.map(({data,...x})=>({...x,keys:Object.keys(data).filter(k=>data[k]!=null)}));
  const version=JSON.parse(fs.readFileSync(path.join(__dirname,'../../app/package.json'),'utf8')).version;
  ok('최신 버전이 실행됨',newest.some(n=>n.version===version),newest.map(n=>n.version).join(','));
- ok('우리 교실 제거 항목이 하나',final.uninstallEntries.length===1,final.uninstallEntries.map(e=>`${e.hive} ${e.label} ${e.version}`).join(' / '));
+ ok('우리 교실 제거 항목이 하나(v1.7.x appId)',final.uninstallEntries.length===1&&final.uninstallEntries[0].label.startsWith('v1.7.x'),final.uninstallEntries.map(e=>`${e.hive} ${e.label} ${e.version}`).join(' / '));
  ok('설치된 실행 파일이 하나',final.installs.length===1,final.installs.join(', '));
  ok('바로가기가 모두 같은 실행 파일을 가리킴',new Set(final.shortcuts.map(s=>s.target.toLowerCase())).size<=1,final.shortcuts.map(s=>s.target).join(' | '));
  if(expected){for(const n of newest.filter(n=>n.version===version)){const missing=KEYS.filter(k=>expected[k]!==n.data[k]);ok(`기존 데이터 전부 동일 (${n.dir})`,missing.length===0,missing.length?'다름: '+missing.join(','):KEYS.length+'개 키 동일');ok('학년/반 설정창 재요청 없음',!n.settingsOpen);}}
