@@ -7,6 +7,8 @@ name: Windows 검증용 설치 파일
 on:
   push:
     branches: [feature/class-dashboard-v1.8.2-windows-validation]
+    # Document-only commits (e.g. recording CI results) do not rebuild or cancel a running validation.
+    paths-ignore: ['**.md']
   workflow_dispatch:
 
 permissions:
