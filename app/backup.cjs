@@ -18,6 +18,9 @@ module.exports=function setupBackup(getMain){
   const stat=await fs.stat(result.filePaths[0]);if(!stat.isFile()||stat.size>MAX_BYTES)return {text:''};
   return {text:await fs.readFile(result.filePaths[0],'utf8'),name:path.basename(result.filePaths[0])};
  });
+ // The main window blocks renderer navigation (will-navigate), which also swallows location.reload();
+ // after a restore the main process reloads the page itself.
+ ipcMain.handle('backup:reload',e=>{if(!allowed(e))throw Error('허용되지 않은 요청');e.sender.reload();return true;});
  // A copy of the current data is kept before every restore, so a restore can always be undone by hand.
  ipcMain.handle('backup:keep',async(e,text)=>{
   if(!allowed(e)||typeof text!=='string')throw Error('허용되지 않은 요청');

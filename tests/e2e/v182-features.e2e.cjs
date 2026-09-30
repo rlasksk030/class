@@ -105,8 +105,9 @@ const refresh=async page=>{await page.click('#refresh');await page.waitForTimeou
  await page.click('#backupRestore');await page.waitForSelector('#backupConfirmDialog[open]');await page.screenshot({path:OUT+'/v2-06-restore-confirm.png'});
  await page.click('#backupConfirmDialog button[value=cancel]');await page.waitForTimeout(200);
  ok('BK. 확인창 취소 시 변경 없음',(await page.evaluate(()=>localStorage.getItem('morningDefault')))==='"바뀐 내용"');
- await page.click('#backupRestore');await page.waitForSelector('#backupConfirmDialog[open]');await page.click('#backupConfirmDialog button[value=restore]');
+ await page.evaluate(()=>{window.__beforeRestore=1;});await page.click('#backupRestore');await page.waitForSelector('#backupConfirmDialog[open]');await page.click('#backupConfirmDialog button[value=restore]');
  await page.waitForTimeout(2000);await page.waitForLoadState('domcontentloaded');await page.waitForTimeout(800);
+ ok('BK. 복원 후 화면을 실제로 다시 불러옴(저장 차단 해제)',await page.evaluate(()=>window.__beforeRestore===undefined&&!window.dashboardRestoring));
  ok('BK. 복원 후 다시 불러오기·값 복원',(await txt(page,'morning'))==='책 읽기 20분'&&(await page.$eval('.morning h2',h=>h.textContent)).includes('오늘 할 일'));
  ok('BK. 복원 시 화이트보드 덮어쓰기 없음',JSON.stringify(await blocks())===JSON.stringify(persisted));
  ok('BK. 복원 전 자동 보관본 생성',fs.readdirSync(PROFILE+'/backups').some(f=>f.startsWith('before-restore-')));
