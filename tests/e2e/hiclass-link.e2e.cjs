@@ -23,10 +23,10 @@ const waitText=async(page,sel,re,ms=8000)=>{const end=Date.now()+ms;while(Date.n
  let {app,page}=await launch();
  await page.evaluate(()=>{localStorage.setItem('settings',JSON.stringify({grade:'6',classroom:'1'}));localStorage.setItem('dashboardLocked','false');});await page.reload();await page.waitForTimeout(700);
  await page.click('#diaryTab');await page.waitForTimeout(300);
- ok('미연결 상태 표시·버튼 하나',(await page.textContent('#diaryLinkState')).includes('미연결')&&(await page.textContent('#diaryConnect'))==='하이클래스 연결하기'&&!(await page.isVisible('#diaryLink')));
+ ok('미연결 상태 표시·버튼 하나',(await page.textContent('#diaryLinkState')).includes('미연결')&&(await page.textContent('#diaryConnect'))==='하이클래스 연결하기'&&(await page.locator('#diaryLink').count())===0);
  await page.click('#diaryConnect');
  ok('① 로그인 안내와 단계 표시',/로그인/.test(await waitText(page,'#diaryLinkMessage',/로그인/))&&await page.isVisible('#diaryLinkSteps')&&(await page.textContent('#diaryLinkSteps li.current')).includes('로그인'));
- ok('오류 복구용 [현재 화면 다시 확인]만 작게 표시',await page.isVisible('#diaryLink'));
+ ok('연결 진행 중에도 버튼 하나',(await page.locator('.diary-hiclass-line button').count())===1);
  await hiclassGo(app,'/main/home');ok('② 담당 학급 선택 안내',/담당 학급을 선택/.test(await waitText(page,'#diaryLinkMessage',/담당 학급을 선택/))&&(await page.textContent('#diaryLinkSteps li.current')).includes('담당 학급 선택'));
  await hiclassGo(app,'/main/clazzes/c1');const home=await waitText(page,'#diaryLinkMessage',/학급은 확인했습니다/);
  ok('③ 학급 홈만 열면 연결하지 않고 구체적 안내',/학급은 확인했습니다\. 이제 해당 학급의 알림장 게시판을 열어 주세요/.test(home)&&(await app.evaluate(()=>globalThis.dialogs.length))===0,home);
@@ -37,7 +37,7 @@ const waitText=async(page,sel,re,ms=8000)=>{const end=Date.now()+ms;while(Date.n
  const saved=JSON.parse(fs.readFileSync(path.join(PROFILE,'hiclass-links.json'),'utf8')).links[`${academicYear()}:6:1`];
  ok('[연결하기] 순간 classKey·게시판 URL·학급명 저장',saved?.url==='https://www.hiclass.net/main/clazzes/c1/note/n1'&&saved?.title==='옥구초등학교 6학년 1반',JSON.stringify(saved));
  ok('완료 메시지',/하이클래스 학급 연결이 완료되었습니다/.test(done));
- ok('연결 완료 표시·[연결 변경]',(await page.textContent('#diaryLinkState'))==='● 하이클래스 연결됨 · 옥구초등학교 6학년 1반'&&(await page.textContent('#diaryConnect'))==='연결 변경'&&!(await page.isVisible('#diaryLinkSteps'))&&!(await page.isVisible('#diaryLink')));
+ ok('연결 완료 표시·[연결 변경]',(await page.textContent('#diaryLinkState'))==='● 하이클래스 연결됨 · 옥구초등학교 6학년 1반'&&(await page.textContent('#diaryConnect'))==='연결 변경'&&!(await page.isVisible('#diaryLinkSteps'))&&(await page.locator('#diaryLink').count())===0);
  const raw=fs.readFileSync(path.join(PROFILE,'hiclass-links.json'),'utf8');ok('비밀번호·쿠키 저장 없음',!/password|cookie|token/i.test(raw));
  await app.close();
  // Restart: saved link shows as connected; an expired login is the only thing that asks to log in again.
@@ -51,7 +51,7 @@ const waitText=async(page,sel,re,ms=8000)=>{const end=Date.now()+ms;while(Date.n
  fs.rmSync(path.join(PROFILE,'hiclass-links.json'),{force:true});
  ({app,page}=await launch(0));await page.click('#diaryTab');await page.click('#diaryConnect');await page.waitForTimeout(500);await hiclassGo(app,'/main/clazzes/c1/note/n1');
  const cancel=await waitText(page,'#diaryLinkMessage',/취소/);ok('확인창 [취소] 시 저장 안 함',/연결을 취소했습니다/.test(cancel)&&!fs.existsSync(path.join(PROFILE,'hiclass-links.json')));
- await page.click('#diaryLink');await page.waitForTimeout(800);ok('[현재 화면 다시 확인]으로 다시 확인창',(await app.evaluate(()=>globalThis.dialogs.length))===2);
+ await page.click('#diaryConnect');await waitText(page,'#diaryLinkMessage',/연결을 취소했습니다/);ok('[하이클래스 연결하기]로 다시 확인창',(await app.evaluate(()=>globalThis.dialogs.length))===2);
  await app.close();
  const f=results.filter(r=>!r[1]);console.log(`\n${results.length-f.length}/${results.length} passed`);process.exit(f.length?1:0);
 })().catch(e=>{console.error(e);process.exit(2);});

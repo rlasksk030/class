@@ -137,7 +137,7 @@ jobs:
       - name: Upload validation installer
         uses: actions/upload-artifact@v4
         with:
-          name: 2026-09-30_우리교실_v1.8.2_Windows검증용
+          name: 2026-10-02_우리교실_v1.8.2_Windows검증용
           path: out/
           if-no-files-found: error
           retention-days: 30

@@ -90,9 +90,12 @@ body .size-controls,body:not(.whiteboard-active) .size-controls{bottom:20px}
 
 #periodHighlightStatus{font-size:20px;font-weight:700;padding:12px;border-radius:8px;background:#f0f1f3;color:#4b5563}
 #periodHighlightStatus[data-enabled="true"]{background:#edf3e8;color:#34543a}
-/* Keep lesson content centered as the timetable board is resized. */
-#timetable{width:100%;justify-content:safe center;align-items:stretch;text-align:center}
-#timetable .lesson{flex:0 0 auto;justify-content:center;text-align:center}
+/* Center the complete timetable; every row shares the same number/subject columns. */
+#timetable{width:max-content;max-width:100%;min-width:0;margin-inline:auto;justify-content:safe center;align-items:stretch;text-align:left}
+#timetable .lesson{flex:0 0 auto;display:grid;grid-template-columns:.9em minmax(0,1fr);column-gap:.45em;text-align:left}
+#timetable .lesson span{min-width:0;text-align:left;overflow-wrap:anywhere}
+/* Events belong to the dashboard only. */
+body.whiteboard-active #ddayBadge,body.random-active #ddayBadge,body.activity-active #ddayBadge,body.diary-active #ddayBadge{display:none}
 /* Larger clock with one uninterrupted row of header actions. */
 .headerRight nav{flex-wrap:nowrap;max-width:none;white-space:nowrap;justify-content:flex-end}
 #clock{font-size:72px}
