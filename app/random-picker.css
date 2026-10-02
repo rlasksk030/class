@@ -1,0 +1,82 @@
+#randomScreen{position:fixed;inset:0 0 48px;background:#fff;z-index:5;padding:24px 3vw;overflow:auto}#randomScreen[hidden]{display:none}.random-heading{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e9ebee;margin-bottom:24px}.random-layout{display:grid;grid-template-columns:minmax(210px,1fr) minmax(360px,2.5fr) minmax(180px,1fr);gap:24px}.random-layout aside{background:#fafbf9;border:1px solid #e5e7eb;border-radius:14px;padding:20px;min-width:0}.random-center{text-align:center;min-width:0}.random-layout button{min-height:44px;font-size:17px;margin:5px}.random-layout summary{font-size:21px;cursor:pointer;padding:12px 0}.random-layout p{font-size:16px}.random-check{display:flex;align-items:center;gap:10px;min-height:44px;margin:4px 0}.random-check input{width:22px;height:22px;margin:0;flex-shrink:0}.random-count,.random-actions{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap}.random-count input,.random-actions input,.random-actions select{width:140px}.random-count select{width:130px}#drawOne{font-size:28px;padding:15px 35px}#pickResult{font-size:clamp(40px,4.5vw,86px);font-weight:700;line-height:1.4;overflow-wrap:anywhere;min-height:170px;margin:28px 0}#pickStatus{min-height:28px}#pickHistory{font-size:23px;line-height:1.7;overflow-wrap:anywhere}#groupResults{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;text-align:left}#groupResults>div{background:#edf3e8;border-radius:10px;padding:14px}#groupResults p{font-size:24px;overflow-wrap:anywhere}#rosterText{font-size:21px}body.random-active>.size-controls{visibility:hidden}@media(max-width:1000px){.random-layout{grid-template-columns:200px minmax(320px,1fr)}.random-layout>aside:last-child{grid-column:1/-1}}
+/* Fill the picker with legible classroom text, avoiding empty result space. */
+#randomScreen{padding:18px 2.5vw}
+.random-heading{margin-bottom:16px}.random-heading h1{font-size:clamp(32px,2.8vw,48px);margin:6px 0 14px}
+#randomClass{font-size:clamp(18px,1.5vw,26px)}
+.random-layout{gap:18px;min-height:calc(100vh - 180px)}.random-layout aside{padding:18px}
+.random-layout h2{font-size:clamp(28px,2.2vw,40px)}
+.random-layout summary{font-size:clamp(24px,1.8vw,32px);padding:10px 0}
+.random-layout button{font-size:clamp(21px,1.5vw,28px);margin:4px;padding:10px 14px;min-height:50px}
+.random-layout label,.random-layout select,.random-layout input{font-size:clamp(21px,1.5vw,28px)}
+.random-layout p{font-size:22px}.random-check{min-height:52px;margin:4px 0}
+.random-count label{margin:8px 0}.random-count select{width:150px}
+#drawOne{font-size:clamp(32px,2.7vw,48px);padding:14px 32px}
+#pickResult{font-size:clamp(52px,5.5vw,108px);line-height:1.3;min-height:0;margin:20px 0}
+#pickResult:empty{display:none}
+#pickStatus{font-size:24px;min-height:0;margin:12px 0}#pickStatus:empty{display:none}
+#pickHistory{font-size:clamp(26px,2vw,38px);line-height:1.6;margin:16px 0;padding-left:38px}
+#groupResults{gap:12px}#groupResults>div{padding:16px}#groupResults h3{font-size:28px;margin:4px 0 10px}#groupResults p{font-size:clamp(28px,2.1vw,40px);margin:10px 0;line-height:1.5}
+#rosterText{font-size:28px;line-height:1.5}
+/* Narrow the exclusion/roster column; preserve room for large draw results. */
+.random-layout{grid-template-columns:minmax(180px,.65fr) minmax(360px,2.85fr) minmax(180px,1fr)}
+@media(max-width:1000px){.random-layout{grid-template-columns:180px minmax(320px,1fr)}}
+#rosterEditor summary{font-size:22px;word-break:keep-all}
+#groupResults p{word-break:keep-all}
+/* Keep each selected name visible, including long names and multi-person draws. */
+#pickResult{max-width:100%;min-width:0;overflow:visible}
+#pickResult>div{max-width:100%;min-width:0;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;padding:0 .08em;line-height:1.4}
+#pickResult:has(>div:nth-child(2)){font-size:clamp(36px,4vw,76px)}
+#pickResult:has(>div:nth-child(5)){font-size:clamp(30px,3vw,56px)}
+#pickHistory li{white-space:normal;word-break:keep-all;overflow-wrap:anywhere;padding-right:4px}
+
+/* Fit the picker to the available window; retain all three columns. */
+body.random-active{overflow:hidden}
+body.random-active #ddayBadge{display:none}
+#randomScreen{overflow:hidden;padding:12px 2vw;display:flex;flex-direction:column;gap:10px}
+#randomScreen[hidden]{display:none}
+.random-heading{flex:none;gap:16px;margin:0}
+.random-heading h1{font-size:clamp(24px,2.8vw,40px);margin:0 0 8px}
+#randomClass{font-size:clamp(14px,1.5vw,24px)}
+.random-layout{flex:1;min-height:0;grid-template-columns:minmax(0,1fr) minmax(0,2.1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:12px}
+.random-layout>aside:last-child{grid-column:auto}
+.random-layout>aside,.random-center{min-height:0;min-width:0;overflow:hidden;padding:10px}
+.random-fit-content{display:flow-root;overflow-wrap:anywhere}
+.random-layout h2{font-size:28px;margin:8px 0}
+.random-layout summary{font-size:24px;padding:7px 0}
+.random-layout button{font-size:21px;min-height:36px;padding:6px 10px;margin:3px}
+.random-layout label,.random-layout select,.random-layout input{font-size:21px}
+.random-layout p{font-size:18px;margin:8px 0}
+.random-check{min-height:30px;margin:2px 0;gap:6px}
+.random-check input{width:20px;height:20px}
+#excludeList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 8px}
+#excludeList label{font-size:24px}
+#pickHistory{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 24px;font-size:26px;line-height:1.35;margin:10px 0;padding-left:30px}
+#pickHistory li{margin-left:8px}
+#drawOne{font-size:32px;padding:10px 24px}
+#pickResult{font-size:clamp(44px,5vw,88px);margin:12px 0}
+#pickResult:has(>div:nth-child(2)){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-size:44px}
+#pickResult:has(>div:nth-child(5)){font-size:36px}
+#pickStatus{font-size:20px;margin:8px 0}
+#groupResults{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#groupResults>div{padding:8px}
+#groupResults h3{font-size:23px;margin:0 0 4px}
+#groupResults p{font-size:26px;line-height:1.35;margin:0}
+#rosterText{font-size:22px;line-height:1.3;height:8em;resize:none}
+
+#randomScreen{bottom:72px}
+
+/* Equal primary draw controls, including the group action. */
+#drawOne,#drawMany,#makeGroups{width:210px;height:64px;min-height:64px;padding:8px 12px;font-size:28px;line-height:1.3;white-space:nowrap;vertical-align:middle}
+
+/* Keep the roster and group controls visible; exclusions are optional. */
+#rosterList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 10px;margin:12px 0;font-size:30px;line-height:1.4;font-weight:700;word-break:keep-all}
+.random-layout button,.random-layout label,.random-layout select,.random-layout input{font-size:25px}
+.random-layout h2{font-size:30px}
+.random-layout summary,#rosterEditor summary{font-size:25px}
+#groupPicker{margin-top:14px}
+#groupResults{grid-template-columns:repeat(auto-fit,minmax(155px,1fr))}
+#groupResults h3{font-size:25px}
+#groupResults p{font-size:30px}
+#drawOne,#drawMany,#makeGroups{width:210px;height:64px;min-height:64px;font-size:28px;background:#fff;color:#4b5563;border:1px solid #dce1e8}
+#drawOne:hover,#drawMany:hover,#makeGroups:hover{background:#f4f6f8}
+#pickHistory{font-size:30px}

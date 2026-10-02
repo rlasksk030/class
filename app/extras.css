@@ -1,0 +1,28 @@
+/* Additive controls are outside the existing grid tracks. */
+.utility-controls{position:fixed;right:16px;bottom:7px;z-index:6;display:flex;gap:5px;background:#fff;border-radius:8px;padding:2px}
+.utility-controls button{font-size:11px;padding:4px 8px}
+#ddayBadge{position:fixed;left:16px;bottom:5px;max-width:30vw;z-index:6;background:#fff;display:flex;gap:10px;padding:5px 9px;border-radius:7px;font-size:14px;color:#49633e;overflow:hidden;white-space:nowrap}
+#ddayBadge:empty{display:none}#ddayBadge span{overflow:hidden;text-overflow:ellipsis}
+.board-concealed{visibility:hidden!important;pointer-events:none!important}
+.lesson.lesson-current{background:#eaf0fa;box-shadow:inset 0 0 0 1px #b8c7df;border-radius:9px}
+.lesson.lesson-next{background:#f5f7fa;box-shadow:inset 3px 0 0 #b8c7df;border-radius:9px}
+.lesson[aria-current="true"] b{background:#d9e4f4;color:#354d74}
+.extras-dialog{width:620px}.extras-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.extras-dialog [hidden]{display:none!important}
+.preference-row{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #eceef1}.preference-row label{margin:0;display:flex;gap:9px;align-items:center}.preference-row input{width:auto;margin:0}.preference-row output{min-width:42px;text-align:center;font-size:12px;color:#737b86}
+.extras-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.schedule-row{display:grid;grid-template-columns:45px 1fr 1fr 55px;gap:10px;align-items:center}.schedule-row input{min-width:0}.schedule-row button{margin-top:7px}
+.extras-message{min-height:20px;color:#796035;font-size:13px}.event-row{display:flex;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid #eceef1}.event-row span{flex:1;overflow-wrap:anywhere}
+#timerDialog{width:690px;text-align:center}#timerDisplay{font-variant-numeric:tabular-nums;font-size:clamp(80px,14vw,150px);letter-spacing:-5px;line-height:1.2;margin:20px 0;color:#354d74}#timerMessage{font-size:22px;min-height:32px}#timerDialog .timer-presets{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}#timerDialog .fields{align-items:end;justify-content:center}#timerDialog .fields input{width:90px}#timerDialog .actions{justify-content:center;flex-wrap:wrap}#timerDialog.finished{box-shadow:0 0 0 8px #b8c7df,0 20px 100px #18233533}#timerButton.finished{background:#eaf0fa;color:#354d74;font-weight:700;outline:2px solid #9aaecb;animation:timer-pulse 1s ease-in-out infinite alternate}@keyframes timer-pulse{to{box-shadow:0 0 0 5px #b8c7df66}}@media(prefers-reduced-motion:reduce){#timerButton.finished{animation:none}}
+#whiteboardScreen{position:fixed;inset:0;z-index:20;padding-bottom:45px;width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;padding:14px;border:0;border-radius:0;background:#fff;overflow:hidden}#whiteboardScreen:not([hidden]){display:flex;flex-direction:column;gap:12px}.whiteboard-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.whiteboard-toolbar strong{margin-right:auto}.whiteboard-toolbar button[aria-pressed="true"]{background:#eaf0fa}.whiteboard-toolbar input{width:45px;margin:0;padding:0;height:32px}.whiteboard-surface{flex:1;min-height:0;position:relative}#whiteboardCanvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}#whiteboardText{width:100%;height:100%;margin:0;resize:none;border:0;outline:none;font-size:36px;line-height:1.7;padding:20px;background:white}#whiteboardCanvas[hidden],#whiteboardText[hidden]{display:none}
+.weather.card.weather-font-custom{width:var(--weather-font-width);height:var(--weather-font-height);max-width:none;display:flex;flex-direction:column;justify-content:center}.weather.weather-font-custom strong{font-size:1.833333em}.weather.weather-font-custom #weather>.status{font-size:.833333em}
+
+#whiteboardScreen[hidden]{display:none}.utility-controls{z-index:30}.screen-tabs{display:flex;gap:4px}.screen-tabs [aria-selected="true"]{background:#f4f5f7;color:#354d74}.whiteboard-active .size-controls,.whiteboard-active #ddayBadge{visibility:hidden}.board-size-mode .utility-controls{bottom:38px}
+#whiteboardScreen{padding-bottom:45px}
+#timerFinished{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:40;padding:20px 30px;display:flex;align-items:center;gap:24px;border:2px solid #9aaecb;border-radius:14px;background:#eaf0fa;color:#354d74;box-shadow:0 8px 40px #18233522;font-size:28px}#timerFinished[hidden]{display:none}
+/* Keep source credits unobstructed; D-Day sits beside the header information. */
+header>div:first-child{position:relative}
+#ddayBadge{position:absolute;top:100%;left:0;bottom:auto;max-width:100%;padding:0;margin-top:5px;font-size:12px}
+body:not(.whiteboard-active) .size-controls{left:calc(50% - 160px)}
+.utility-controls{left:calc(50% - 115px);right:auto}
+.whiteboard-active .utility-controls{left:auto;right:16px}
+#whiteboardFontSize{min-width:42px;text-align:center;font-size:12px;color:#737b86;font-variant-numeric:tabular-nums}

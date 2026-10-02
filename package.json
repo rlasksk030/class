@@ -1,0 +1,18 @@
+{
+  "name": "classroom-dashboard-workspace",
+  "private": true,
+  "description": "우리 교실 대시보드 개발·빌드·검증 작업 공간 (앱 소스는 app/)",
+  "scripts": {
+    "start": "electron app",
+    "check": "node tests/check-syntax.cjs",
+    "test": "node --test app/*.test.cjs",
+    "test:e2e": "node tests/e2e/board-titles.e2e.cjs && node tests/e2e/v182-features.e2e.cjs && node tests/e2e/regression.e2e.cjs && node tests/e2e/hiclass-link.e2e.cjs && node tests/e2e/recovery.e2e.cjs && node tests/e2e/timetable-layout.e2e.cjs && node tests/e2e/diary-drafts.e2e.cjs",
+    "test:migration": "node tests/e2e/migration-v178.e2e.cjs",
+    "dist:win": "node build/prepare-nsis.cjs && electron-builder --win --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "40.10.6",
+    "electron-builder": "26.15.3",
+    "playwright-core": "1.63.0"
+  }
+}

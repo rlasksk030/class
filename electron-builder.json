@@ -1,0 +1,43 @@
+{
+  "appId": "org.school.classroomdashboard",
+  "productName": "우리 교실",
+  "electronVersion": "40.10.6",
+  "directories": {
+    "app": "app",
+    "output": "dist"
+  },
+  "files": [
+    "**/*",
+    "!package-lock.json"
+  ],
+  "asar": true,
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    ]
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowElevation": true,
+    "allowToChangeInstallationDirectory": true,
+    "runAfterFinish": false,
+    "deleteAppDataOnUninstall": false,
+    "installerLanguages": ["ko_KR"],
+    "language": "1042",
+    "include": "build/installer.nsh",
+    "artifactName": "classroom-dashboard-setup-${version}.exe"
+  },
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "rlasksk030",
+      "repo": "class"
+    }
+  ]
+}
