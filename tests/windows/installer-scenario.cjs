@@ -61,6 +61,7 @@ async function writeData(page){
  await page.reload();await page.waitForTimeout(1200);
 }
 async function main(){
+ if(['G','H','I'].includes(scenario))return require('./baseline-v184-scenario.cjs')(scenario,dir);
  const setup=v=>path.join(dir,`setup-${v}.exe`);
  let expected=null;
  if(['A','B','D','F'].includes(scenario)){
@@ -119,7 +120,7 @@ async function finishF(final,expected,version){
  ok('Program Files 사본은 자동으로 제거하지 않음(그대로 남음)',!!pf&&final.uninstallEntries.some(e=>e.hive==='HKLM'&&e.label.startsWith('v1.8.x')),pf||'없음');
  if(!perUser)return finish();
  const r=await launch(perUser);
- await r.page.waitForFunction(()=>!document.getElementById('installNotice')?.hidden,null,{timeout:20000}).catch(()=>{});
+ await r.page.waitForFunction(()=>{const n=document.getElementById('installNotice');return n&&!n.hidden;},null,{timeout:20000}).catch(()=>{});
  const notice=await r.page.evaluate(()=>document.getElementById('installNotice')?.textContent||'');
  const data=await storage(r.page),settingsOpen=!!(await r.page.$('#settingsDialog[open]'));
  await r.app.close();await sleep(1500);
@@ -136,4 +137,4 @@ function finish(){
  fs.writeFileSync(path.join(OUT,`report-${scenario}.json`),JSON.stringify(report,null,1));
  const f=results.filter(r=>!r[1]);console.log(`\n${results.length-f.length}/${results.length} passed`);process.exit(f.length?1:0);
 }
-main().catch(e=>{console.error(e);fs.writeFileSync(path.join(OUT,`report-${scenario}.json`),JSON.stringify(report,null,1));process.exit(2);});
+main().catch(e=>{console.error(e);if(!['G','H','I'].includes(scenario))fs.writeFileSync(path.join(OUT,`report-${scenario}.json`),JSON.stringify(report,null,1));process.exit(2);});

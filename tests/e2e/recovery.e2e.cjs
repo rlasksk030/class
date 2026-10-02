@@ -55,8 +55,9 @@ const USER={settings:{grade:'5',classroom:'3'},morningDefault:'복구 확인: �
  ok('가져온 데이터 재실행 후 유지',(await page.innerText('#morning'))==='복구 확인: 독서 20분');
  // Another copy on this PC (registry lookup is Windows-only; stubbed here): shown as a notice, nothing removed.
  ok('다른 설치본이 없으면 안내 없음',await page.evaluate(()=>document.getElementById('installNotice').hidden));
- await app.evaluate(({ipcMain,BrowserWindow})=>{ipcMain.removeHandler('install:others');ipcMain.handle('install:others',()=>[{dir:'C:\\Program Files\\classroom-dashboard',version:'1.8.1',allUsers:true}]);BrowserWindow.getAllWindows()[0].webContents.reload();});
- await page.waitForFunction(()=>!document.getElementById('installNotice')?.hidden,null,{timeout:10000}).catch(()=>{});
+ await app.evaluate(({ipcMain})=>{ipcMain.removeHandler('install:others');ipcMain.handle('install:others',()=>[{dir:'C:\\Program Files\\classroom-dashboard',version:'1.8.1',allUsers:true}]);});
+ await page.reload();
+ await page.waitForFunction(()=>{const n=document.getElementById('installNotice');return n&&!n.hidden;},null,{timeout:10000});
  const notice=await page.evaluate(()=>document.getElementById('installNotice')?.textContent||'');
  ok('다른 설치본 안내: 위치·버전·관리자 계정 안내',notice.includes('C:\\Program Files\\classroom-dashboard')&&notice.includes('1.8.1')&&notice.includes('관리자 계정'),notice);
  ok('안내가 상단 상태줄에도 표시',(await page.textContent('#globalStatus')).includes('다른 위치에도 우리 교실'));

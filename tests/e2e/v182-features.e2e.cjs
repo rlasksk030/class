@@ -89,7 +89,7 @@ const refresh=async page=>{await page.click('#refresh');await page.waitForTimeou
  await page.click('#backupCreate');await page.waitForTimeout(700);
  ok('BK. 백업 완료 메시지',(await txt(page,'backupStatus')).startsWith('백업이 완료되었습니다.'),await txt(page,'backupStatus'));
  const raw=fs.readFileSync(BK,'utf8'),bk=JSON.parse(raw);
- ok('BK. schemaVersion·appVersion·createdAt',bk.schemaVersion===1&&bk.appVersion==='1.8.2'&&!!bk.createdAt&&bk.format==='classroom-dashboard-backup',bk.appVersion);
+ ok('BK. schemaVersion·appVersion·createdAt',bk.schemaVersion===1&&bk.appVersion===require('../../app/package.json').version&&!!bk.createdAt&&bk.format==='classroom-dashboard-backup',bk.appVersion);
  ok('BK. 사용자 데이터 포함',bk.data.morningDefault==='책 읽기 20분'&&bk.data.boardTitles.morning==='오늘 할 일'&&bk.data.ddayEvents.length===1&&bk.data.whiteboardContents.blocks.length===persisted.length&&bk.data.boardSizes.row===.6&&bk.data.settings.grade==='6');
  ok('BK. 민감정보·캐시·위치 제외',!raw.includes('SECRET-KEY-123')&&!bk.data.cache&&!bk.data.lastLocation&&!Object.keys(bk.data).some(k=>k.startsWith('weather'))&&!/cookie|token|password|hiclass/i.test(raw));
  const userFiles=fs.readdirSync(PROFILE);ok('BK. 로그인 세션(Partitions)은 백업 대상 아님',!raw.includes('Partitions'),userFiles.join(','));

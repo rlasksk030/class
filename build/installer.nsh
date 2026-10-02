@@ -21,6 +21,37 @@
   Pop $0
 !macroend
 
+; Published v1.8.4 policy: never terminate a running classroom app (including PIP).
+; Silent upgrades fail with code 2; interactive upgrades ask the teacher to close it.
+!macro customCheckAppRunning
+  appProcessCheck:
+    nsProcess::_FindProcess /NOUNLOAD "${APP_EXECUTABLE_FILENAME}"
+    Pop $R0
+    ${If} $R0 == 603
+      Goto appProcessClear
+    ${ElseIf} $R0 == 0
+      IfSilent appProcessBlocked
+      MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "우리 교실 앱이 실행 중입니다. 앱과 PIP 창을 닫은 뒤 다시 시도를 눌러 주세요." IDRETRY appProcessCheck
+      Goto appProcessBlocked
+    ${Else}
+      IfSilent appProcessBlocked
+      MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "앱 실행 상태를 확인하지 못했습니다. 오류 코드: $R0. 다시 시도하거나 설치를 취소해 주세요." IDRETRY appProcessCheck
+    ${EndIf}
+  appProcessBlocked:
+    nsProcess::_Unload
+    SetErrorLevel 2
+    Quit
+  appProcessClear:
+    nsProcess::_Unload
+!macroend
+
+!macro customUnInstall
+  ${ifNot} ${isUpdated}
+    DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "classroom-dashboard"
+    DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\RunOnce" "classroom-dashboard-update-recovery"
+  ${endif}
+!macroend
+
 ; Runs in .onInit, before the old version is uninstalled. When both the v1.7.x (d78eedc4-...) and the v1.8.x
 ; (80d89bea-...) registrations point to the same folder, the shared "Uninstall 우리 교실.exe" there is the v1.8.x
 ; one; running it as the v1.7.x uninstaller hangs in silent mode (measured on Windows, scenario D). The v1.7.x

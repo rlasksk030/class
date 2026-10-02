@@ -84,7 +84,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scenario: [A, B, C, D, E, F]
+        scenario: [A, B, C, D, E, F, G, H, I]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -97,11 +97,12 @@ jobs:
         with:
           name: internal-build
           path: build-out
-      - name: Get published v1.7.8 and v1.8.1 installers
+      - name: Get published installers including baseline v1.8.4
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force setups | Out-Null
-          foreach ($v in @('1.7.8','1.8.1')) { Invoke-WebRequest "https://github.com/rlasksk030/class/releases/download/v$v/classroom-dashboard-setup-$v.exe" -OutFile "setups/setup-$v.exe" }
+          foreach ($v in @('1.7.8','1.8.1','1.8.4')) { Invoke-WebRequest "https://github.com/rlasksk030/class/releases/download/v$v/classroom-dashboard-setup-$v.exe" -OutFile "setups/setup-$v.exe" }
+          if ((Get-FileHash setups/setup-1.8.4.exe -Algorithm SHA256).Hash.ToLower() -ne 'f72232b8e64c6840da2cca19606ee94c6c04280894ee40e733a58918a0c90d71') { throw 'Published v1.8.4 baseline hash mismatch' }
           $new = Get-ChildItem build-out -Filter 'classroom-dashboard-setup-*.exe' | Select-Object -First 1
           Copy-Item $new.FullName setups/setup-new.exe
           Get-ChildItem setups | Format-Table Name, Length
@@ -137,7 +138,7 @@ jobs:
       - name: Upload validation installer
         uses: actions/upload-artifact@v4
         with:
-          name: 2026-10-02_우리교실_v1.8.2_Windows검증용
+          name: 2026-10-02_우리교실_v1.8.5_Windows검증용
           path: out/
           if-no-files-found: error
           retention-days: 30

@@ -22,8 +22,14 @@
     ]
   },
   "nsis": {
-    "oneClick": true,
+    "oneClick": false,
     "perMachine": false,
+    "allowElevation": true,
+    "allowToChangeInstallationDirectory": true,
+    "runAfterFinish": false,
+    "deleteAppDataOnUninstall": false,
+    "installerLanguages": ["ko_KR"],
+    "language": "1042",
     "include": "build/installer.nsh",
     "artifactName": "classroom-dashboard-setup-${version}.exe"
   },
