@@ -32,19 +32,23 @@ function findRecipientControls() {
    if(inside.length!==1||inside[0]!==element)break;
    if(visible(near))add(kind(near.textContent),3);
   }
-  if(ranks.size>1)return {error:'ambiguous'};
+  if(ranks.size>1)return {error:'ambiguous',reason:'conflicting-label'};
   for(const [name,rank] of ranks)candidates[name].push({element,click,rank,wrapper});
  }
- if(Object.values(candidates).some(c=>c.length>1))return {error:'ambiguous'};
- if(!candidates.parents.length||!candidates.students.length)return {error:'missing'};
- const result={};
+ if(Object.values(candidates).some(c=>c.length>1))return {error:'ambiguous',reason:'multiple-controls'};
+ const result={},available={};let unreadable=false;
  for(const name of ['parents','students']){
+  if(!candidates[name].length)continue;
   const control=candidates[name].sort((a,b)=>a.rank-b.rank)[0];
   const raw=(control.wrapper||control.element).getAttribute('aria-checked');
   const checked=native(control.element)?control.element.checked:raw==='true'?true:raw==='false'?false:null;
-  if(checked===null||(native(control.element)&&raw!==null&&raw!==String(checked)))return {error:'ambiguous'};
+  if(checked===null){unreadable=true;continue;}
+  available[name]=checked;
+  if(native(control.element)&&raw!==null&&raw!==String(checked))return {error:'ambiguous',reason:'conflicting-state'};
   result[name]={...control,checked,disabled:control.element.disabled===true||control.element.getAttribute('aria-disabled')==='true'||control.wrapper?.getAttribute('aria-disabled')==='true'};
  }
+ if(unreadable)return {error:'ambiguous',reason:'unreadable-state',available};
+ if(!result.parents||!result.students)return {error:'missing',available};
  return result;
 }
 const messages={missing:'하이클래스 수신대상 항목을 찾지 못했습니다.',change:'하이클래스 수신대상 선택을 변경하지 못했습니다.',mismatch:'수신대상이 앱의 선택과 달라 등록을 중단했습니다.',ambiguous:'하이클래스 수신대상 화면 구조가 변경되어 안전하게 확인할 수 없습니다.'};

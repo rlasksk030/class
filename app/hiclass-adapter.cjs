@@ -3,11 +3,11 @@ const visible='el=>!!(el.getClientRects().length)';
 const titleSelector='textarea[placeholder="제목을 입력하세요."]';
 const bodySelector='.fr-element.fr-view[contenteditable="true"]';
 const {setRecipients,verifyRecipients}=require('./hiclass-recipients.cjs');
+const submitFlow=require('./hiclass-submit.cjs');
 async function inspect(w){return w.webContents.executeJavaScript(`(()=>{const visible=${visible};return {url:location.href,login:[...document.querySelectorAll('input[type=password]')].some(visible)||(!location.pathname.startsWith('/main/')&&document.body.innerText.includes('로그인')),classTitle:[...document.querySelectorAll('strong')].find(el=>visible(el)&&el.textContent.includes('옥구초등학교'))?.textContent||''};})()`);}
 async function clickText(w,labels){return w.webContents.executeJavaScript(`(()=>{const visible=${visible},labels=${JSON.stringify(labels)};const matches=[...document.querySelectorAll('button,[role=button],a')].filter(el=>visible(el)&&labels.includes(el.textContent.trim()));if(matches.length!==1)return false;matches[0].click();return true;})()`);}
 const delay=()=>new Promise(resolve=>setTimeout(resolve,350));
 async function wait(fn,ms=15000){const end=Date.now()+ms;while(Date.now()<end){const r=await fn();if(r)return r;await delay();}throw Error('하이클래스 화면을 확인하지 못했습니다. 연결 창을 확인해 주세요.');}
-async function articleIds(w){return w.webContents.executeJavaScript(`Array.from(document.querySelectorAll('article')).map(e=>e.id||e.className)`);}
 async function verifyClass(w,link){
  const state=await inspect(w);
  if(state.login)throw Error('하이클래스 로그인이 만료되었습니다.');
@@ -36,25 +36,9 @@ async function prepare(w,link,payload){
  await wait(()=>w.webContents.executeJavaScript(`(()=>{const el=document.querySelector(${JSON.stringify(bodySelector)});return !!el&&(${readLines.toString()})(el)===${JSON.stringify(payload.body.replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ').trimEnd())};})()`));
 
  await setRecipients(w,payload);
- return articleIds(w);
+ return submitFlow.articleSnapshot(w,payload);
 }
-async function submit(w,payload,before,link){
- await verifyClass(w,link);
- await verifyRecipients(w,payload);
- if(!await clickText(w,['등록']))throw Error('등록 버튼을 확실하게 찾지 못했습니다.');
- const confirmation=await wait(()=>w.webContents.executeJavaScript(`(()=>{const dialog=document.querySelector('.swal2-popup[role="dialog"]');return dialog?.getClientRects().length?dialog.querySelector('.swal2-html-container')?.innerText||'':null;})()`));
- const teachersOnly=confirmation.replace(/\s+/g,' ').trim()==='수신대상이 없는 게시글은 클래스 선생님만 확인이 가능합니다. 게시글을 등록하시겠습니까?';
- const temporary=confirmation.replace(/\s+/g,' ').trim()==='임시 저장한 게시물은 클래스 구성원에게 공개되지 않습니다. 임시 저장하시겠습니까?';
- const publish=confirmation.trim()==='작성한 내용을 지금 클래스 구성원들에게 보내시겠습니까?';
- if(!temporary&&!publish&&!teachersOnly)throw Error('하이클래스 확인 내용이 변경되어 자동 등록을 중단했습니다.');
- if(teachersOnly&&(payload.parents||payload.students))throw Error('수신대상 확인에 실패했습니다. 등록하지 않았습니다.');
- if(publish&&payload.parents===false&&payload.students===false)throw Error('수신 제외 설정과 일치하지 않아 등록을 중단했습니다.');
- await verifyClass(w,link);
- await verifyRecipients(w,payload);
- await w.webContents.executeJavaScript(`document.querySelector('.swal2-popup[role="dialog"] .swal2-confirm').click()`);
- await wait(()=>w.webContents.executeJavaScript(`!document.querySelector(${JSON.stringify(titleSelector)})`));
- if(temporary)await clickText(w,['임시저장']);
- await wait(()=>w.webContents.executeJavaScript(`(()=>{const title=${JSON.stringify(payload.title)},body=${JSON.stringify(payload.body)},before=${JSON.stringify(before)};const normalize=s=>s.replace(/\\s+/g,' ').trim();return [...document.querySelectorAll('article')].some(el=>!before.includes(el.id||el.className)&&el.querySelector('strong')?.textContent.trim()===title&&normalize(el.innerText).includes(normalize(body)));})()`),20000);
- return temporary?'draft':'success';
+async function submit(w,payload,before,link,options){
+ return submitFlow.submit(w,payload,before,link,verifyClass,clickText,options);
 }
 module.exports={inspect,prepare,submit,verifyClass,verifyRecipients};
