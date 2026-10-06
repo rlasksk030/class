@@ -2,6 +2,7 @@
 const visible='el=>!!(el.getClientRects().length)';
 const titleSelector='textarea[placeholder="제목을 입력하세요."]';
 const bodySelector='.fr-element.fr-view[contenteditable="true"]';
+const {setRecipients,verifyRecipients}=require('./hiclass-recipients.cjs');
 async function inspect(w){return w.webContents.executeJavaScript(`(()=>{const visible=${visible};return {url:location.href,login:[...document.querySelectorAll('input[type=password]')].some(visible)||(!location.pathname.startsWith('/main/')&&document.body.innerText.includes('로그인')),classTitle:[...document.querySelectorAll('strong')].find(el=>visible(el)&&el.textContent.includes('옥구초등학교'))?.textContent||''};})()`);}
 async function clickText(w,labels){return w.webContents.executeJavaScript(`(()=>{const visible=${visible},labels=${JSON.stringify(labels)};const matches=[...document.querySelectorAll('button,[role=button],a')].filter(el=>visible(el)&&labels.includes(el.textContent.trim()));if(matches.length!==1)return false;matches[0].click();return true;})()`);}
 const delay=()=>new Promise(resolve=>setTimeout(resolve,350));
@@ -34,12 +35,8 @@ async function prepare(w,link,payload){
  };
  await wait(()=>w.webContents.executeJavaScript(`(()=>{const el=document.querySelector(${JSON.stringify(bodySelector)});return !!el&&(${readLines.toString()})(el)===${JSON.stringify(payload.body.replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ').trimEnd())};})()`));
 
- const targets=await w.webContents.executeJavaScript(`(()=>{for(const [id,checked] of [['target-parents-check',${JSON.stringify(payload.parents!==false)}],['target-student-check',${JSON.stringify(payload.students!==false)}]]){const el=document.getElementById(id);if(!el)return false;if(el.checked!==checked)el.click();if(el.checked!==checked)return false;}return true;})()`);if(!targets)throw Error('수신대상을 확인하지 못해 등록을 중단했습니다.');
+ await setRecipients(w,payload);
  return articleIds(w);
-}
-async function verifyRecipients(w,payload){
- const match=await w.webContents.executeJavaScript(`(()=>{const parents=document.getElementById('target-parents-check'),students=document.getElementById('target-student-check');return !!parents&&!!students&&parents.checked===${JSON.stringify(payload.parents)}&&students.checked===${JSON.stringify(payload.students)};})()`);
- if(!match)throw Error('수신대상이 앱의 선택과 달라 등록을 중단했습니다.');
 }
 async function submit(w,payload,before,link){
  await verifyClass(w,link);
@@ -60,4 +57,4 @@ async function submit(w,payload,before,link){
  await wait(()=>w.webContents.executeJavaScript(`(()=>{const title=${JSON.stringify(payload.title)},body=${JSON.stringify(payload.body)},before=${JSON.stringify(before)};const normalize=s=>s.replace(/\\s+/g,' ').trim();return [...document.querySelectorAll('article')].some(el=>!before.includes(el.id||el.className)&&el.querySelector('strong')?.textContent.trim()===title&&normalize(el.innerText).includes(normalize(body)));})()`),20000);
  return temporary?'draft':'success';
 }
-module.exports={inspect,prepare,submit,verifyClass};
+module.exports={inspect,prepare,submit,verifyClass,verifyRecipients};
