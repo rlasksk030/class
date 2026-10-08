@@ -1,10 +1,11 @@
+const {assertBackground}=require('./hiclass-window.cjs');
 // HiClass adapter: observed editor selectors; live end-to-end verification is required before release.
 const visible='el=>!!(el.getClientRects().length)';
 const titleSelector='textarea[placeholder="제목을 입력하세요."]';
 const bodySelector='.fr-element.fr-view[contenteditable="true"]';
 const {setRecipients,verifyRecipients}=require('./hiclass-recipients.cjs');
 const submitFlow=require('./hiclass-submit.cjs');
-async function inspect(w){return w.webContents.executeJavaScript(`(()=>{const visible=${visible};return {url:location.href,login:[...document.querySelectorAll('input[type=password]')].some(visible)||(!location.pathname.startsWith('/main/')&&document.body.innerText.includes('로그인')),classTitle:[...document.querySelectorAll('strong')].find(el=>visible(el)&&el.textContent.includes('옥구초등학교'))?.textContent||''};})()`);}
+async function inspect(w){assertBackground(w);return w.webContents.executeJavaScript(`(()=>{const visible=${visible};return {url:location.href,login:[...document.querySelectorAll('input[type=password]')].some(visible)||(!location.pathname.startsWith('/main/')&&document.body.innerText.includes('로그인')),classTitle:[...document.querySelectorAll('strong')].find(el=>visible(el)&&el.textContent.includes('옥구초등학교'))?.textContent||''};})()`);}
 async function clickText(w,labels){return w.webContents.executeJavaScript(`(()=>{const visible=${visible},labels=${JSON.stringify(labels)};const matches=[...document.querySelectorAll('button,[role=button],a')].filter(el=>visible(el)&&labels.includes(el.textContent.trim()));if(matches.length!==1)return false;matches[0].click();return true;})()`);}
 const delay=()=>new Promise(resolve=>setTimeout(resolve,350));
 async function wait(fn,ms=15000){const end=Date.now()+ms;while(Date.now()<end){const r=await fn();if(r)return r;await delay();}throw Error('하이클래스 화면을 확인하지 못했습니다. 연결 창을 확인해 주세요.');}

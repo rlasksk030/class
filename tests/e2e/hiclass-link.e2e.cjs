@@ -37,6 +37,7 @@ const waitText=async(page,sel,re,ms=8000)=>{const end=Date.now()+ms;while(Date.n
  const saved=JSON.parse(fs.readFileSync(path.join(PROFILE,'hiclass-links.json'),'utf8')).links[`${academicYear()}:6:1`];
  ok('[연결하기] 순간 classKey·게시판 URL·학급명 저장',saved?.url==='https://www.hiclass.net/main/clazzes/c1/note/n1'&&saved?.title==='옥구초등학교 6학년 1반',JSON.stringify(saved));
  ok('완료 메시지',/하이클래스 학급 연결이 완료되었습니다/.test(done));
+ ok('연결 완료 후 하이클래스 숨김·대시보드 포커스',await app.evaluate(({BrowserWindow})=>{const all=BrowserWindow.getAllWindows();return all.filter(w=>w.webContents.getURL().includes('hiclass.net')).every(w=>!w.isVisible())&&all.find(w=>w.webContents.getURL().startsWith('file:')).isFocused();}));
  ok('연결 완료 표시·[연결 변경]',(await page.textContent('#diaryLinkState'))==='● 하이클래스 연결됨 · 옥구초등학교 6학년 1반'&&(await page.textContent('#diaryConnect'))==='연결 변경'&&!(await page.isVisible('#diaryLinkSteps'))&&(await page.locator('#diaryLink').count())===0);
  const raw=fs.readFileSync(path.join(PROFILE,'hiclass-links.json'),'utf8');ok('비밀번호·쿠키 저장 없음',!/password|cookie|token/i.test(raw));
  await app.close();
@@ -45,7 +46,7 @@ const waitText=async(page,sel,re,ms=8000)=>{const end=Date.now()+ms;while(Date.n
  ok('재실행 후에도 "연결됨" 표시',(await page.textContent('#diaryLinkState')).startsWith('● 하이클래스 연결됨')&&(await page.textContent('#diaryConnect'))==='연결 변경');
  await app.evaluate(()=>{globalThis.sessionStatus='expired';});await app.close();
  ({app,page}=await launch());await app.evaluate(()=>{globalThis.sessionStatus='expired';});await page.click('#diaryTab');await page.waitForTimeout(600);
- ok('로그인 만료 시에만 다시 로그인 안내',(await page.textContent('#diaryLinkState'))==='로그인이 만료되었습니다. 다시 로그인해 주세요.'&&(await page.textContent('#diaryConnect'))==='다시 로그인');
+ ok('로그인 만료 시에만 다시 로그인 안내',(await page.textContent('#diaryLinkState'))==='하이클래스 로그인이 만료되었습니다. 다시 로그인해 주세요.'&&(await page.textContent('#diaryConnect'))==='다시 로그인');
  await app.close();
  // Cancel in the confirmation: nothing saved for another class.
  fs.rmSync(path.join(PROFILE,'hiclass-links.json'),{force:true});

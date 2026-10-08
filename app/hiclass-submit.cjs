@@ -1,3 +1,4 @@
+const {assertBackground}=require('./hiclass-window.cjs');
 const {findRecipientControls,messages}=require('./hiclass-recipients.cjs');
 const titleSelector='textarea[placeholder="제목을 입력하세요."]';
 const pause=()=>new Promise(r=>setTimeout(r,100));
@@ -106,7 +107,7 @@ function transaction(find,dialog,register,action,arg){
  }
  return failure('snapshot');
 }
-const pageAction=(w,action,arg={})=>w.webContents.executeJavaScript(`(${transaction.toString()})(${findRecipientControls.toString()},${confirmation.toString()},${registerControl.toString()},${JSON.stringify(action)},${JSON.stringify(arg)})`);
+const pageAction=(w,action,arg={})=>{if(['start','status','confirm'].includes(action))assertBackground(w);return w.webContents.executeJavaScript(`(${transaction.toString()})(${findRecipientControls.toString()},${confirmation.toString()},${registerControl.toString()},${JSON.stringify(action)},${JSON.stringify(arg)})`);};
 function errorFor(state){
  const labels={...messages,'missing-popup':'하이클래스 등록 확인창을 찾지 못했습니다.','unknown-popup':'하이클래스 확인 내용이 변경되어 등록을 중단했습니다.','ambiguous-popup':'하이클래스 등록 확인창을 안전하게 식별하지 못했습니다.','ambiguous-confirm':'하이클래스 확인 버튼을 안전하게 식별하지 못했습니다.','snapshot':'수신대상 안전 검증을 유지할 수 없어 등록을 중단했습니다.','class':'연결된 학급과 현재 하이클래스 학급이 달라 등록하지 않았습니다.','editor':'알림장 작성 화면을 확실하게 찾지 못했습니다.','changed-draft':'하이클래스 작성 내용이 초안과 달라 등록을 중단했습니다.','register':'등록 버튼을 확실하게 찾지 못했습니다.','cancelled':'하이클래스 등록을 취소했습니다.','disabled-confirm':'하이클래스 확인 버튼을 사용할 수 없습니다.','in-progress':'이미 하이클래스 등록이 진행 중입니다.'};
  const e=Error(labels[state.error]||'하이클래스 등록을 확인하지 못했습니다.');e.stage=state.error;return e;
@@ -122,7 +123,6 @@ async function submit(w,payload,before,link,verifyClass,clickText,options={}){
  try{
   await verifyClass(w,link);stage('B',{classVerified:true});
   if((before.matching||0)>0)throw Error('같은 제목과 본문의 게시물이 이미 있습니다. 중복 등록하지 않았습니다.');
-  w.show?.();
   const start=await pageAction(w,'start',{parents:payload.parents,students:payload.students,classTitle:link.title.trim(),title:payload.title,body:payload.body});
   if(start.error)throw errorFor(start);clicked=true;stage('B',{snapshot:start.snapshot});stage('C',{registerClicked:true});
   let state,end=Date.now()+(options.popupTimeout||15000);
@@ -139,7 +139,7 @@ async function submit(w,payload,before,link,verifyClass,clickText,options={}){
    while(Date.now()<end){if(await w.webContents.executeJavaScript(`!document.querySelector(${JSON.stringify(titleSelector)})`))break;await pause();}
    await clickText(w,['임시저장']);
   }
-  while(Date.now()<end){if(await published(w,payload,before)){stage('H',{published:true,manual:state.manual===true});return kind==='draft'?'draft':'success';}await pause();}
+  while(Date.now()<end){if((assertBackground(w),await published(w,payload,before))){stage('H',{published:true,manual:state.manual===true});return kind==='draft'?'draft':'success';}await pause();}
   throw Error('실제 게시물을 확인하지 못했습니다. 초안은 유지됩니다.');
  }catch(e){
   if(!clicked)e.safeToRetry=true;
