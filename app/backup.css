@@ -1,0 +1,15 @@
+/* Backup / restore block inside the existing settings dialog. */
+.backup-settings{margin:18px 0 0;padding:14px;border:1px solid #e5e7eb;border-radius:10px}
+.backup-settings legend{font-size:16px;padding:0 6px}
+.backup-settings p{margin:0 0 10px;font-size:13px;color:#7d8490}
+.backup-actions{display:flex;flex-wrap:wrap;gap:8px}
+.backup-actions button{font-size:15px;min-height:44px;padding:8px 14px}
+#backupStatus{margin:10px 0 0;min-height:20px;color:#303640;font-size:14px}
+.recovery-dialog{width:680px}
+.recovery-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid #eceef1}
+.recovery-item div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.recovery-item strong{font-size:16px;overflow-wrap:anywhere}
+.recovery-item span{font-size:14px;color:#737b86;overflow-wrap:anywhere}
+.recovery-item button{flex-shrink:0;min-height:44px;font-size:15px}
+#recoveryStatus{min-height:20px;font-size:14px;color:#303640}
+.install-notice{margin:10px 0 0;padding:10px 12px;border-radius:8px;background:#fcf3f0;color:#7a3a28;font-size:14px}
