@@ -1,11 +1,11 @@
 (() => {
  if(!window.desktop?.openPip)return;
  const startupLabel=document.createElement('label');startupLabel.className='check desktop-startup';
- const startup=document.createElement('input');startup.type='checkbox';startup.id='windowsStartup';startupLabel.append(startup,document.createTextNode('Windows를 켜면 학급 대시보드 자동 실행'));
+ const startup=document.createElement('input');startup.type='checkbox';startup.id='windowsStartup';startup.disabled=true;startupLabel.append(startup,document.createTextNode('Windows를 켜면 학급 대시보드 자동 실행'));
  $('settingsForm').querySelector('.actions').before(startupLabel);
  const startupStatus=document.createElement('p');startupStatus.role='status';startupLabel.after(startupStatus);
- window.desktop.settings().then(s=>{startup.checked=s.startupEnabled===true;settings.startup=startup.checked;}).catch(()=>{startup.disabled=true;startupStatus.textContent='자동 실행 설정을 읽지 못했습니다.';});
- startup.onchange=async()=>{startup.disabled=true;try{const enabled=await window.desktop.startup(startup.checked);settings.startup=enabled;put('settings',settings);startupStatus.textContent=enabled?'Windows 로그인 후 자동으로 실행됩니다.':'자동 실행이 꺼져 있습니다.';}catch{startup.checked=!startup.checked;startupStatus.textContent='자동 실행 설정을 저장하지 못했습니다.';}finally{startup.disabled=false;}};
+ window.desktop.settings().then(s=>{startup.checked=s.startupEnabled===true;settings.startup=startup.checked;startupStatus.textContent=s.startupWarning||'';startup.disabled=false;}).catch(()=>{startup.disabled=true;startupStatus.textContent='자동 실행 설정을 읽지 못했습니다.';});
+ startup.onchange=async()=>{startup.disabled=true;try{const enabled=await window.desktop.startup(startup.checked);settings.startup=enabled;put('settings',settings);const current=await window.desktop.settings();startupStatus.textContent=current.startupWarning||(enabled?'Windows 로그인 후 자동으로 실행됩니다.':'자동 실행이 꺼져 있습니다.');}catch{startup.checked=!startup.checked;startupStatus.textContent='자동 실행 설정을 저장하지 못했습니다. 전체 사용자 등록 또는 접근 권한을 확인해 주세요.';}finally{startup.disabled=false;}};
  const savedPipOptions=read('dashboardPipOptions',{}),pipOptions={};
  const pipSettings=document.createElement('fieldset');pipSettings.className='dashboard-pip-settings';const legend=document.createElement('legend');legend.textContent='우리교실 PIP에 표시할 내용';pipSettings.append(legend);
  for(const [key,label]of [['currentPeriod','현재 교시'],['currentSubject','현재 과목'],['nextPeriod','다음 교시'],['nextSubject','다음 과목'],['time','현재 시각'],['timer','타이머']]){

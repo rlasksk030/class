@@ -16,7 +16,7 @@
  const dateLine=make('div',{className:'date-dday-line'});
  const dateLabel=$('date');dateLabel.before(dateLine);dateLine.append(dateLabel);
  const ddayBadge=make('div',{id:'ddayBadge'},dateLine);
- const timerBanner=make('div',{id:'timerFinished',hidden:true},document.body);timerBanner.setAttribute('role','alert');make('strong',{textContent:'시간이 다 되었습니다!'},timerBanner);const acknowledge=make('button',{textContent:'확인'},timerBanner);let timerAcknowledged=false;acknowledge.onclick=()=>{timerAcknowledged=true;timerBanner.hidden=true;};
+ const timerBanner=make('div',{id:'timerFinished',hidden:true},document.body);timerBanner.setAttribute('role','alert');make('strong',{textContent:'시간이 다 되었습니다!'},timerBanner);const acknowledge=make('button',{textContent:'확인'},timerBanner);acknowledge.onclick=()=>dismissTimer();
 
  // Board visibility keeps the grid slot reserved so other cards never move.
  let preferences=read('boardPreferences',{});
@@ -97,9 +97,12 @@
  function unlockAudio(){try{audioContext||=new AudioContext();audioContext.resume().catch(()=>{});}catch{}}
  function beep(){if(!sound||!audioContext)return;try{for(let i=0;i<3;i++){const osc=audioContext.createOscillator(),gain=audioContext.createGain(),t=audioContext.currentTime+i*.35;osc.frequency.value=880;gain.gain.setValueAtTime(.12,t);gain.gain.exponentialRampToValueAtTime(.001,t+.25);osc.connect(gain);gain.connect(audioContext.destination);osc.start(t);osc.stop(t+.26);}}catch{}}
  const format=ms=>{const total=Math.ceil(ms/1000);return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`;};
- function drawTimer(){timerBanner.hidden=timer.state!=='finished'||timerAcknowledged;const remaining=X.timerRemaining(timer,Date.now());$('timerDisplay').textContent=format(remaining);timerButton.textContent=timer.state==='idle'?'⏱ 타이머':timer.state==='finished'?'⏱ 종료':`⏱ ${format(remaining)}`;timerButton.classList.toggle('finished',timer.state==='finished');timerDialog.classList.toggle('finished',timer.state==='finished');$('timerMessage').textContent=timer.state==='finished'?'시간이 다 되었습니다!':timer.state==='paused'?'일시정지':timer.state==='running'?'진행 중':'';$('timerStart').disabled=timer.state==='running';$('timerStart').textContent=timer.state==='paused'?'계속하기':'시작';$('timerPause').disabled=timer.state!=='running';}
- function act(action,duration){timerAcknowledged=false;if(sound)unlockAudio();timer=X.timerAction(timer,action,Date.now(),duration);put('classTimer',timer);drawTimer();}
- timerButton.onclick=()=>{drawTimer();timerDialog.showModal();};
+ function drawTimer(){timerBanner.hidden=timer.state!=='finished';const remaining=X.timerRemaining(timer,Date.now());$('timerDisplay').textContent=format(remaining);timerButton.textContent=timer.state==='idle'?'⏱ 타이머':timer.state==='finished'?'⏱ 종료':`⏱ ${format(remaining)}`;timerButton.classList.toggle('finished',timer.state==='finished');timerDialog.classList.toggle('finished',timer.state==='finished');$('timerMessage').textContent=timer.state==='finished'?'시간이 다 되었습니다!':timer.state==='paused'?'일시정지':timer.state==='running'?'진행 중':'';$('timerStart').disabled=timer.state==='running';$('timerStart').textContent=timer.state==='paused'?'계속하기':'시작';$('timerPause').disabled=timer.state!=='running';}
+ function act(action,duration){if(sound)unlockAudio();timer=X.timerAction(timer,action,Date.now(),duration);put('classTimer',timer);drawTimer();}
+ function dismissTimer(){if(timer.state!=='finished')return;act('dismiss');$('timerMinutes').value=Math.floor(timer.duration/60000);$('timerSeconds').value=Math.floor(timer.duration/1000)%60;}
+ // All closing paths, including native Escape, share the same state policy.
+ timerDialog.addEventListener('close',()=>{dismissTimer();document.body.append(timerBanner);});
+ timerButton.onclick=()=>{drawTimer();timerDialog.append(timerBanner);timerDialog.showModal();};
  timerDialog.querySelectorAll('[data-minutes]').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.minutes);$('timerMinutes').value=n;$('timerSeconds').value=0;act('preset',n*60000);});
  $('timerSet').onclick=()=>{const m=Number($('timerMinutes').value),s=Number($('timerSeconds').value);if(!Number.isInteger(m)||!Number.isInteger(s)||m<0||m>180||s<0||s>59||m*60+s<=0){$('timerMessage').textContent='1초 이상, 180분 59초 이하로 입력해 주세요.';return;}act('preset',(m*60+s)*1000);};
  $('timerStart').onclick=()=>act('start');$('timerPause').onclick=()=>act('pause');$('timerRestart').onclick=()=>act('restart');$('timerReset').onclick=()=>act('reset');$('timerSound').onchange=()=>{sound=$('timerSound').checked;put('timerSound',sound);if(sound)unlockAudio();};

@@ -5,9 +5,9 @@ module.exports=function setupDesktop(getMain){
  try{preferences={...preferences,...JSON.parse(fs.readFileSync(file,'utf8'))};}catch{}
  if(!preferences.pipBounds||typeof preferences.pipBounds!=='object')preferences.pipBounds={};
  function save(){fs.mkdirSync(path.dirname(file),{recursive:true});const tmp=file+'.tmp';fs.writeFileSync(tmp,JSON.stringify(preferences));fs.renameSync(tmp,file);}
- const startupName=process.env.CLASSROOM_TEST_PROFILE?'classroom-dashboard-test':'classroom-dashboard';
- function startup(enabled){if(process.platform==='win32')app.setLoginItemSettings({openAtLogin:enabled===true,name:startupName,path:process.execPath,args:[]});preferences.startupEnabled=enabled===true;save();return preferences.startupEnabled;}
- startup(preferences.startupEnabled===true);
+ const applyStartup=require('./startup-manager.cjs').create({app,shell:require('electron').shell});let startupWarning='';
+ async function startup(enabled,explicit=false){const result=await applyStartup(enabled===true,explicit);startupWarning=result.warning;if(preferences.startupEnabled!==result.enabled||!fs.existsSync(file)){preferences.startupEnabled=result.enabled;save();}return result.enabled;}
+ const startupReady=startup(preferences.startupEnabled===true).catch(e=>{startupWarning=e.message;});
  let pip=null,kind='dashboard',lastState=null,saveTimer;
  const validKind=k=>['dashboard','whiteboard','random','activity'].includes(k);
  const fromMain=e=>e.sender===getMain()?.webContents;
@@ -26,8 +26,8 @@ module.exports=function setupDesktop(getMain){
   pip.on('close',remember);pip.on('closed',()=>{pip=null;getMain()?.webContents.send('pip:closed')});
  }
  for(const event of ['display-removed','display-metrics-changed'])screen.on(event,()=>{if(pip&&!pip.isDestroyed()){pip.setBounds(safeBounds(pip.getBounds(),screen.getAllDisplays().map(d=>d.workArea),screen.getPrimaryDisplay().workArea,kind));remember();}});
- ipcMain.handle('desktop:settings',e=>{if(!fromMain(e))throw Error('허용되지 않은 요청');return {startupEnabled:preferences.startupEnabled===true};});
- ipcMain.handle('startup',(e,on)=>{if(!fromMain(e))throw Error('허용되지 않은 요청');return startup(on===true);});
+ ipcMain.handle('desktop:settings',async e=>{if(!fromMain(e))throw Error('허용되지 않은 요청');await startupReady;return {startupEnabled:preferences.startupEnabled===true,startupWarning};});
+ ipcMain.handle('startup',async(e,on)=>{if(!fromMain(e))throw Error('허용되지 않은 요청');await startupReady;return startup(on===true,true);});
  ipcMain.handle('pip:open',(e,next)=>{if(!fromMain(e))throw Error('허용되지 않은 요청');open(next);return true;});
  ipcMain.on('pip:publish',(e,state)=>{if(!fromMain(e))return;lastState=state;update();});
  ipcMain.handle('pip:get',e=>{if(!fromPip(e))throw Error('허용되지 않은 요청');return {kind,state:lastState};});

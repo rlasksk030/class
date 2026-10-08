@@ -1,5 +1,13 @@
 const test=require('node:test'),assert=require('node:assert/strict'),X=require('./extras-core.js');
 const schedule=[{period:1,start:'09:00',end:'09:40'},{period:2,start:'09:50',end:'10:30'},{period:3,start:'10:40',end:'11:20'}];
+test('timer dismissal preserves running, paused and idle states',()=>{
+ for(const state of ['idle','running','paused']){const t={duration:300000,remaining:120000,deadline:400000,state};assert.deepEqual(X.timerAction(t,'dismiss',300000),t);}
+});
+test('finished dismissal restores the configured duration and can restart immediately',()=>{
+ const t={duration:65000,remaining:0,deadline:null,state:'finished'},idle=X.timerAction(t,'dismiss',1000);
+ assert.deepEqual(idle,{duration:65000,remaining:65000,deadline:null,state:'idle'});assert.deepEqual(X.timerAction(idle,'dismiss',2000),idle);
+ assert.equal(X.timerAction(idle,'start',3000).deadline,68000);assert.equal(t.state,'finished');
+});
 test('period boundaries, breaks, removed periods and end of day',()=>{
  assert.ok(X.validSchedule(schedule));assert.deepEqual(X.currentPeriod(schedule,['1','2','3'],540),{period:'1',state:'current'});
  assert.deepEqual(X.currentPeriod(schedule,['1','2','3'],580),{period:'2',state:'next'});

@@ -19,6 +19,7 @@
   if(action==='start'&&t.state!=='running'){t.remaining=t.state==='finished'?t.duration:t.remaining;t.deadline=now+t.remaining;t.state='running';}
   if(action==='pause'&&t.state==='running'){t.remaining=timerRemaining(t,now);t.deadline=null;t.state=t.remaining?'paused':'finished';}
   if(action==='restart'){t.remaining=t.duration;t.deadline=now+t.duration;t.state='running';}
+  if(action==='dismiss'&&t.state==='finished'){t.remaining=t.duration;t.deadline=null;t.state='idle';}
   if(action==='reset'){t.remaining=t.duration;t.deadline=null;t.state='idle';}
   if(action==='tick'&&t.state==='running'&&timerRemaining(t,now)===0){t.remaining=0;t.deadline=null;t.state='finished';}
   return t;
