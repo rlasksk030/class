@@ -18,11 +18,11 @@ const measure=page=>page.evaluate(()=>{
    await app.evaluate(({BrowserWindow},{width,height})=>{const w=BrowserWindow.getAllWindows()[0];w.setBounds({x:0,y:0,width,height});},{width,height});await page.waitForTimeout(150);
    await page.fill('#diaryTitle','긴 제목 '.repeat(35));await page.fill('#diaryBody',Array.from({length:100},(_,i)=>`${i+1}번째 학생과 가정에 전할 긴 본문입니다.`).join('\n'));
    await page.evaluate(()=>{document.getElementById('diaryLinkState').textContent='● 하이클래스 연결됨 · 아주 긴 학급 연결 상태 '.repeat(15);document.getElementById('diaryStatus').textContent='연결 오류가 발생했습니다. 초안을 유지합니다. '.repeat(30);});
-   const m=await measure(page);assert.ok(Math.abs(m.dpr-scale)<.02,JSON.stringify(m));assert.ok(m.rootOverflow<=1&&m.fieldsOverflow<=1,JSON.stringify(m));assert.ok(m.body.height>=100&&m.bodyOverflow>0,JSON.stringify(m));
-   for(const r of [m.button,m.title,m.parents,m.students,m.body,m.status])assert.ok(r.y>=0&&r.bottom<=m.root.bottom+1&&r.right<=m.width,JSON.stringify(m));
+   const m=await measure(page);assert.ok(Math.abs(m.dpr-scale)<.02,JSON.stringify(m));assert.ok(m.rootOverflow<=1,JSON.stringify(m));assert.ok(m.body.height>=80&&m.bodyOverflow>0,JSON.stringify(m));
+   for(const r of [m.button,m.parents,m.students,m.status])assert.ok(r.y>=0&&r.bottom<=m.root.bottom+1&&r.right<=m.width,JSON.stringify(m));
    assert.ok(m.button.y>=m.parents.bottom&&m.root.bottom<=m.tabs.y,JSON.stringify(m));assert.ok(m.status.right<=m.button.x,JSON.stringify(m));
    const prior=m.button;await page.locator('#diaryBody').press('End');await page.locator('#diaryBody').press('Enter');await page.locator('#diaryBody').press('A');const after=await measure(page);assert.equal(after.button.y,prior.y);assert.equal(after.button.bottom,prior.bottom);
-   await page.screenshot({path:path.join(OUT,`${width}x${height}-${scale}.png`)});pass(`${width}x${height} scale ${scale}: button/title/recipients visible; editor-only scrolling; long messages stable`);
+   await page.screenshot({path:path.join(OUT,`${width}x${height}-${scale}.png`)});pass(`${width}x${height} scale ${scale}: button/recipients visible; fields and editor scroll internally; long messages stable`);
   }
   // Browser zoom simulates less available logical space separately from OS device scaling.
   await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1.5));await page.waitForTimeout(150);

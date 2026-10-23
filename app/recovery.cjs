@@ -4,6 +4,7 @@ const fs=require('node:fs/promises'),path=require('node:path');
 // another profile's "Local Storage" is copied into a temporary partition, read by the app, and the copy removed.
 module.exports=function setupRecovery(getMain){
  const allowed=e=>e.sender===getMain()?.webContents;
+ const media=require('./media.cjs'),core=require('./backup-core.js');
  const userData=()=>app.getPath('userData');
  const exists=p=>fs.access(p).then(()=>true,()=>false);
  async function snapshots(){
@@ -24,7 +25,7 @@ module.exports=function setupRecovery(getMain){
  async function readSnapshot(id){
   const [kind,name]=String(id).split(/:(.*)/s);
   if(!name||name.includes('..')||/[\\/]/.test(name))throw Error('잘못된 요청');
-  if(kind==='update'){const raw=JSON.parse(await fs.readFile(path.join(userData(),'update-recovery',name,'local-storage-backup.json'),'utf8'));return {format:'raw',data:raw};}
+  if(kind==='update'){const raw=JSON.parse(await fs.readFile(path.join(userData(),'update-recovery',name,'local-storage-backup.json'),'utf8'));return {format:'raw',data:raw,media:await media.current().pack(core.fromRaw(raw).data)};}
   if(kind==='restore')return {format:'backup',text:await fs.readFile(path.join(userData(),'backups',name),'utf8')};
   throw Error('잘못된 요청');
  }
@@ -42,7 +43,7 @@ module.exports=function setupRecovery(getMain){
   try{
    await w.loadFile(path.join(__dirname,'recovery-read.html'));
    const data=JSON.parse(await w.webContents.executeJavaScript('JSON.stringify(Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)])))'));
-   return {format:'raw',data,source};
+   const sourceRoot=path.dirname(source);return {format:'raw',data,source,media:await media.fromFolder(sourceRoot).pack(core.fromRaw(data).data)};
   }finally{w.destroy();setTimeout(()=>fs.rm(temp,{recursive:true,force:true}).catch(()=>{}),1500);}
  }
  // Temporary read copies stay locked by the session while the app runs (Windows); remove leftovers at startup,

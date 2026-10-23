@@ -1,12 +1,12 @@
 // Settings backup file: user-made data only. Caches, location and every login credential stay out.
 (function(root){
- const FORMAT='classroom-dashboard-backup',SCHEMA_VERSION=1,MAX_BYTES=20*1024*1024;
+ const FORMAT='classroom-dashboard-backup',SCHEMA_VERSION=2,MAX_BYTES=200*1024*1024;
  // Allowlist of localStorage keys written by the dashboard. Anything not listed is never exported or restored.
- const KEYS=['settings','classRosters','randomPicker','randomPickerSession','morningDefault','morningHistory','boardTitles','notes','ddayEvents','overrides','boardSizes','boardPreferences','dashboardLocked','dashboardPipOptions','periodSchedule','periodHighlightEnabled','classTimer','timerSound','whiteboardContents','activityCompletion','diaryDrafts'];
+ const KEYS=['settings','classRosters','randomPicker','randomPickerSession','morningDefault','morningHistory','boardTitles','notes','ddayEvents','overrides','boardSizes','boardPreferences','dashboardLocked','dashboardPipOptions','periodSchedule','periodHighlightEnabled','classTimer','timerSound','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences'];
  const SETTINGS_FIELDS=['grade','classroom','locationMode','manual'];
  const isObject=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
  // Keys whose stored value must be a plain object (others may be strings, booleans or arrays).
- const OBJECT_KEYS=new Set(['settings','classRosters','randomPicker','randomPickerSession','morningHistory','boardTitles','notes','overrides','boardSizes','boardPreferences','dashboardPipOptions','classTimer','whiteboardContents','activityCompletion','diaryDrafts']);
+ const OBJECT_KEYS=new Set(['settings','classRosters','randomPicker','randomPickerSession','morningHistory','boardTitles','notes','overrides','boardSizes','boardPreferences','dashboardPipOptions','classTimer','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences']);
  const INVALID='이 파일은 사용할 수 있는 학급 대시보드 백업 파일이 아닙니다.';
 
  function sanitize(key,value){
@@ -49,7 +49,7 @@
   return {format:FORMAT,schemaVersion:SCHEMA_VERSION,appVersion:String(meta.appVersion||''),createdAt:(meta.now||new Date()).toISOString(),school:meta.school||'',academicYear:meta.academicYear||'',grade:String(data.settings?.grade||''),classroom:String(data.settings?.classroom||''),keys:Object.keys(data),checksum:await checksum(data),data};
  }
  // Future schema versions add a step here; older files are upgraded one version at a time.
- const MIGRATIONS={};
+ const MIGRATIONS={1:b=>({...b,schemaVersion:2})};
  function migrate(backup){
   let b=backup;
   while(b.schemaVersion<SCHEMA_VERSION){const step=MIGRATIONS[b.schemaVersion];if(!step)throw Error(INVALID);b=step(b);}

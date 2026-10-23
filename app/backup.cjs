@@ -3,13 +3,15 @@ const fs=require('node:fs/promises'),path=require('node:path');
 // Save/open dialogs for the settings backup. Files are written atomically; nothing else in userData is touched.
 module.exports=function setupBackup(getMain){
  const allowed=e=>e.sender===getMain()?.webContents;
- const MAX_BYTES=20*1024*1024,filters=[{name:'학급 대시보드 백업',extensions:['json']}];
+ const media=require('./media.cjs'),core=require('./backup-core.js');
+ async function portable(text){const {backup}=await core.parse(text);backup.media=await media.current().pack(backup.data);const packed=JSON.stringify(backup);if(Buffer.byteLength(packed)>MAX_BYTES)throw Error('사진을 포함한 백업이 200 MB를 초과합니다.');return packed;}
+ const MAX_BYTES=200*1024*1024,filters=[{name:'학급 대시보드 백업',extensions:['json']}];
  async function write(file,text){const temp=file+'.'+process.pid+'.tmp';await fs.writeFile(temp,text,'utf8');try{await fs.rename(temp,file);}catch(e){await fs.rm(temp,{force:true});throw e;}}
  ipcMain.handle('backup:save',async(e,{name,text}={})=>{
   if(!allowed(e)||typeof text!=='string'||typeof name!=='string')throw Error('허용되지 않은 요청');
   const result=await dialog.showSaveDialog(getMain(),{title:'백업 파일 저장',defaultPath:path.join(app.getPath('documents'),path.basename(name)),filters});
   if(result.canceled||!result.filePath)return {canceled:true};
-  await write(result.filePath,text);return {saved:true,name:path.basename(result.filePath)};
+  await write(result.filePath,await portable(text));return {saved:true,name:path.basename(result.filePath)};
  });
  ipcMain.handle('backup:open',async e=>{
   if(!allowed(e))throw Error('허용되지 않은 요청');
@@ -25,7 +27,7 @@ module.exports=function setupBackup(getMain){
  ipcMain.handle('backup:keep',async(e,text)=>{
   if(!allowed(e)||typeof text!=='string')throw Error('허용되지 않은 요청');
   const dir=path.join(app.getPath('userData'),'backups');await fs.mkdir(dir,{recursive:true});
-  const file=path.join(dir,'before-restore-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json');await write(file,text);
+  const file=path.join(dir,'before-restore-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json');await write(file,await portable(text));
   const old=(await fs.readdir(dir)).filter(f=>f.startsWith('before-restore-')).sort();for(const f of old.slice(0,Math.max(0,old.length-5)))await fs.rm(path.join(dir,f),{force:true});
   return true;
  });

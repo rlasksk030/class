@@ -4,6 +4,7 @@ const visible='el=>!!(el.getClientRects().length)';
 const titleSelector='textarea[placeholder="제목을 입력하세요."]';
 const bodySelector='.fr-element.fr-view[contenteditable="true"]';
 const {setRecipients,verifyRecipients}=require('./hiclass-recipients.cjs');
+const photos=require('./hiclass-photos.cjs');
 const submitFlow=require('./hiclass-submit.cjs');
 async function inspect(w){assertBackground(w);return w.webContents.executeJavaScript(`(()=>{const visible=${visible};return {url:location.href,login:[...document.querySelectorAll('input[type=password]')].some(visible)||(!location.pathname.startsWith('/main/')&&document.body.innerText.includes('로그인')),classTitle:[...document.querySelectorAll('strong')].find(el=>visible(el)&&el.textContent.includes('옥구초등학교'))?.textContent||''};})()`);}
 async function clickText(w,labels){return w.webContents.executeJavaScript(`(()=>{const visible=${visible},labels=${JSON.stringify(labels)};const matches=[...document.querySelectorAll('button,[role=button],a')].filter(el=>visible(el)&&labels.includes(el.textContent.trim()));if(matches.length!==1)return false;matches[0].click();return true;})()`);}
@@ -15,7 +16,9 @@ async function verifyClass(w,link){
  const expected=new URL(link.url),actual=new URL(state.url);
  if(actual.origin!==expected.origin||actual.pathname!==expected.pathname||state.classTitle.trim()!==link.title.trim())throw Error('연결된 학급과 현재 하이클래스 학급이 달라 등록하지 않았습니다.');
 }
-async function prepare(w,link,payload){
+async function prepare(w,link,payload,options={}){
+ // Fail before navigation/editing when the live photo contract is unknown.
+ if(payload.photos?.length&&!options.attachmentDriver)throw Error(photos.UNSUPPORTED);
  const u=new URL(link.url);if(!/^\/main\/clazzes\/[^/]+\/note\/[^/]+/.test(u.pathname))throw Error('담당 클래스의 알림장 게시판을 열고 학급을 다시 연결해 주세요.');
  await w.loadURL(link.url);await wait(async()=>{const s=await inspect(w);if(s.login)throw Error('하이클래스 로그인이 만료되었습니다. 다시 로그인해 주세요.');return s.classTitle;});
  await verifyClass(w,link);
@@ -37,6 +40,7 @@ async function prepare(w,link,payload){
  await wait(()=>w.webContents.executeJavaScript(`(()=>{const el=document.querySelector(${JSON.stringify(bodySelector)});return !!el&&(${readLines.toString()})(el)===${JSON.stringify(payload.body.replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ').trimEnd())};})()`));
 
  await setRecipients(w,payload);
+ await photos.prepare(w,payload,options.attachmentDriver);
  return submitFlow.articleSnapshot(w,payload);
 }
 async function submit(w,payload,before,link,options){

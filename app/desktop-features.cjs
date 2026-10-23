@@ -30,6 +30,7 @@ module.exports=function setupDesktop(getMain){
  ipcMain.handle('startup',async(e,on)=>{if(!fromMain(e))throw Error('허용되지 않은 요청');await startupReady;return startup(on===true,true);});
  ipcMain.handle('pip:open',(e,next)=>{if(!fromMain(e))throw Error('허용되지 않은 요청');open(next);return true;});
  ipcMain.on('pip:publish',(e,state)=>{if(!fromMain(e))return;lastState=state;update();});
+ ipcMain.handle('pip:photo',async(e,ref)=>{if(!fromPip(e)||kind!=='whiteboard'||!lastState?.whiteboard?.blocks?.some(b=>b.type==='image'&&b.photo?.id===ref?.id))throw Error('허용되지 않은 요청');return new Uint8Array(await require('./media.cjs').current().read(ref));});
  ipcMain.handle('pip:get',e=>{if(!fromPip(e))throw Error('허용되지 않은 요청');return {kind,state:lastState};});
  ipcMain.on('input:focus',e=>{if(!fromMain(e)&&!fromPip(e))return;const w=BrowserWindow.fromWebContents(e.sender);if(w&&!w.isDestroyed()){w.focus();w.webContents.focus();}});
  const actions=new Set(['activity-title','activity-toggle','random-draw','random-repeat','whiteboard-edit','expand','timer']);

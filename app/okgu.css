@@ -104,3 +104,11 @@ body.whiteboard-active #ddayBadge,body.random-active #ddayBadge,body.activity-ac
 .open-update.update-available{background:#e2f2df;color:#285c32;border-color:#68a875;font-weight:700;animation:update-ready 2.4s ease-in-out infinite}
 @keyframes update-ready{0%,100%{box-shadow:0 0 0 0 #68a87522}50%{box-shadow:0 0 0 5px #68a87544}}
 @media(prefers-reduced-motion:reduce){.open-update.update-available{animation:none}}
+
+#whiteboardPhotoFiles[hidden]{display:none}
+#whiteboardPhotoStatus{font-size:14px;max-height:3em;overflow:auto;flex-shrink:0;color:#555}
+.whiteboard-image{min-width:0;border:1px solid transparent}
+.whiteboard-image.selected{border-color:#486c9e}
+.whiteboard-image img{display:block;width:100%;height:100%;object-fit:contain;user-select:none;touch-action:none;cursor:move}
+.whiteboard-image .textblock-tools{top:0;z-index:2}
+.whiteboard-image .textblock-width{bottom:0;right:0;z-index:2}

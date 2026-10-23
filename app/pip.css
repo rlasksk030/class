@@ -18,3 +18,5 @@ button{min-height:2.75rem;padding:.44rem .625rem;font-size:1.125rem;border-radiu
 
 #pipActivityTitle{width:100%;min-width:0;font-size:1.6rem;font-weight:700;padding:.4rem;border:1px solid #dce1e8;border-radius:.4rem;background:#fff;flex:none}
 .pip-activity-body{display:flex;flex-direction:column;flex:1;min-height:0}
+
+.pip-photo{object-fit:contain;pointer-events:auto;user-select:none;border:0;background:transparent}

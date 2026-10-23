@@ -1,5 +1,6 @@
 const {assertBackground}=require('./hiclass-window.cjs');
 const {findRecipientControls,messages}=require('./hiclass-recipients.cjs');
+const photos=require('./hiclass-photos.cjs');
 const titleSelector='textarea[placeholder="제목을 입력하세요."]';
 const pause=()=>new Promise(r=>setTimeout(r,100));
 // Renderer functions are deliberately self-contained and never return draft content.
@@ -121,14 +122,16 @@ async function published(w,payload,before){
 async function submit(w,payload,before,link,verifyClass,clickText,options={}){
  const stage=(name,state={})=>options.onStage?.({stage:name,...state});let clicked=false;
  try{
+  await photos.verify(w,payload);
+  if(payload.photos?.length&&options.autoConfirm===false)throw Error('사진 첨부의 수동 확인 경로는 아직 검증되지 않았습니다.');
   await verifyClass(w,link);stage('B',{classVerified:true});
-  if((before.matching||0)>0)throw Error('같은 제목과 본문의 게시물이 이미 있습니다. 중복 등록하지 않았습니다.');
+  if(!payload.photos?.length&&(before.matching||0)>0)throw Error('같은 제목과 본문의 게시물이 이미 있습니다. 중복 등록하지 않았습니다.');
   const start=await pageAction(w,'start',{parents:payload.parents,students:payload.students,classTitle:link.title.trim(),title:payload.title,body:payload.body});
   if(start.error)throw errorFor(start);clicked=true;stage('B',{snapshot:start.snapshot});stage('C',{registerClicked:true});
   let state,end=Date.now()+(options.popupTimeout||15000);
   while(Date.now()<end){state=await pageAction(w,'status');if(state.error&&state.error!=='missing-popup')throw errorFor(state);if(!state.error)break;await pause();}
   if(state?.error)throw errorFor(state);stage('D',{popup:true});stage('E',{kind:state.kind,text:state.text});stage('F',{recipientVerification:state.mode});stage('G',{ready:true});
-  if(!state.confirmed&&options.autoConfirm!==false){await verifyClass(w,link);const result=await pageAction(w,'confirm');if(result.error)throw errorFor(result);}
+  if(!state.confirmed&&options.autoConfirm!==false){await verifyClass(w,link);await photos.verify(w,payload);const result=await pageAction(w,'confirm');if(result.error)throw errorFor(result);}
   else if(!state.confirmed){
    end=Date.now()+(options.manualTimeout||300000);
    while(Date.now()<end){state=await pageAction(w,'status');if(state.error)throw errorFor(state);if(state.confirmed)break;await pause();}
@@ -139,7 +142,7 @@ async function submit(w,payload,before,link,verifyClass,clickText,options={}){
    while(Date.now()<end){if(await w.webContents.executeJavaScript(`!document.querySelector(${JSON.stringify(titleSelector)})`))break;await pause();}
    await clickText(w,['임시저장']);
   }
-  while(Date.now()<end){if((assertBackground(w),await published(w,payload,before))){stage('H',{published:true,manual:state.manual===true});return kind==='draft'?'draft':'success';}await pause();}
+  while(Date.now()<end){if((assertBackground(w),await published(w,payload,before))){await photos.verify(w,payload,true);stage('H',{published:true,manual:state.manual===true});return kind==='draft'?'draft':'success';}await pause();}
   throw Error('실제 게시물을 확인하지 못했습니다. 초안은 유지됩니다.');
  }catch(e){
   if(!clicked)e.safeToRetry=true;

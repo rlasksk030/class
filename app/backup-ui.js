@@ -18,6 +18,7 @@
  async function snapshot(){return BackupCore.create(key=>localStorage.getItem(key),{appVersion:await appVersion(),school:OKGU_SCHOOL.SCHUL_NM,academicYear:academicYear()});}
  async function saveFile(name,text){
   if(window.desktop?.backupSave)return window.desktop.backupSave({name,text});
+  if(Object.values(BackupCore.collect(k=>localStorage.getItem(k)).diaryDrafts||{}).some(d=>d.photos?.length)||BackupCore.collect(k=>localStorage.getItem(k)).whiteboardContents?.blocks?.some(b=>b.type==='image'))throw Error('사진 포함 백업은 데스크톱 앱에서 만들어 주세요.');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);return {saved:true,name};
  }
  function openFile(){
@@ -42,34 +43,36 @@
   try{const file=await openFile();if(file?.canceled){status('');return;}status('백업 파일을 확인하는 중입니다…');parsed=await BackupCore.parse(file?.text);}
   catch(e){status(e?.message||BackupCore.INVALID);return;}
   const b=parsed.backup,made=new Date(b.createdAt);
-  await confirmAndRestore(parsed.entries,`${Number.isNaN(made.getTime())?'':made.toLocaleString('ko-KR')+' · '}${b.grade&&b.classroom?`${b.grade}학년 ${b.classroom}반`:'학년·반 정보 없음'}${b.appVersion?' · 앱 '+b.appVersion:''}`,status);
+  await confirmAndRestore(parsed.entries,`${Number.isNaN(made.getTime())?'':made.toLocaleString('ko-KR')+' · '}${b.grade&&b.classroom?`${b.grade}학년 ${b.classroom}반`:'학년·반 정보 없음'}${b.appVersion?' · 앱 '+b.appVersion:''}`,status,b.media);
  });
- async function restoreEntries(entries){
+ async function restoreEntries(entries,media){
   if(window.desktop?.backupKeep)await window.desktop.backupKeep(JSON.stringify(await snapshot()));
+  const data=Object.fromEntries(entries.map(([k,v])=>[k,JSON.parse(v)]));
+  if(window.desktop?.mediaRestore)await window.desktop.mediaRestore({data,media:media||{}});
   window.dashboardRestoring=true; // stop in-memory state from being written back while the page reloads
   try{BackupCore.apply(localStorage,entries);}catch(e){window.dashboardRestoring=false;throw e;}
  }
- async function confirmAndRestore(entries,info,report){
+ async function confirmAndRestore(entries,info,report,media){
   $('backupConfirmInfo').textContent=info;
   confirmDialog.returnValue='';confirmDialog.showModal();
   const answer=await new Promise(resolve=>confirmDialog.addEventListener('close',()=>resolve(confirmDialog.returnValue),{once:true}));
   if(answer!=='restore'||window.dashboardLocked){report('복원을 취소했습니다.');return false;}
-  try{await restoreEntries(entries);}catch{report('복원하지 못했습니다. 기존 데이터는 그대로 유지됩니다.');return false;}
+  try{await restoreEntries(entries,media);}catch{report('복원하지 못했습니다. 기존 데이터는 그대로 유지됩니다.');return false;}
   report('복원이 완료되었습니다. 화면을 다시 불러옵니다…');
   setTimeout(reload,600);return true;
  }
  // ---------- Earlier data: updater snapshots, pre-restore copies, another profile folder ----------
  const describe=s=>[s.grade&&s.classroom?`${s.grade}학년 ${s.classroom}반`:'학년·반 없음',s.morning?`아침활동 "${s.morning}"`:'',s.students?`학생 ${s.students}명`:'',s.ddays?`D-Day ${s.ddays}개`:'',s.whiteboard?`화이트보드 글상자 ${s.whiteboard}개`:''].filter(Boolean).join(' · ');
  async function load(source){
-  if(source.format==='raw')return BackupCore.fromRaw(source.data);
-  const parsed=await BackupCore.parse(source.text);const data={};for(const [k,v] of parsed.entries)data[k]=JSON.parse(v);return {data,entries:parsed.entries};
+  if(source.format==='raw')return {...BackupCore.fromRaw(source.data),media:source.media};
+  const parsed=await BackupCore.parse(source.text);const data={};for(const [k,v] of parsed.entries)data[k]=JSON.parse(v);return {data,entries:parsed.entries,media:parsed.backup.media};
  }
  function addItem(title,when,loaded){
   const row=document.createElement('div');row.className='recovery-item';
   const text=document.createElement('div'),strong=document.createElement('strong'),small=document.createElement('span');
   strong.textContent=`${title}${when?' · '+when:''}`;small.textContent=BackupCore.hasUserData(loaded.data)?describe(BackupCore.summary(loaded.data)):'사용자 데이터 없음';text.append(strong,small);
   const button=document.createElement('button');button.type='button';button.textContent='이 데이터로 복원';button.disabled=!BackupCore.hasUserData(loaded.data);
-  button.onclick=async()=>{recoveryDialog.close();await confirmAndRestore(loaded.entries,`${title}${when?' · '+when:''} · ${describe(BackupCore.summary(loaded.data))}`,status);};
+  button.onclick=async()=>{recoveryDialog.close();await confirmAndRestore(loaded.entries,`${title}${when?' · '+when:''} · ${describe(BackupCore.summary(loaded.data))}`,status,loaded.media);};
   row.append(text,button);$('recoveryList').append(row);
  }
  $('recoveryFind').onclick=()=>guarded(async()=>{
@@ -100,7 +103,7 @@
    for(const s of (await window.desktop.recoveryScan()).filter(x=>x.kind==='update')){
     const loaded=await load(await window.desktop.recoveryRead(s.id));
     if(!BackupCore.hasUserData(loaded.data))continue;
-    await restoreEntries(loaded.entries);
+    await restoreEntries(loaded.entries,loaded.media);
     sessionStorage.setItem('recoveryNotice',`이전 데이터를 복구했습니다 (업데이트 직전 자동 백업 ${new Date(s.time).toLocaleString('ko-KR')}).`);
     setTimeout(reload,300);return;
    }
