@@ -2,7 +2,7 @@
 // The injected driver is a main-process test seam, never supplied by renderer IPC.
 const crypto=require('node:crypto');
 const {validateRef}=require('./media-store.cjs');
-const UNSUPPORTED='하이클래스 사진 첨부 구조가 아직 검증되지 않아 등록하지 않았습니다. 본문과 사진은 초안에 보존됩니다.';
+const UNSUPPORTED='현재 사진이 포함된 알림장은 하이클래스에 등록할 수 없습니다. 본문과 사진은 초안에 보존됩니다.';
 function ids(photos=[]){if(!Array.isArray(photos)||photos.length>20)throw Error('첨부 사진은 최대 20장입니다.');return photos.map(validateRef);}
 function digest(payload){const content=[payload.classKey,payload.date,payload.title,payload.body,payload.parents!==false,payload.students!==false],photos=ids(payload.photos);if(photos.length)content.push(photos);return crypto.createHash('sha256').update(JSON.stringify(content)).digest('hex');}
 function same(actual,expected){return Array.isArray(actual)&&actual.length===expected.length&&actual.every((id,i)=>id===expected[i]);}
