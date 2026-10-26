@@ -1,0 +1,124 @@
+{
+  "date": "2026-10-26",
+  "baseRemoteCommit": "595bfd04f5ee62ce0c1fcda5757396a7f7778441",
+  "preservedLocalHead": "a96e6cbe0c2f4e7013c1d4283668afcce1aafb77",
+  "inheritedFeatureCommit": "b470d4afa8c336fd8c8a3a29fe8eea6b37b8b4b4",
+  "testedCodeCommit": "02dab3b4c3a62e8fd01f233152715c39be447685",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v24.14.1",
+    "electron": "40.10.6"
+  },
+  "syntax": {
+    "passed": 71,
+    "total": 71,
+    "toolScriptsCheckedSeparately": 2
+  },
+  "unit": {
+    "passed": 45,
+    "total": 45
+  },
+  "e2e": {
+    "passed": 299,
+    "total": 299,
+    "suites": [
+      {
+        "passed": 24,
+        "total": 24
+      },
+      {
+        "passed": 43,
+        "total": 43
+      },
+      {
+        "passed": 36,
+        "total": 36
+      },
+      {
+        "passed": 16,
+        "total": 16
+      },
+      {
+        "passed": 17,
+        "total": 17
+      },
+      {
+        "passed": 8,
+        "total": 8
+      },
+      {
+        "passed": 17,
+        "total": 17
+      },
+      {
+        "passed": 38,
+        "total": 38
+      },
+      {
+        "passed": 21,
+        "total": 21
+      },
+      {
+        "passed": 16,
+        "total": 16
+      },
+      {
+        "passed": 15,
+        "total": 15
+      },
+      {
+        "passed": 11,
+        "total": 11
+      },
+      {
+        "passed": 22,
+        "total": 22
+      },
+      {
+        "passed": 4,
+        "total": 4
+      },
+      {
+        "passed": 6,
+        "total": 6
+      },
+      {
+        "passed": 5,
+        "total": 5
+      }
+    ],
+    "fullRegressionRuns": 1
+  },
+  "regressionReproduction": {
+    "case": "backup opened its save dialog while a diary photo import was pending",
+    "beforeFix": "FAIL: expected 0 native save dialogs, actual 1",
+    "afterFix": "5/5 photo-transfer checks passed"
+  },
+  "migration": {
+    "status": "SKIP",
+    "reason": "SKIP: set CLASSROOM_V178_APP to the extracted v1.7.8 app.asar folder"
+  },
+  "liveHiClassAttachments": "NOT IMPLEMENTED / UNVERIFIED; authenticated editor unavailable, photo publication blocked",
+  "physicalWindowsValidation": "UNVERIFIED",
+  "push": false,
+  "newGitHubActionsRuns": 0,
+  "evidenceDirectory": "tests/e2e/.out/photo-validation-2026-10-26T02-36-38-265Z-ADIb01",
+  "logSha256": {
+    "syntax.log": "12f95abc5a9ec3d447a67579892c88fc3a2754a14817e6f85c2b293e1db88731",
+    "unit.log": "643e9bd20b28bbbaf0c16798ca8ce09ee38b5f88dc34213283e700ca043632ae",
+    "e2e.log": "573b7ecc52f859351ac660dbdea1c8eef015a4490b3cafabe512db869802491e",
+    "migration.log": "f7819737c6d76ec27371644882b37240f289adc34ce9880766fb942218c79168"
+  },
+  "manualPreview": {
+    "status": "verified visible",
+    "windowTitle": "우리 교실 · 사진·글씨 확인 (격리 데이터 / 실제 발송 없음)",
+    "tab": "알림장",
+    "fontSize": "24px",
+    "syntheticPhotos": 2,
+    "realPublication": "blocked",
+    "profile": "tests/e2e/.out/photo-validation-2026-10-26T02-36-38-265Z-ADIb01/profile-manual-preview"
+  },
+  "finalRemoteHead": "595bfd04f5ee62ce0c1fcda5757396a7f7778441",
+  "draftPr": true
+}
