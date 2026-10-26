@@ -1,6 +1,7 @@
 const {assertBackground}=require('./hiclass-window.cjs');
 const {findRecipientControls,messages}=require('./hiclass-recipients.cjs');
 const photos=require('./hiclass-photos.cjs');
+const {postState}=require('./hiclass-posts.cjs');
 const titleSelector='textarea[placeholder="제목을 입력하세요."]';
 const pause=()=>new Promise(r=>setTimeout(r,100));
 // Renderer functions are deliberately self-contained and never return draft content.
@@ -114,10 +115,10 @@ function errorFor(state){
  const e=Error(labels[state.error]||'하이클래스 등록을 확인하지 못했습니다.');e.stage=state.error;return e;
 }
 async function articleSnapshot(w,payload){
- return w.webContents.executeJavaScript(`(()=>{const n=s=>String(s||'').replace(/\\s+/g,' ').trim(),title=${JSON.stringify(payload.title)},body=${JSON.stringify(payload.body)};const articles=[...document.querySelectorAll('article')];return {ids:articles.map(e=>e.id).filter(Boolean),matching:articles.filter(e=>e.querySelector('strong')?.textContent.trim()===title&&n(e.innerText).includes(n(body))).length};})()`);
+ return w.webContents.executeJavaScript(`(()=>{const {ids,matching}=(${postState.toString()})(${JSON.stringify({title:payload.title,body:payload.body})});return {ids,matching};})()`);
 }
 async function published(w,payload,before){
- return w.webContents.executeJavaScript(`(()=>{if(document.querySelector(${JSON.stringify(titleSelector)}))return false;const n=s=>String(s||'').replace(/\\s+/g,' ').trim(),title=${JSON.stringify(payload.title)},body=${JSON.stringify(payload.body)},before=${JSON.stringify(before)};const matches=[...document.querySelectorAll('article')].filter(e=>e.querySelector('strong')?.textContent.trim()===title&&n(e.innerText).includes(n(body)));return matches.length>(before.matching||0)&&matches.some(e=>!e.id||!before.ids.includes(e.id));})()`);
+ return w.webContents.executeJavaScript(`(()=>{if(document.querySelector(${JSON.stringify(titleSelector)}))return false;const before=${JSON.stringify(before)},state=(${postState.toString()})(${JSON.stringify({title:payload.title,body:payload.body})});return state.matches.some(e=>e.modern&&e.id&&!before.ids.includes(e.id))||(state.matching>(before.matching||0)&&state.matches.some(e=>!e.modern&&(!e.id||!before.ids.includes(e.id))));})()`);
 }
 async function submit(w,payload,before,link,verifyClass,clickText,options={}){
  const stage=(name,state={})=>options.onStage?.({stage:name,...state});let clicked=false;

@@ -1,8 +1,8 @@
-// No live attachment selectors have been observed. A missing driver MUST block photo publication.
-// The injected driver is a main-process test seam, never supplied by renderer IPC.
+// The production driver is created in the main process, never supplied by renderer IPC.
+// Missing or changed service contracts must still block photo publication.
 const crypto=require('node:crypto');
 const {validateRef}=require('./media-store.cjs');
-const UNSUPPORTED='현재 사진이 포함된 알림장은 하이클래스에 등록할 수 없습니다. 본문과 사진은 초안에 보존됩니다.';
+const UNSUPPORTED='하이클래스 사진 첨부 연결을 확인하지 못했습니다. 등록하지 않았으며 본문과 사진은 초안에 보존됩니다.';
 function ids(photos=[]){if(!Array.isArray(photos)||photos.length>20)throw Error('첨부 사진은 최대 20장입니다.');return photos.map(validateRef);}
 function digest(payload){const content=[payload.classKey,payload.date,payload.title,payload.body,payload.parents!==false,payload.students!==false],photos=ids(payload.photos);if(photos.length)content.push(photos);return crypto.createHash('sha256').update(JSON.stringify(content)).digest('hex');}
 function same(actual,expected){return Array.isArray(actual)&&actual.length===expected.length&&actual.every((id,i)=>id===expected[i]);}
@@ -24,4 +24,5 @@ async function verify(w,payload,published=false){
  if(!same(await tx.driver[published?'published':'editor'](tx.receipts),expected))throw Error(published?'등록된 사진을 확인하지 못했습니다. 자동 재전송하지 말고 하이클래스에서 확인해 주세요.':'사진 첨부 완료 상태가 변경되었습니다. 등록하지 않았습니다.');
  return true;
 }
-module.exports={prepare,verify,digest,ids,UNSUPPORTED};
+function forget(w){transactions.delete(w);}
+module.exports={prepare,verify,forget,digest,ids,UNSUPPORTED};

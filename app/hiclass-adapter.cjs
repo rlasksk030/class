@@ -1,5 +1,6 @@
 const {assertBackground}=require('./hiclass-window.cjs');
-// HiClass adapter: observed editor selectors; live end-to-end verification is required before release.
+// HiClass adapter: normal editor and recipient flow; photo driver follows production source.
+// Authenticated photo upload/publication and Windows runtime remain unverified.
 const visible='el=>!!(el.getClientRects().length)';
 const titleSelector='textarea[placeholder="제목을 입력하세요."]';
 const bodySelector='.fr-element.fr-view[contenteditable="true"]';
@@ -17,7 +18,7 @@ async function verifyClass(w,link){
  if(actual.origin!==expected.origin||actual.pathname!==expected.pathname||state.classTitle.trim()!==link.title.trim())throw Error('연결된 학급과 현재 하이클래스 학급이 달라 등록하지 않았습니다.');
 }
 async function prepare(w,link,payload,options={}){
- // Fail before navigation/editing when the live photo contract is unknown.
+ // Never proceed with photos unless the main process supplied an attachment driver.
  if(payload.photos?.length&&!options.attachmentDriver)throw Error(photos.UNSUPPORTED);
  const u=new URL(link.url);if(!/^\/main\/clazzes\/[^/]+\/note\/[^/]+/.test(u.pathname))throw Error('담당 클래스의 알림장 게시판을 열고 학급을 다시 연결해 주세요.');
  await w.loadURL(link.url);await wait(async()=>{const s=await inspect(w);if(s.login)throw Error('하이클래스 로그인이 만료되었습니다. 다시 로그인해 주세요.');return s.classTitle;});
