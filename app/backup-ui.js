@@ -26,7 +26,9 @@
   return new Promise(resolve=>{const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.onchange=async()=>{const f=input.files[0];resolve(f?{text:f.size>20*1024*1024?'':await f.text(),name:f.name}:{canceled:true});};input.oncancel=()=>resolve({canceled:true});input.click();});
  }
  async function guarded(task){
-  if(busy||window.dashboardLocked)return;busy=true;$('backupCreate').disabled=$('backupRestore').disabled=$('recoveryFind').disabled=true;
+  if(busy||window.dashboardLocked)return;
+  try{window.ClassPhotos?.assertSaved();}catch(e){status(e.message);return;}
+  busy=true;$('backupCreate').disabled=$('backupRestore').disabled=$('recoveryFind').disabled=true;
   try{await task();}finally{busy=false;$('backupCreate').disabled=$('backupRestore').disabled=$('recoveryFind').disabled=false;}
  }
  $('backupCreate').onclick=()=>guarded(async()=>{
@@ -46,9 +48,11 @@
   await confirmAndRestore(parsed.entries,`${Number.isNaN(made.getTime())?'':made.toLocaleString('ko-KR')+' · '}${b.grade&&b.classroom?`${b.grade}학년 ${b.classroom}반`:'학년·반 정보 없음'}${b.appVersion?' · 앱 '+b.appVersion:''}`,status,b.media);
  });
  async function restoreEntries(entries,media){
+  window.ClassPhotos?.assertSaved();
   if(window.desktop?.backupKeep)await window.desktop.backupKeep(JSON.stringify(await snapshot()));
   const data=Object.fromEntries(entries.map(([k,v])=>[k,JSON.parse(v)]));
   if(window.desktop?.mediaRestore)await window.desktop.mediaRestore({data,media:media||{}});
+  window.ClassPhotos?.assertSaved();
   window.dashboardRestoring=true; // stop in-memory state from being written back while the page reloads
   try{BackupCore.apply(localStorage,entries);}catch(e){window.dashboardRestoring=false;throw e;}
  }

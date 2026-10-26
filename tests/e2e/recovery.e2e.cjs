@@ -2,7 +2,7 @@
 // data, and import from another profile folder (original folder untouched).
 const path=require('path'),fs=require('fs'),crypto=require('crypto');
 const {_electron}=require('playwright-core');const electronPath=require('electron');
-const ROOT=path.resolve(__dirname,'../..'),OUTDIR=path.join(__dirname,'.out');
+const ROOT=path.resolve(__dirname,'../..'),OUTDIR=require('../output.cjs');
 const P=n=>path.join(OUTDIR,'profile-recovery-'+n);
 const results=[];const ok=(n,c,d='')=>{results.push([n,!!c]);console.log((c?'PASS':'FAIL')+' '+n+(d?' — '+d:''));};
 async function launch(profile,folder){

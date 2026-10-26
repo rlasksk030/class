@@ -3,7 +3,7 @@
 //   npx asar extract "<v1.7.8 install>/resources/app.asar" <dir>   then   CLASSROOM_V178_APP=<dir> npm run test:migration
 const path=require('path'),fs=require('fs');
 const {_electron}=require('playwright-core');const electronPath=require('electron');
-const ROOT=path.resolve(__dirname,'../..'),OUTDIR=path.join(__dirname,'.out'),PROFILE=path.join(OUTDIR,'profile-migration'),OLD=process.env.CLASSROOM_V178_APP;
+const ROOT=path.resolve(__dirname,'../..'),OUTDIR=require('../output.cjs'),PROFILE=path.join(OUTDIR,'profile-migration'),OLD=process.env.CLASSROOM_V178_APP;
 if(!OLD||!fs.existsSync(path.join(OLD,'package.json'))){console.log('SKIP: set CLASSROOM_V178_APP to the extracted v1.7.8 app.asar folder');process.exit(0);}
 const results=[];const ok=(n,c,d='')=>{results.push([n,!!c]);console.log((c?'PASS':'FAIL')+' '+n+(d?' — '+d:''));};
 async function launch(dir){const app=await _electron.launch({executablePath:electronPath,args:['--no-sandbox',dir],env:{...process.env,CLASSROOM_TEST_PROFILE:PROFILE}});const page=await app.firstWindow();page.on('dialog',d=>d.accept());await page.waitForLoadState('domcontentloaded');

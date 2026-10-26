@@ -2,7 +2,7 @@
 // Drives the real main-process watcher: login -> class selection -> class home -> note board -> confirmation -> saved.
 const path=require('path'),fs=require('fs');
 const {_electron}=require('playwright-core');const electronPath=require('electron');
-const ROOT=path.resolve(__dirname,'../..'),OUTDIR=path.join(__dirname,'.out'),PROFILE=path.join(OUTDIR,'profile-hiclass');
+const ROOT=path.resolve(__dirname,'../..'),OUTDIR=require('../output.cjs'),PROFILE=path.join(OUTDIR,'profile-hiclass');
 const results=[];const ok=(n,c,d='')=>{results.push([n,!!c]);console.log((c?'PASS':'FAIL')+' '+n+(d?' — '+d:''));};
 const academicYear=()=>{const n=new Date();return String(n.getFullYear()-(n.getMonth()<2?1:0));};
 async function launch(answer=1){

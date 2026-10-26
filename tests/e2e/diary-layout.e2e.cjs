@@ -1,6 +1,6 @@
 // Native Electron sizes + Chromium device scale factors; does not change Windows settings.
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const {_electron}=require('playwright-core'),ROOT=path.resolve(__dirname,'../..'),OUT=path.join(__dirname,'.out/diary-layout');fs.mkdirSync(OUT,{recursive:true});let app,count=0;
+const {_electron}=require('playwright-core'),ROOT=path.resolve(__dirname,'../..'),OUT=path.join(require('../output.cjs'),'diary-layout');fs.mkdirSync(OUT,{recursive:true});let app,count=0;
 const pass=s=>{count++;console.log('PASS '+s);};
 const measure=page=>page.evaluate(()=>{
  const rect=id=>{const r=document.getElementById(id).getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,height:r.height};};

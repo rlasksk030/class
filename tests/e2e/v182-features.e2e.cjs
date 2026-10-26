@@ -1,5 +1,5 @@
 // Electron E2E: run with `npm run test:e2e` (Linux CI: wrap with xvfb-run). Output goes to tests/e2e/.out (git-ignored).
-const path=require('path');const ROOT=path.resolve(__dirname,'../..'),OUTDIR=path.join(__dirname,'.out');
+const path=require('path');const ROOT=path.resolve(__dirname,'../..'),OUTDIR=require('../output.cjs');
 const {_electron}=require('playwright-core');const electronPath=require('electron');
 const fs=require('fs');const PROFILE=path.join(OUTDIR,'profile-v182'),OUT=path.join(OUTDIR,'shots'),BK=path.join(OUTDIR,'backup-out.json');fs.mkdirSync(OUT,{recursive:true});
 const results=[];const ok=(n,c,d='')=>{results.push([n,!!c]);console.log((c?'PASS':'FAIL')+' '+n+(d?' — '+d:''));};

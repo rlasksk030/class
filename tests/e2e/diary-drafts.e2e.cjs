@@ -1,7 +1,7 @@
 // Public-registration outcomes are mocked at IPC. This test cannot send a real note.
 const path=require('node:path'),fs=require('node:fs'),assert=require('node:assert/strict');
 const {_electron}=require('playwright-core');
-const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(__dirname,'.out');fs.mkdirSync(OUT,{recursive:true});
+const ROOT=path.resolve(__dirname,'../..'),OUT=require('../output.cjs');fs.mkdirSync(OUT,{recursive:true});
 const PROFILE=fs.mkdtempSync(path.join(OUT,'profile-diary-'));let app,count=0;
 const pass=n=>{count++;console.log('PASS '+n);};
 (async()=>{try{

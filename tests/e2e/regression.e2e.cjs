@@ -2,7 +2,7 @@
 // screen lock, timetable edit/highlight, notices "yesterday", diary local rules. Output: tests/e2e/.out
 const path=require('path'),fs=require('fs');
 const {_electron}=require('playwright-core');const electronPath=require('electron');
-const ROOT=path.resolve(__dirname,'../..'),OUTDIR=path.join(__dirname,'.out'),PROFILE=path.join(OUTDIR,'profile-regression');
+const ROOT=path.resolve(__dirname,'../..'),OUTDIR=require('../output.cjs'),PROFILE=path.join(OUTDIR,'profile-regression');
 const results=[];const ok=(n,c,d='')=>{results.push([n,!!c]);console.log((c?'PASS':'FAIL')+' '+n+(d?' — '+d:''));};
 const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date());
 const shift=(d,n)=>new Date(Date.parse(d+'T00:00:00Z')+n*86400000).toISOString().slice(0,10);

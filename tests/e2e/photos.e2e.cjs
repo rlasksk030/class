@@ -1,7 +1,7 @@
 // Only synthetic raster fixtures and an isolated profile. Never connects to a real class or sends a post.
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {_electron}=require('playwright-core');
-const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(__dirname,'.out');fs.mkdirSync(OUT,{recursive:true});
+const ROOT=path.resolve(__dirname,'../..'),OUT=require('../output.cjs');fs.mkdirSync(OUT,{recursive:true});
 const PROFILE=fs.mkdtempSync(path.join(OUT,'profile-photos-'));let app,page,count=0;const pass=s=>{count++;console.log('PASS '+s);};
 const wait=()=>page.waitForFunction(()=>!document.getElementById('diaryPublish').disabled);
 const drafts=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('diaryDrafts')));

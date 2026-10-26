@@ -1,6 +1,6 @@
 // Manual local preview with synthetic data. Never uses the installed app's profile or a real HiClass session.
 const path=require('node:path'),{_electron}=require('playwright-core');
-const root=path.resolve(__dirname,'..'),profile=path.join(root,'tests/e2e/.out/profile-photo-preview');
+const root=path.resolve(__dirname,'..'),profile=process.env.CLASSROOM_PHOTO_PREVIEW_PROFILE||path.join(root,'tests/e2e/.out/profile-photo-preview');
 (async()=>{
  const app=await _electron.launch({executablePath:require('electron'),args:[path.join(root,'app')],env:{...process.env,CLASSROOM_TEST_PROFILE:profile}});
  const page=await app.firstWindow();await page.waitForLoadState('domcontentloaded');

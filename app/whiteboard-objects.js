@@ -85,6 +85,7 @@ window.createClassWhiteboard=function({read,put}){
   else if(key==='y'||(key==='z'&&e.shiftKey)){e.preventDefault();redo();}
  });
  $('whiteboardClear').onclick=()=>{if(!confirm('화이트보드의 모든 사진·글상자와 판서를 지울까요?'))return;commit();board.blocks=[];board.strokes=[];board.text='';layer.replaceChildren();nodes.clear();select(null);save();redraw();commit();};
+ window.addEventListener('classroom:before-data-transfer',e=>{if(unsaved||pendingImages||ink||drag)e.preventDefault();});
  window.addEventListener('beforeunload',e=>{if(unsaved||pendingImages){e.preventDefault();e.returnValue='';$('whiteboardPhotoStatus').textContent='사진 처리 또는 보드 저장이 끝나지 않아 창을 유지합니다. 저장 공간을 확인해 주세요.';}});
  window.addEventListener('pagehide',save);new ResizeObserver(redraw).observe(el.querySelector('.whiteboard-surface'));tool('text');fontUI();historyUI();save();
  function editText(change){

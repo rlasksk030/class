@@ -2,7 +2,7 @@
 const path=require('node:path'),fs=require('node:fs');
 const assert=require('node:assert/strict');
 const {_electron}=require('playwright-core');
-const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(__dirname,'.out');
+const ROOT=path.resolve(__dirname,'../..'),OUT=require('../output.cjs');
 fs.mkdirSync(OUT,{recursive:true});
 const PROFILE=fs.mkdtempSync(path.join(OUT,'profile-timetable-'));
 let app,count=0;
