@@ -1,0 +1,53 @@
+:root{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;color:#262b33;background:#fff;font-synthesis:none}*{box-sizing:border-box}body{margin:0;padding:28px 3vw 18px}header{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:32px;align-items:center;margin-bottom:26px;padding-bottom:24px;border-bottom:1px solid #e9ebee}.eyebrow{font-size:11px;letter-spacing:1.8px;color:#858b94;font-weight:600}h1{font-size:clamp(24px,2.4vw,36px);letter-spacing:-1.2px;margin:10px 0;overflow-wrap:anywhere}h2{font-size:21px;margin:0;font-weight:700}p{line-height:1.6}#date{margin:0;color:#737b86;font-size:15px}.headerRight{text-align:right}#clock{font-size:42px;font-weight:500;letter-spacing:-1.5px;font-variant-numeric:tabular-nums}nav{display:flex;gap:6px;margin-top:10px}button{border:1px solid #e5e7eb;background:#fff;padding:8px 11px;border-radius:7px;color:#626a76;cursor:pointer;font:inherit;font-size:12px}button:hover{background:#f5f6f8}button:focus-visible{outline:3px solid #8f9caf;outline-offset:2px}button:disabled{opacity:.5;cursor:wait}main{display:grid;grid-template-columns:minmax(210px,.85fr) minmax(280px,1.35fr) minmax(250px,1fr);grid-template-rows:minmax(220px,1fr) minmax(220px,1fr);gap:18px;min-height:calc(100vh - 230px)}.card{min-width:0;padding:24px;border:1px solid #e5e7eb;border-radius:14px;background:#fff;box-shadow:0 3px 16px #18233503}.cardhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid #eceef1}.cardhead button{border:0;color:#8a9099;padding:5px 6px;flex-shrink:0}.timetable{grid-column:1;grid-row:1/3}.morning{grid-column:2;grid-row:1}.notices{grid-column:2;grid-row:2}.meal{grid-column:3;grid-row:1/3}.prose{white-space:pre-wrap;font-size:clamp(18px,1.65vw,25px);line-height:1.8;overflow-wrap:anywhere}#meal{font-size:clamp(18px,1.6vw,24px);line-height:1.75;white-space:pre-wrap;overflow:visible}.lesson{display:flex;align-items:center;gap:16px;border-bottom:1px solid #f0f1f3;padding:15px 0;font-size:clamp(21px,1.9vw,28px);overflow-wrap:anywhere}.lesson:last-child{border-bottom:0}.lesson b{display:grid;place-items:center;border-radius:8px;background:#f4f5f7;width:33px;height:33px;font-size:15px;color:#7a828e;flex-shrink:0}.status{font-size:11px;color:#9097a1;line-height:1.6;margin-top:18px}.weather.card{border:0;border-left:1px solid #e9ebee;border-radius:0;box-shadow:none;padding:0 0 0 24px;max-width:300px}.weather .eyebrow{font-size:10px;letter-spacing:1px;margin-bottom:8px}#weather{display:grid;grid-template-columns:auto auto;column-gap:14px;row-gap:3px;font-size:12px;color:#737b86;align-items:center}.weather strong{grid-column:1/3;display:block;font-size:22px;font-weight:600;letter-spacing:-.5px;color:#414955;margin:0 0 3px}.weather #weather>div:nth-of-type(3){grid-column:1/3}.weather #weather>.status{grid-column:1/3;font-size:10px;margin:4px 0 0}.weather p{margin:0}footer{display:flex;justify-content:space-between;gap:12px;margin-top:18px;color:#a0a5ad;font-size:10px}dialog{border:1px solid #e5e7eb;border-radius:16px;padding:30px;width:540px;max-width:92vw;max-height:90vh;color:#303640;background:#fff;box-shadow:0 20px 100px #18233522}dialog::backdrop{background:#18233555;backdrop-filter:blur(3px)}dialog h2{margin:12px 0}dialog p,dialog small{font-size:13px;color:#7d8490}label{display:block;font-size:13px;margin:18px 0 8px}input,select,textarea{width:100%;padding:11px;border:1px solid #dce0e6;border-radius:7px;margin-top:7px;font:inherit;background:#fff;color:#303640}textarea{font-size:18px;line-height:1.7;resize:vertical}.fields,.search{display:flex;gap:12px}.fields label{flex:1}.search input{margin:0}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:24px}.primary{background:#414b5a;color:white}.primary:hover{background:#303947}.check{display:flex;align-items:center;gap:8px}.check input{width:auto;margin:0}#schoolResults{font-size:13px}.empty{color:#939aa4;font-size:16px}@media(max-width:1100px){body{padding:20px}header{gap:18px}.weather.card{max-width:230px;padding-left:16px}#weather{display:block}.weather #weather>div{margin-top:3px}main{grid-template-columns:minmax(170px,.85fr) minmax(230px,1.1fr) minmax(230px,1fr);gap:12px}.card{padding:18px}h2{font-size:19px}.lesson{padding:12px 0}.cardhead{margin-bottom:16px;padding-bottom:14px}}@media(max-height:800px){body{padding-top:18px}header{padding-bottom:16px;margin-bottom:18px}#clock{font-size:34px}main{min-height:calc(100vh - 205px);grid-template-rows:minmax(180px,1fr) minmax(180px,1fr)}.lesson{padding:10px 0}.card{padding:18px}#meal{font-size:19px;line-height:1.65}.cardhead{margin-bottom:14px;padding-bottom:14px}}
+/* Keep the timetable balanced and give morning activities more room. */
+main{grid-template-rows:minmax(260px,1.45fr) minmax(150px,.65fr)}
+#timetable{width:fit-content;max-width:100%;min-width:65%;margin-inline:auto}
+.lesson{gap:22px;padding-inline:12px}
+@media(max-height:800px){main{grid-template-rows:minmax(235px,1.45fr) minmax(145px,.65fr)}}
+/* Soft title colors separate cards while keeping the main canvas white. */
+.cardhead{margin:-24px -24px 20px;padding:16px 22px;border-bottom:0;border-radius:13px 13px 0 0;min-height:61px}
+.timetable .cardhead{background:#eaf0fa;color:#354d74}
+.morning .cardhead{background:#edf4ea;color:#49633e}
+.notices .cardhead{background:#fff3df;color:#796035}
+.meal .cardhead{background:#faece8;color:#80554a}
+.cardhead button{color:inherit;opacity:.75}
+.lesson{font-size:clamp(30px,2.6vw,40px);font-weight:500;gap:24px}
+.lesson b{font-size:18px;width:36px;height:36px}
+@media(max-width:1100px),(max-height:800px){.cardhead{margin:-18px -18px 16px;padding:14px 18px;min-height:57px}}
+main{grid-template-columns:minmax(210px,.85fr) minmax(300px,1.6fr) minmax(230px,.75fr)}
+@media(max-width:1100px){main{grid-template-columns:minmax(170px,.85fr) minmax(250px,1.3fr) minmax(210px,.75fr)}}
+/* Fixed board: content scales inside each card instead of adding scrollbars. */
+body{height:100vh;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:18px;overflow:hidden}
+header{margin-bottom:0}footer{margin-top:0}
+main{height:100%;min-height:0;grid-template-rows:minmax(0,1.45fr) minmax(0,.65fr)}
+main>.card{display:flex;flex-direction:column;min-height:0}
+.cardhead{flex-shrink:0;min-height:64px}
+h2{font-size:clamp(25px,2.15vw,34px);letter-spacing:-.7px}
+.cardhead button{font-size:13px}
+#morning,#notices,#meal,#timetable{flex:1;min-height:0;overflow:hidden}
+#morning{--max-font:38;font-size:38px;line-height:1.65}
+#notices{--max-font:28;font-size:28px;line-height:1.6}
+#meal{--max-font:24;font-size:24px;line-height:1.65}
+#timetable{--max-font:40;font-size:40px}
+.lesson{font-size:inherit;line-height:1.35;padding:.24em .3em;gap:.6em}
+.lesson b{font-size:.45em;width:2em;height:2em;border-radius:.45em}
+main>.card>.status{flex-shrink:0;margin:12px 0 0}
+@media(max-width:1100px),(max-height:800px){h2{font-size:25px}.cardhead{min-height:60px}#morning{--max-font:34}#timetable{--max-font:36}#meal{--max-font:23}}
+/* Size editing only: these controls do not participate in the existing grid. */
+.card{position:relative}
+.size-controls{position:fixed;left:50%;bottom:8px;transform:translateX(-50%);display:flex;gap:6px;z-index:5}
+.size-controls button{padding:4px 9px;font-size:11px}
+.board-resize-handle{position:absolute;z-index:3;padding:0;border:0;border-radius:4px;background:#7e8a9b;touch-action:none;opacity:.65}
+.board-resize-handle[hidden]{display:none}
+.board-resize-handle:hover,.board-resize-handle:focus-visible{background:#59677c;opacity:1}
+.edge-left,.edge-right{width:9px;height:44px;top:50%;transform:translateY(-50%);cursor:ew-resize}
+.edge-left{left:-5px}.edge-right{right:-5px}
+.edge-top,.edge-bottom{height:9px;width:44px;left:50%;transform:translateX(-50%);cursor:ns-resize}
+.edge-top{top:-5px}.edge-bottom{bottom:-5px}
+.resizing-board{user-select:none}
+.weather.card.custom-weather-size{max-width:none;min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column;justify-content:center}
+.weather.custom-weather-size #weather{min-height:0;font-size:12px}
+.weather.custom-weather-size strong{font-size:1.833333em}
+.weather.custom-weather-size #weather>.status{font-size:.833333em}
+/* Saved pixel tracks must be allowed to shrink when the window gets smaller. */
+body>header,body>main{min-width:0}

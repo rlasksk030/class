@@ -1,0 +1,10 @@
+/* Editable board titles: the title keeps its original font, size, weight, color and position. */
+.cardhead .board-title{flex:0 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;-webkit-user-select:none;user-select:none}
+.cardhead .board-title-edit{flex:0 0 auto;width:36px;height:36px;margin-right:auto;padding:0;display:inline-grid;place-items:center;overflow:hidden;border:0;background:transparent;color:inherit;opacity:.4;touch-action:manipulation}
+.cardhead .board-title-edit svg{width:20px;height:20px}
+.cardhead .board-title-edit:hover,.cardhead .board-title-edit:focus-visible{opacity:.85;background:#ffffff80}
+.dashboard-locked .board-title-edit,.title-editing .board-title-edit,.title-editing [data-edit]{display:none}
+.board-title-editor{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.board-title-editor input{flex:1 1 auto;min-width:0;width:auto;margin:0;padding:0 .3em;line-height:1.1;border:2px solid currentColor;border-radius:8px;background:#fff;color:inherit}
+.board-title-editor input:focus{outline:3px solid #8f9caf66;outline-offset:1px}
+.cardhead .board-title-reset{flex:0 0 auto;min-height:40px;padding:6px 12px;font-size:14px;font-weight:700;letter-spacing:0;border:1px solid currentColor;border-radius:8px;background:#fff;color:inherit;opacity:.85;touch-action:manipulation}

@@ -1,0 +1,47 @@
+{
+  "version": "1.8.6",
+  "architecture": "x64",
+  "files": [
+    {
+      "name": "classroom-dashboard-setup-1.8.6.exe",
+      "size": 99308504,
+      "sha256": "0bf9ac50ee21ecfe3066cdafb6722127d5139d55433aa9c042765ecc7fce95e3",
+      "sha512": "GZ014yzELMbIgWARu6qg1ohGQ1Src2R7rXOij6DapucLUUbAHoOM/BIWtOtVGYYsuaDTlcQyOCTwhfq/3Ix5BQ==",
+      "url": "https://github.com/rlasksk030/class/releases/download/v1.8.6/classroom-dashboard-setup-1.8.6.exe"
+    },
+    {
+      "name": "classroom-dashboard-setup-1.8.6.exe.blockmap",
+      "size": 104735,
+      "sha256": "ba6fe0280168902826145180ac1b6100dceb16ba10d6cfb686ca3d4ce7189eea",
+      "sha512": "y2TCt3j/Xu7BzA/M1ZIOJdlB6bx16G2Ox6F3pShGzzCeTDckHjEWZgrZcqFqabADoDCGxfcQgWsDRU/WIbJ2gg==",
+      "url": "https://github.com/rlasksk030/class/releases/download/v1.8.6/classroom-dashboard-setup-1.8.6.exe.blockmap"
+    },
+    {
+      "name": "latest.yml",
+      "size": 366,
+      "sha256": "475dcf55b51fba2aa73136d6ac633ef34c0e8327a1878e2aa6a53eed13363d31",
+      "sha512": "3v/Dwu5Zt55yGhVAapE/2/LgdOkpDuLZYWfYYeIq6M8bYJVSLVnQHvrJ6OlvKWd4Dz9qJdGKheKOwICFZTqquA==",
+      "url": "https://github.com/rlasksk030/class/releases/download/v1.8.6/latest.yml"
+    }
+  ],
+  "sourceTag": "v1.8.6",
+  "previousHead": "aa816e5c7b94fc6c04f18dcd9c65ab475496d803",
+  "packagingCommand": "npm run dist:win",
+  "packagingPlatform": "darwin-arm64",
+  "electron": "40.10.6",
+  "electronBuilder": "26.15.3",
+  "additionalFeatureTestsRun": false,
+  "testsOmittedByUserRequest": true,
+  "windowsRuntimeChecks": "NOT_RUN",
+  "liveHiclassPhotoSupport": false,
+  "expectedWorkflowTriggers": [
+    "push on feature/class-dashboard-v1.8.2-windows-validation",
+    "workflow_dispatch"
+  ],
+  "pushSkipDirective": "[skip ci]",
+  "actionsBaseline": {
+    "totalCount": 15,
+    "lastRunId": 37741006999,
+    "lastAttempt": 1
+  }
+}

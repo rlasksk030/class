@@ -1,0 +1,3 @@
+const test=require('node:test'),assert=require('node:assert/strict'),T=require('./board-titles.js');
+test('untouched boards keep their original titles',()=>{assert.equal(T.resolve({},'morning'),'아침활동');assert.equal(T.resolve(null,'notices'),'안내사항');assert.equal(T.resolve({morning:'   '},'morning'),'아침활동');});
+test('custom titles are trimmed, single-line and limited to 30 characters',()=>{assert.equal(T.resolve({morning:'  오늘\n할 일 '},'morning'),'오늘 할 일');assert.equal(T.normalize('가'.repeat(40)).length,30);assert.equal(T.normalize(123),'');assert.equal(T.resolve({notices:'꼭 확인하세요'},'notices'),'꼭 확인하세요');});

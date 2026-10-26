@@ -1,0 +1,100 @@
+{
+  "baseCommit": "595bfd04f5ee62ce0c1fcda5757396a7f7778441",
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "node": "24.14.1",
+    "electron": "40.10.6"
+  },
+  "syntax": {
+    "passed": 69,
+    "total": 69,
+    "toolScriptsCheckedSeparately": 2
+  },
+  "unit": {
+    "passed": 45,
+    "total": 45
+  },
+  "e2e": {
+    "passed": 288,
+    "total": 288,
+    "suites": [
+      {
+        "passed": 24,
+        "total": 24
+      },
+      {
+        "passed": 43,
+        "total": 43
+      },
+      {
+        "passed": 36,
+        "total": 36
+      },
+      {
+        "passed": 16,
+        "total": 16
+      },
+      {
+        "passed": 17,
+        "total": 17
+      },
+      {
+        "passed": 8,
+        "total": 8
+      },
+      {
+        "passed": 17,
+        "total": 17
+      },
+      {
+        "passed": 38,
+        "total": 38
+      },
+      {
+        "passed": 21,
+        "total": 21
+      },
+      {
+        "passed": 16,
+        "total": 16
+      },
+      {
+        "passed": 15,
+        "total": 15
+      },
+      {
+        "passed": 11,
+        "total": 11
+      },
+      {
+        "passed": 22,
+        "total": 22
+      },
+      {
+        "passed": 4,
+        "total": 4
+      }
+    ]
+  },
+  "additionalPhotoBoundaries": {
+    "passed": 6,
+    "total": 6
+  },
+  "migration": {
+    "status": "SKIP",
+    "reason": "CLASSROOM_V178_APP not available; tag contains README only"
+  },
+  "liveHiClassAttachments": "UNVERIFIED; photo publication blocked",
+  "physicalWindowsValidation": "UNVERIFIED",
+  "push": false,
+  "newGitHubActionsRuns": 0,
+  "logSha256": {
+    "syntax.log": "3531e2f2e323acad6e6edb2b90d2eeffe8bab275fca6f3e6916fc4ae94a868e7",
+    "unit.log": "1aed6d6a87cee7362842578be47302c34e152f10605a4e1c79d8c7cd643919d7",
+    "e2e.log": "9f17d1f116cdfd64ccb482f89a9c4eb5d1763941168a0d5dd5df166aa740e4c2",
+    "migration.log": "f7819737c6d76ec27371644882b37240f289adc34ce9880766fb942218c79168"
+  },
+  "testedCodeCommit": "b470d4afa8c336fd8c8a3a29fe8eea6b37b8b4b4",
+  "manualPreview": "Launched isolated photo/font preview; real publication disabled"
+}
