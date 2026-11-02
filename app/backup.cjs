@@ -9,7 +9,10 @@ module.exports=function setupBackup(getMain){
  async function write(file,text){const temp=file+'.'+process.pid+'.tmp';await fs.writeFile(temp,text,'utf8');try{await fs.rename(temp,file);}catch(e){await fs.rm(temp,{force:true});throw e;}}
  ipcMain.handle('backup:save',async(e,{name,text}={})=>{
   if(!allowed(e)||typeof text!=='string'||typeof name!=='string')throw Error('허용되지 않은 요청');
-  const result=await dialog.showSaveDialog(getMain(),{title:'백업 파일 저장',defaultPath:path.join(app.getPath('documents'),path.basename(name)),filters});
+  let defaultPath=path.basename(name);
+  // Windows may have no available Documents folder (for example a redirected profile).
+  try{defaultPath=path.join(app.getPath('documents'),defaultPath);}catch{}
+  const result=await dialog.showSaveDialog(getMain(),{title:'백업 파일 저장',defaultPath,filters});
   if(result.canceled||!result.filePath)return {canceled:true};
   await write(result.filePath,await portable(text));return {saved:true,name:path.basename(result.filePath)};
  });

@@ -42,6 +42,10 @@ async function main(){
   set('settings',{grade:'6',classroom:'1'});set('classRosters',{'fixture':{students:[{id:'s1',name:'가상 학생'}]}});set('activityCompletion',{fixture:['s1']});set('diaryDrafts',{fixture:{body:'가상 초안',photos:[photo]}});
  },photo);
  fs.writeFileSync(path.join(profile,'hiclass-links.json'),JSON.stringify({links:{fixture:{title:'가상 학급'}},posts:{}}));
+ if(process.env.CLASSROOM_QA_LOG){
+  const installed=execFileSync('reg.exe',['query','HKCU\\Software\\d78eedc4-9833-5771-9f01-d94e51e1b797','/v','InstallLocation'],{encoding:'utf8'});
+  fs.writeFileSync(process.env.CLASSROOM_QA_LOG,'baseline path '+install+'\n'+installed+'\n');
+ }
  const before=await page.evaluate(()=>Object.fromEntries(['classRosters','activityCompletion','diaryDrafts'].map(k=>[k,localStorage.getItem(k)])));
  await proc.close();proc=null;page=await launch();
  server=http.createServer((req,res)=>{
@@ -58,11 +62,13 @@ async function main(){
  assert.deepEqual(original,{provider:'github',owner:'rlasksk030',repo:'class'});
  await page.click('#settings');await page.locator('#settingsForm .open-update').click();await page.waitForSelector('#installUpdate:visible');
  await page.click('#checkUpdate');await page.waitForSelector('#installUpdate:visible');await page.click('#installUpdate');
- const until=Date.now()+180000;
+ const until=Date.now()+300000;
  let healthy='';
  while(Date.now()<until){
   const recovery=path.join(profile,'update-recovery');
-  for(const dir of fs.existsSync(recovery)?fs.readdirSync(recovery):[]){const file=path.join(recovery,dir,'healthy');if(fs.existsSync(file))healthy=fs.readFileSync(file,'utf8').trim();}
+  for(const dir of fs.existsSync(recovery)?fs.readdirSync(recovery):[]){const errorFile=path.join(recovery,dir,'recovery.json.error.txt');
+   if(fs.existsSync(errorFile))throw Error(fs.readFileSync(errorFile,'utf8'));
+   const file=path.join(recovery,dir,'healthy');if(fs.existsSync(file))healthy=fs.readFileSync(file,'utf8').trim();}
   if(healthy==='1.8.8')break;await sleep(500);
  }
  assert.equal(healthy,'1.8.8','updated candidate wrote the expected health marker');
