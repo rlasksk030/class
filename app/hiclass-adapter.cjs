@@ -7,12 +7,27 @@ const bodySelector='.fr-element.fr-view[contenteditable="true"]';
 const {setRecipients,verifyRecipients}=require('./hiclass-recipients.cjs');
 const photos=require('./hiclass-photos.cjs');
 const submitFlow=require('./hiclass-submit.cjs');
-async function inspect(w){assertBackground(w);return w.webContents.executeJavaScript(`(()=>{const visible=${visible};return {url:location.href,login:[...document.querySelectorAll('input[type=password]')].some(visible)||(!location.pathname.startsWith('/main/')&&document.body.innerText.includes('로그인')),classTitle:[...document.querySelectorAll('strong')].find(el=>visible(el)&&el.textContent.includes('옥구초등학교'))?.textContent||''};})()`);}
+function inspectPage(schoolName,expectedTitle){
+ const visible=el=>!!el.getClientRects().length;
+ const titles=[...document.querySelectorAll('strong')].filter(el=>{
+  const text=el.textContent.trim();
+  if(!visible(el))return false;
+  if(expectedTitle)return text===expectedTitle;
+  const at=text.indexOf(schoolName);
+  return at>=0&&!/[가-힣A-Za-z]/.test(text[at-1]||'')&&!/[가-힣A-Za-z]/.test(text[at+schoolName.length]||'');
+ });
+ const login=[...document.querySelectorAll('input[type=password]')].some(visible)||(!location.pathname.startsWith('/main/')&&document.body.innerText.includes('로그인'));
+ return {url:location.href,login,classTitle:titles.length===1?titles[0].textContent.trim():''};
+}
+async function inspect(w,schoolName=require('./school.js').legacy.SCHUL_NM,expectedTitle=''){
+ assertBackground(w);
+ return w.webContents.executeJavaScript(`(${inspectPage})(${JSON.stringify(schoolName)},${JSON.stringify(expectedTitle)})`);
+}
 async function clickText(w,labels){return w.webContents.executeJavaScript(`(()=>{const visible=${visible},labels=${JSON.stringify(labels)};const matches=[...document.querySelectorAll('button,[role=button],a')].filter(el=>visible(el)&&labels.includes(el.textContent.trim()));if(matches.length!==1)return false;matches[0].click();return true;})()`);}
 const delay=()=>new Promise(resolve=>setTimeout(resolve,350));
 async function wait(fn,ms=15000){const end=Date.now()+ms;while(Date.now()<end){const r=await fn();if(r)return r;await delay();}throw Error('하이클래스 화면을 확인하지 못했습니다. 연결 창을 확인해 주세요.');}
 async function verifyClass(w,link){
- const state=await inspect(w);
+ const state=await inspect(w,link.schoolName,link.title);
  if(state.login)throw Error('하이클래스 로그인이 만료되었습니다.');
  const expected=new URL(link.url),actual=new URL(state.url);
  if(actual.origin!==expected.origin||actual.pathname!==expected.pathname||state.classTitle.trim()!==link.title.trim())throw Error('연결된 학급과 현재 하이클래스 학급이 달라 등록하지 않았습니다.');
@@ -21,7 +36,7 @@ async function prepare(w,link,payload,options={}){
  // Never proceed with photos unless the main process supplied an attachment driver.
  if(payload.photos?.length&&!options.attachmentDriver)throw Error(photos.UNSUPPORTED);
  const u=new URL(link.url);if(!/^\/main\/clazzes\/[^/]+\/note\/[^/]+/.test(u.pathname))throw Error('담당 클래스의 알림장 게시판을 열고 학급을 다시 연결해 주세요.');
- await w.loadURL(link.url);await wait(async()=>{const s=await inspect(w);if(s.login)throw Error('하이클래스 로그인이 만료되었습니다. 다시 로그인해 주세요.');return s.classTitle;});
+ await w.loadURL(link.url);await wait(async()=>{const s=await inspect(w,link.schoolName,link.title);if(s.login)throw Error('하이클래스 로그인이 만료되었습니다. 다시 로그인해 주세요.');return s.classTitle;});
  await verifyClass(w,link);
  if(!await wait(()=>clickText(w,['게시글 쓰기'])))throw Error('알림장 작성 버튼을 찾지 못했습니다.');
  await wait(()=>w.webContents.executeJavaScript(`Boolean(document.querySelector(${JSON.stringify(titleSelector)})&&document.querySelector(${JSON.stringify(bodySelector)}))`));

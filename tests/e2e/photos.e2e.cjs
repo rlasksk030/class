@@ -27,9 +27,22 @@ async function upload(files,selector='#diaryPhotoFiles'){await page.setInputFile
  await upload([{name:'large.png',bytes:new Uint8Array(10*1024*1024+1)}]);await page.waitForFunction(()=>document.getElementById('diaryStatus').textContent.includes('10 MB'));assert.equal(await page.locator('#diaryPhotos img').count(),4);
  await upload(Array.from({length:21},()=>a));assert.ok((await page.textContent('#diaryStatus')).includes('20장'));pass('corrupt/oversized/excess photo count explicitly rejected without losing draft');
  await page.evaluate(()=>{window.realSet=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k==='diaryDrafts')throw Error('synthetic quota');return realSet.call(this,k,v);};});await paste([b]);await page.waitForFunction(()=>document.querySelectorAll('#diaryPhotos img').length===5);assert.ok((await page.textContent('#diaryStatus')).includes('저장 실패'));assert.ok((await page.inputValue('#diaryBody')).includes('가상 본문'));await page.evaluate(()=>{Storage.prototype.setItem=realSet;document.getElementById('diaryBody').dispatchEvent(new Event('input'));});pass('draft storage failure preserves body and imported photos for retry');
- // Real IPC/adapter rejects photos before navigation, with a synthetic link only.
- const key=Object.entries(await drafts()).find(([k,d])=>d.photos?.length===5)[0];await app.evaluate(({app},key)=>{const fs=process.mainModule.require('node:fs'),path=process.mainModule.require('node:path');fs.writeFileSync(path.join(app.getPath('userData'),'hiclass-links.json'),JSON.stringify({links:{[key.slice(0,-11)]:{url:'https://www.hiclass.net/main/clazzes/offline/note/offline',title:'옥구초등학교 6학년 1반'}},posts:{}}));},key);
- await page.click('#diaryPublish');await wait();assert.ok((await page.textContent('#diaryStatus')).includes('사진 첨부 구조'));assert.equal(await page.locator('#diaryPhotos img').count(),5);pass('actual production photo path blocks without verified live adapter');
+ // Use the real publish IPC with the attachment driver deliberately unavailable.
+ const postingKey=Object.entries(await drafts()).find(([,d])=>d.photos?.length===5)[0];
+ const beforeDraft=await drafts();
+ await app.evaluate(({app},args)=>{
+  const fs=process.mainModule.require('node:fs'),path=process.mainModule.require('node:path');
+  const factory=process.mainModule.require(path.join(args.root,'app/hiclass-attachment-driver.cjs'));
+  globalThis.driverAttempts=0;factory.create=()=>{globalThis.driverAttempts++;return null;};
+  fs.writeFileSync(path.join(app.getPath('userData'),'hiclass-links.json'),JSON.stringify({links:{[args.key.slice(0,-11)]:{url:'https://www.hiclass.net/main/clazzes/offline/note/offline',title:'옥구초등학교 6학년 1반'}},posts:{}}));
+ },{root:ROOT,key:postingKey});
+ await page.click('#diaryPublish');await wait();
+ assert.match(await page.textContent('#diaryStatus'),/첨부 연결을 확인하지 못했습니다/);
+ const afterDraft=(await drafts())[postingKey];
+ for(const field of ['title','body','photos','postedHash'])assert.deepEqual(afterDraft[field],beforeDraft[postingKey][field]);
+ assert.equal(await page.locator('#diaryPhotos img').count(),5);
+ const attempts=await app.evaluate(({app})=>({count:globalThis.driverAttempts,posts:JSON.parse(process.mainModule.require('fs').readFileSync(process.mainModule.require('path').join(app.getPath('userData'),'hiclass-links.json'))).posts}));
+ assert.deepEqual(attempts,{count:1,posts:{}});pass('missing driver blocks posting, keeps body and photos, records no success and does not resend');
  // Registration-result tests below use IPC outcomes; they are NOT service verification.
  await app.evaluate(({ipcMain})=>{ipcMain.removeHandler('diary:publish');ipcMain.handle('diary:publish',async()=>{if(globalThis.hold)await new Promise(r=>globalThis.finish=r);return globalThis.outcome;});});
  for(const outcome of [{status:'error',message:'일부 사진 업로드 실패'},{status:'uncertain',message:'결과 불확실'},{status:'cancelled',message:'취소'},{status:'error',message:'로그인 만료'},{status:'success',message:'첨부 검증 없는 잘못된 성공'}]){await app.evaluate((_,o)=>globalThis.outcome=o,outcome);await page.click('#diaryPublish');await wait();assert.equal(await page.locator('#diaryPhotos img').count(),5);assert.ok((await page.inputValue('#diaryBody')).includes('가상 본문'));}pass('partial failure, uncertain, cancellation, expiration and unproved success preserve body/photos');

@@ -26,7 +26,7 @@ module.exports=function setupBackup(getMain){
  // A copy of the current data is kept before every restore, so a restore can always be undone by hand.
  ipcMain.handle('backup:keep',async(e,text)=>{
   if(!allowed(e)||typeof text!=='string')throw Error('허용되지 않은 요청');
-  const dir=path.join(app.getPath('userData'),'backups');await fs.mkdir(dir,{recursive:true});
+  const dir=path.join(require('./school-profile.cjs').get().dir,'backups');await fs.mkdir(dir,{recursive:true});
   const file=path.join(dir,'before-restore-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json');await write(file,await portable(text));
   const old=(await fs.readdir(dir)).filter(f=>f.startsWith('before-restore-')).sort();for(const f of old.slice(0,Math.max(0,old.length-5)))await fs.rm(path.join(dir,f),{force:true});
   return true;

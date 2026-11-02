@@ -24,7 +24,7 @@ module.exports=function setupUpdates(getMain){
    emit({phase:'preparing'});
    const w=getMain();w.webContents.send('update:flush');await new Promise(r=>setTimeout(r,150));w.webContents.session.flushStorageData();
    const local=await w.webContents.executeJavaScript('JSON.stringify(Object.fromEntries(Object.keys(localStorage).map(key=>[key,localStorage.getItem(key)])))');
-   const recoveryRoot=path.join(app.getPath('userData'),'update-recovery',Date.now().toString());await fs.mkdir(recoveryRoot,{recursive:true});
+   const recoveryRoot=path.join(require('./school-profile.cjs').get().dir,'update-recovery',Date.now().toString());await fs.mkdir(recoveryRoot,{recursive:true});
    await fs.writeFile(path.join(recoveryRoot,'local-storage-backup.json'),local,'utf8');
    const installDir=path.dirname(process.execPath),backupDir=path.join(recoveryRoot,'previous-app');
    // Never remove the running version. A full verified copy remains available for rollback.
@@ -46,4 +46,5 @@ module.exports=function setupUpdates(getMain){
  updater.on('download-progress',progress=>emit({phase:'downloading',percent:Math.round(progress.percent)}));
  updater.on('error',()=>{if(busy)emit({phase:'error',message:'업데이트하지 못했습니다. 현재 버전을 계속 사용할 수 있습니다.'});});
  setTimeout(()=>{if(status.phase==='idle')check();},5000).unref();
+ return ()=>!busy;
 };

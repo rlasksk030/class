@@ -5,7 +5,7 @@ const fs=require('node:fs/promises'),path=require('node:path');
 module.exports=function setupRecovery(getMain){
  const allowed=e=>e.sender===getMain()?.webContents;
  const media=require('./media.cjs'),core=require('./backup-core.js');
- const userData=()=>app.getPath('userData');
+ const userData=()=>require('./school-profile.cjs').get().dir;
  const exists=p=>fs.access(p).then(()=>true,()=>false);
  async function snapshots(){
   const out=[];
@@ -36,7 +36,7 @@ module.exports=function setupRecovery(getMain){
  async function readFolder(dir){
   const source=await localStorageDir(dir);if(!source)return {error:'선택한 폴더에서 우리 교실 데이터(Local Storage)를 찾지 못했습니다.'};
   if(path.resolve(source)===path.resolve(path.join(userData(),'Local Storage')))return {error:'지금 사용 중인 데이터 폴더입니다. 다른 폴더를 선택해 주세요.'};
-  const name='recovery-'+Date.now(),temp=path.join(userData(),'Partitions',name);
+  const name='recovery-'+Date.now(),temp=path.join(app.getPath('userData'),'Partitions',name);
   await fs.mkdir(temp,{recursive:true});
   await fs.cp(source,path.join(temp,'Local Storage'),{recursive:true,filter:src=>!/[\\/]LOCK$/.test(src)});
   const w=new BrowserWindow({show:false,webPreferences:{partition:'persist:'+name,sandbox:true,contextIsolation:true,nodeIntegration:false}});
@@ -48,7 +48,7 @@ module.exports=function setupRecovery(getMain){
  }
  // Temporary read copies stay locked by the session while the app runs (Windows); remove leftovers at startup,
  // before any of those sessions is opened. Only our own "recovery-*" copies are touched.
- const partitions=path.join(userData(),'Partitions');
+ const partitions=path.join(app.getPath('userData'),'Partitions');
  fs.readdir(partitions).then(names=>Promise.all(names.filter(n=>/^recovery-\d+$/.test(n)).map(n=>fs.rm(path.join(partitions,n),{recursive:true,force:true}).catch(()=>{})))).catch(()=>{});
  ipcMain.handle('recovery:scan',async e=>{if(!allowed(e))throw Error('허용되지 않은 요청');return snapshots();});
  ipcMain.handle('recovery:read',async(e,id)=>{if(!allowed(e))throw Error('허용되지 않은 요청');return readSnapshot(id);});

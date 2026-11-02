@@ -46,7 +46,7 @@
  }
  async function create(getItem,meta={}){
   const data=collect(getItem);
-  return {format:FORMAT,schemaVersion:SCHEMA_VERSION,appVersion:String(meta.appVersion||''),createdAt:(meta.now||new Date()).toISOString(),school:meta.school||'',academicYear:meta.academicYear||'',grade:String(data.settings?.grade||''),classroom:String(data.settings?.classroom||''),keys:Object.keys(data),checksum:await checksum(data),data};
+  return {format:FORMAT,schemaVersion:SCHEMA_VERSION,appVersion:String(meta.appVersion||''),createdAt:(meta.now||new Date()).toISOString(),school:meta.school||'',schoolId:meta.schoolId||'',academicYear:meta.academicYear||'',grade:String(data.settings?.grade||''),classroom:String(data.settings?.classroom||''),keys:Object.keys(data),checksum:await checksum(data),data};
  }
  // Future schema versions add a step here; older files are upgraded one version at a time.
  const MIGRATIONS={1:b=>({...b,schemaVersion:2})};

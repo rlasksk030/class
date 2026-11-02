@@ -15,7 +15,7 @@
  const reload=()=>window.desktop?.reloadAfterRestore?window.desktop.reloadAfterRestore():location.reload();
  const current=()=>BackupCore.collect(key=>localStorage.getItem(key));
  async function appVersion(){try{return (await window.desktop?.updateState?.())?.currentVersion||'';}catch{return '';}}
- async function snapshot(){return BackupCore.create(key=>localStorage.getItem(key),{appVersion:await appVersion(),school:OKGU_SCHOOL.SCHUL_NM,academicYear:academicYear()});}
+ async function snapshot(){return BackupCore.create(key=>localStorage.getItem(key),{appVersion:await appVersion(),school:settings.school?.SCHUL_NM,schoolId:settings.school&&Schools.id(settings.school),academicYear:academicYear()});}
  async function saveFile(name,text){
   if(window.desktop?.backupSave)return window.desktop.backupSave({name,text});
   if(Object.values(BackupCore.collect(k=>localStorage.getItem(k)).diaryDrafts||{}).some(d=>d.photos?.length)||BackupCore.collect(k=>localStorage.getItem(k)).whiteboardContents?.blocks?.some(b=>b.type==='image'))throw Error('사진 포함 백업은 데스크톱 앱에서 만들어 주세요.');
@@ -36,7 +36,7 @@
   try{
    const backup=await snapshot(),text=JSON.stringify(backup,null,1);
    await BackupCore.parse(text); // the file must pass the same checks a restore will run
-   const result=await saveFile(BackupCore.fileName(),text);
+   const result=await saveFile(BackupCore.fileName(new Date(),settings.school?.SCHUL_NM||'우리교실'),text);
    status(result?.saved?`백업이 완료되었습니다. (${result.name})`:'백업을 취소했습니다.');
   }catch{status('백업 파일을 만들지 못했습니다. 현재 데이터는 그대로 유지됩니다.');}
  });
@@ -44,7 +44,7 @@
   let parsed;
   try{const file=await openFile();if(file?.canceled){status('');return;}status('백업 파일을 확인하는 중입니다…');parsed=await BackupCore.parse(file?.text);}
   catch(e){status(e?.message||BackupCore.INVALID);return;}
-  const b=parsed.backup,made=new Date(b.createdAt);
+  const b=parsed.backup;if(!matchesSchool(b)){status('다른 학교의 백업입니다. 해당 학교로 변경한 뒤 복원해 주세요.');return;}const made=new Date(b.createdAt);
   await confirmAndRestore(parsed.entries,`${Number.isNaN(made.getTime())?'':made.toLocaleString('ko-KR')+' · '}${b.grade&&b.classroom?`${b.grade}학년 ${b.classroom}반`:'학년·반 정보 없음'}${b.appVersion?' · 앱 '+b.appVersion:''}`,status,b.media);
  });
  async function restoreEntries(entries,media){
@@ -67,9 +67,14 @@
  }
  // ---------- Earlier data: updater snapshots, pre-restore copies, another profile folder ----------
  const describe=s=>[s.grade&&s.classroom?`${s.grade}학년 ${s.classroom}반`:'학년·반 없음',s.morning?`아침활동 "${s.morning}"`:'',s.students?`학생 ${s.students}명`:'',s.ddays?`D-Day ${s.ddays}개`:'',s.whiteboard?`화이트보드 글상자 ${s.whiteboard}개`:''].filter(Boolean).join(' · ');
+ function matchesSchool(b){return (b.schoolId||Schools.id(Schools.legacy))===(settings.school?Schools.id(settings.school):Schools.id(Schools.legacy));}
  async function load(source){
-  if(source.format==='raw')return {...BackupCore.fromRaw(source.data),media:source.media};
-  const parsed=await BackupCore.parse(source.text);const data={};for(const [k,v] of parsed.entries)data[k]=JSON.parse(v);return {data,entries:parsed.entries,media:parsed.backup.media};
+  if(source.format==='raw'){
+   const s=JSON.parse(source.data.settings||'{}').school||Schools.legacy;
+   if(!matchesSchool({schoolId:Schools.id(s)}))throw Error('다른 학교의 데이터입니다.');
+   return {...BackupCore.fromRaw(source.data),media:source.media};
+  }
+  const parsed=await BackupCore.parse(source.text);if(!matchesSchool(parsed.backup))throw Error('다른 학교의 백업입니다.');const data={};for(const [k,v] of parsed.entries)data[k]=JSON.parse(v);return {data,entries:parsed.entries,media:parsed.backup.media};
  }
  function addItem(title,when,loaded){
   const row=document.createElement('div');row.className='recovery-item';

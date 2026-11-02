@@ -2,13 +2,23 @@ const $=id=>document.getElementById(id);
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
 const put=(key,value)=>{if(window.dashboardRestoring)return false;try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{$('globalStatus').textContent='저장 공간을 확인해 주세요. 이번 변경은 재실행 후 유지되지 않을 수 있습니다.';return false;}};
 let settings=read('settings',{}),cache=read('cache',{}),overrides=read('overrides',{}),notes=read('notes',{}),day=Core.dateKey(),generation=0,schools=[],chosenSchool=null,editing=null;
-settings.school=OKGU_SCHOOL;
+const schoolContext=window.desktop?.schoolContext?.()||{active:null,schools:[],hasKey:false};
+const activeSelection=schoolContext.active;
+if(activeSelection&&activeSelection.revision!==settings.schoolRevision){
+ Object.assign(settings,{school:activeSelection.school,grade:activeSelection.grade,classroom:activeSelection.classroom,schoolRevision:activeSelection.revision});
+ put('settings',settings);
+}else if(activeSelection)settings.school=activeSelection.school;
+else if(settings.grade&&settings.classroom){settings.school=Schools.legacy;put('settings',settings);}
+else settings.school=null;
+if(settings.apiKey&&window.desktop?.migrateNeisKey){
+ window.desktop.migrateNeisKey(settings.apiKey).then(()=>{delete settings.apiKey;put('settings',settings);schoolContext.hasKey=true;}).catch(()=>{$('globalStatus').textContent='기존 인증키를 암호화하지 못했습니다. 설정에서 다시 연결해 주세요.';});
+}
 let morningText=Core.morningDefault(read('morningDefault',null),notes,day);
 put('morningDefault',morningText);
 const errors={};
 const request=url=>window.desktop?window.desktop.fetch(url):fetch(url,{signal:AbortSignal.timeout(15000)}).then(r=>{if(!r.ok)throw Error('연결 실패');return r.json();});
 async function neis(endpoint,params,s=settings){
- const get=async extra=>{const url=new URL('https://open.neis.go.kr/hub/'+endpoint);url.search=new URLSearchParams({...(s.apiKey?{KEY:s.apiKey}:{}),Type:'json',pIndex:'1',pSize:'1000',...params,...extra,ATPT_OFCDC_SC_CODE:OKGU_SCHOOL.ATPT_OFCDC_SC_CODE,SD_SCHUL_CODE:OKGU_SCHOOL.SD_SCHUL_CODE});const json=await request(url.href);return {data:Core.rows(json,endpoint),total:json[endpoint]?.find(x=>x.head)?.head?.find(x=>x.list_total_count!==undefined)?.list_total_count||0};};
+ const get=async extra=>{const url=new URL('https://open.neis.go.kr/hub/'+endpoint);url.search=new URLSearchParams({Type:'json',pIndex:'1',pSize:'1000',...params,...extra,ATPT_OFCDC_SC_CODE:s.school.ATPT_OFCDC_SC_CODE,SD_SCHUL_CODE:s.school.SD_SCHUL_CODE});const json=await request(url.href);return {data:Core.schoolRows(json,endpoint,s.school),total:json[endpoint]?.find(x=>x.head)?.head?.find(x=>x.list_total_count!==undefined)?.list_total_count||0};};
  const first=await get({});
  if(endpoint==='classInfo'&&first.total>first.data.length)throw Error('학급 목록 일부만 조회되었습니다');
  // The public response is capped at five rows. Query missing periods explicitly;
@@ -49,7 +59,7 @@ function render(){
  $(kind+'Status').textContent=overrides[key]!==undefined?'직접 수정한 오늘의 정보':entry?`${errors[kind]?'연결 실패 · 저장된 정보':'자동 조회'} · ${new Date(entry.time).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}`:'';
  }
 }
-async function refreshSchool(){if(!settings.grade||!settings.classroom)return;const s=structuredClone(settings),d=day,g=generation;
+async function refreshSchool(){if(!settings.school||!settings.grade||!settings.classroom)return;const s=structuredClone(settings),d=day,g=generation;
  const endpoints={'초등학교':'elsTimetable','중학교':'misTimetable','고등학교':'hisTimetable','특수학교':'spsTimetable'};
  await Promise.allSettled(['timetable','meal'].map(async kind=>{try{const ep=kind==='meal'?'mealServiceDietInfo':endpoints[s.school.SCHUL_KND_SC_NM];if(!ep)throw Error('지원하지 않는 학교 종류입니다');const params={ATPT_OFCDC_SC_CODE:s.school.ATPT_OFCDC_SC_CODE,SD_SCHUL_CODE:s.school.SD_SCHUL_CODE,...(kind==='meal'?{MLSV_YMD:d.replaceAll('-',''),MMEAL_SC_CODE:'2'}:{ALL_TI_YMD:d.replaceAll('-',''),GRADE:s.grade,CLASS_NM:s.classroom})};const rows=await neis(ep,params,s);const data=kind==='meal'?rows.flatMap(r=>String(r.DDISH_NM??'').split(/<br\s*\/?\s*>/i).map(x=>x.replace(/<[^>]*>/g,'').trim()).filter(Boolean)):rows.sort((a,b)=>Number(a.PERIO)-Number(b.PERIO)).filter(r=>r.PERIO!=null).map(r=>({period:String(r.PERIO),subject:String(r.ITRT_CNTNT??'').trim()}));cache[Core.dataKey(s,d,kind)]={data,time:Date.now()};pruneCache();put('cache',cache);if(g===generation){delete errors[kind];render();}}catch(e){if(g===generation){errors[kind]=`${kind==='meal'?'급식':'시간표'} 정보를 불러오지 못했습니다. 연결되면 자동으로 다시 확인합니다.`;render();}}}));
 }
@@ -74,21 +84,39 @@ function validateClassSelection(){
 }
 async function loadClassOptions(){
  const token=++classOptionsGeneration,grade=$('grade').value,year=academicYear();validClasses=null;$('classOptions').replaceChildren();$('classroom').setCustomValidity('');
- if(!grade){$('classInfoStatus').textContent='학년을 먼저 선택해 주세요.';return;}
- const key=year+':'+grade,stored=read('schoolClasses',{});
+ if(!grade||!chosenSchool){$('classInfoStatus').textContent='학년을 먼저 선택해 주세요.';return;}
+ const key=Schools.id(chosenSchool)+':'+year+':'+grade,stored=read('schoolClasses',{});
  const show=values=>{validClasses=values; $('classOptions').replaceChildren(...values.map(value=>{const option=document.createElement('option');option.value=value;option.label=value+'반';return option;}));};
  if(stored[key]?.length)show(stored[key]);
  $('classInfoStatus').textContent='학급 목록을 확인하고 있습니다…';
- try{const rows=await neis('classInfo',{AY:year,GRADE:grade});if(token!==classOptionsGeneration)return;
+ try{const rows=await neis('classInfo',{AY:year,GRADE:grade},{school:chosenSchool});if(token!==classOptionsGeneration)return;
  const values=[...new Set(rows.filter(r=>String(r.GRADE)===grade&&String(r.AY)===year).map(r=>String(r.CLASS_NM)))].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
  if(!values.length)throw Error('학급정보 없음');show(values);stored[key]=values;put('schoolClasses',stored);$('classInfoStatus').textContent=year+'학년도 '+grade+'학년: '+values.map(v=>v+'반').join(', ');
  }catch{if(token!==classOptionsGeneration)return;$('classInfoStatus').textContent=validClasses?'저장된 학급 목록을 표시합니다.':'학급 목록을 불러오지 못했습니다. 반을 직접 입력해 주세요.';}
 }
 $('grade').onchange=()=>{$('classroom').value='';loadClassOptions();};
 $('classroom').oninput=()=>$('classroom').setCustomValidity('');
-function openSettings(){if(window.dashboardLocked)return;$('grade').value=settings.grade||'';$('classroom').value=settings.classroom||'';$('settingsDialog').showModal();loadClassOptions();}
+const schoolSetup=createSchoolSetup({desktop:window.desktop,context:schoolContext,onSchool(school){
+ chosenSchool=school;classOptionsGeneration++;validClasses=null;
+ $('classOptions').replaceChildren();$('classroom').setCustomValidity('');
+ if(school&&settings.school&&Schools.id(school)===Schools.id(settings.school))return;
+ $('grade').value='';$('classroom').value='';
+}});
+function openSettings(){if(window.dashboardLocked)return;schoolSetup.saved(settings.school);$('grade').value=settings.grade||'';$('classroom').value=settings.classroom||'';$('settingsDialog').showModal();loadClassOptions();}
 $('settings').onclick=openSettings;
-$('settingsForm').onsubmit=e=>{e.preventDefault();if(window.dashboardLocked)return;if(!validateClassSelection())return;settings={...settings,school:OKGU_SCHOOL,grade:$('grade').value,classroom:$('classroom').value};put('settings',settings);generation++;delete errors.meal;delete errors.timetable;$('settingsDialog').close();render();refreshSchool();refreshWeather();};
+$('settingsForm').onsubmit=async e=>{
+ e.preventDefault();if(window.dashboardLocked||!chosenSchool||!validateClassSelection())return;
+ const grade=$('grade').value,classroom=$('classroom').value;
+ const button=$('settingsForm').querySelector('.primary');button.disabled=true;
+ try{
+  window.ClassPhotos?.assertSaved();
+  const result=await window.desktop.selectSchool({school:chosenSchool,grade,classroom,legacy:!!settings.grade&&settings.school&&Schools.id(settings.school)===Schools.id(Schools.legacy)});
+  if(result.changed){$('schoolStatus').textContent='선택한 학교로 다시 시작합니다…';return;}
+  schoolContext.active=result.active;schoolContext.schools=[...new Map([...schoolContext.schools,chosenSchool].map(s=>[Schools.id(s),s])).values()];
+  settings={...settings,school:chosenSchool,grade,classroom,schoolRevision:result.active.revision};if(!put('settings',settings))throw Error('설정을 저장하지 못했습니다.');
+  generation++;delete errors.meal;delete errors.timetable;$('settingsDialog').close();render();refreshSchool();refreshWeather();
+ }catch(err){$('schoolStatus').textContent=err.message;}finally{button.disabled=false;}
+};
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
 document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{if(window.dashboardLocked)return;const kind=b.dataset.edit,automatic=['meal','timetable'].includes(kind);if(automatic&&!settings.school){openSettings();return;}editing={kind,date:day,key:automatic?Core.dataKey(settings,day,kind):null};const value=automatic?Core.display(overrides[editing.key],cache[editing.key]):kind==='morning'?morningText:notes[day]?.[kind];$('editTitle').textContent=({meal:'오늘의 급식 수정',timetable:'오늘 시간표 수정',morning:'아침활동 수정',notices:'안내사항 작성'})[kind];$('editHelp').textContent=automatic?'오늘 이 교실에만 적용됩니다. 한 줄에 하나씩 입력해 주세요. 외부 원본은 변경하지 않습니다.':kind==='morning'?'저장한 내용은 매일 자동으로 표시됩니다. 수정하면 다음 날에도 변경된 내용이 표시됩니다.':'오늘의 내용을 적어 주세요.';$('editText').value=automatic?(value||[]).map(v=>kind==='timetable'?`${v.period} | ${v.subject}`:v).join('\n'):value||'';$('restore').hidden=!automatic;$('restore').textContent=kind==='meal'?'원래 급식으로 되돌리기':'원래 시간표로 되돌리기';$('editDialog').showModal();});
 $('editForm').onsubmit=e=>{e.preventDefault();if(window.dashboardLocked)return;if(!editing)return;const {kind,key,date}=editing;if(key){overrides[key]=$('editText').value.split('\n').map(x=>x.trim()).filter(Boolean).map((x,i)=>{if(kind!=='timetable')return x;const m=x.match(/^(\d+)\s*\|\s*(.*)$/);return {period:m?m[1]:String(i+1),subject:m?m[2]:x};});put('overrides',overrides);}else if(kind==='morning'){morningText=$('editText').value;put('morningDefault',morningText);document.dispatchEvent(new CustomEvent('morning-saved',{detail:{date,value:morningText}}));}else{notes[date]={...notes[date],[kind]:$('editText').value};put('notes',notes);}$('editDialog').close();render();};

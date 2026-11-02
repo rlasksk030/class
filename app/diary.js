@@ -44,7 +44,7 @@ window.createClassDiary=function({read,put}){
  function showLink(){
   const box=$('diaryHiclass'),expired=link.linked&&link.session==='expired';
   box.dataset.state=expired?'expired':link.linked?'linked':'none';
-  $('diaryLinkState').textContent=expired?'하이클래스 로그인이 만료되었습니다. 다시 로그인해 주세요.':link.linked?`● 하이클래스 연결됨 · 옥구초등학교 ${classLabel()}`+(link.title&&!link.title.includes(classLabel())?` (하이클래스: ${link.title})`:''):'○ 하이클래스 미연결';
+  $('diaryLinkState').textContent=expired?'하이클래스 로그인이 만료되었습니다. 다시 로그인해 주세요.':link.linked?`● 하이클래스 연결됨 · ${settings.school?.SCHUL_NM||''} ${classLabel()}`+(link.title&&!link.title.includes(classLabel())?` (하이클래스: ${link.title})`:''):'○ 하이클래스 미연결';
   $('diaryLinkState').title=$('diaryLinkState').textContent;
   $('diaryConnect').textContent=expired?'다시 로그인':link.linked?'연결 변경':'하이클래스 연결하기';
  }

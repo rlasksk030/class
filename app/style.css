@@ -51,3 +51,12 @@ main>.card>.status{flex-shrink:0;margin:12px 0 0}
 .weather.custom-weather-size #weather>.status{font-size:.833333em}
 /* Saved pixel tracks must be allowed to shrink when the window gets smaller. */
 body>header,body>main{min-width:0}
+
+#settingsDialog { max-height: 90vh; overflow-y: auto; }
+#settingsDialog details { padding: .55rem 0; }
+#settingsDialog summary { cursor: pointer; font-weight: 700; }
+#settingsDialog details label { display: block; margin: .5rem 0; }
+#settingsDialog details input, #settingsDialog details select { max-width: 100%; }
+#settingsDialog ol { padding-inline-start: 1.6rem; }
+#settingsDialog li { margin-block: .7rem; }
+#schoolSelected { display: block; }

@@ -111,7 +111,12 @@ const refresh=async page=>{await page.click('#refresh');await page.waitForTimeou
  ok('BK. 복원 후 다시 불러오기·값 복원',(await txt(page,'morning'))==='책 읽기 20분'&&(await page.$eval('.morning h2',h=>h.textContent)).includes('오늘 할 일'));
  ok('BK. 복원 시 화이트보드 덮어쓰기 없음',JSON.stringify(await blocks())===JSON.stringify(persisted));
  ok('BK. 복원 전 자동 보관본 생성',fs.readdirSync(PROFILE+'/backups').some(f=>f.startsWith('before-restore-')));
- ok('BK. 복원해도 이 PC의 제외 항목(API 키)은 유지',(await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('settings'));return s.grade==='6'&&s.apiKey==='SECRET-KEY-123';})));
+ const localKeyPreserved=await app.evaluate(({app,safeStorage})=>{
+  const fs=process.mainModule.require('node:fs'),path=process.mainModule.require('node:path');
+  const bytes=fs.readFileSync(path.join(app.getPath('userData'),'neis-key.bin'));
+  return !bytes.includes('SECRET-KEY-123')&&safeStorage.decryptString(bytes)==='SECRET-KEY-123';
+ });
+ ok('BK. 복원 뒤 기존 인증키는 로컬 암호화 저장소에만 유지',localKeyPreserved&&await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('settings'));return s.grade==='6'&&!Object.hasOwn(s,'apiKey');}));
  ok('health. 업데이트 헬스체크 조건',await page.evaluate(()=>Boolean(window.classroomTools&&window.desktop&&document.getElementById('activityTab'))));
  await app.close();
  const f=results.filter(r=>!r[1]);console.log(`\n${results.length-f.length}/${results.length} passed`);process.exit(f.length?1:0);

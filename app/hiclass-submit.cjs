@@ -41,8 +41,8 @@ function transaction(find,dialog,register,action,arg){
   if(g.error)return failure(g.error);
   if(location.href!==g.href)return failure('class');
   const c=dialog();if(c.error)return c;
-  const classTitle=[...document.querySelectorAll('strong')].find(e=>e.getClientRects().length&&e.textContent.includes('옥구초등학교'))?.textContent.trim();
-  if(classTitle&&classTitle!==g.classTitle)return failure('class');
+  const titles=[...document.querySelectorAll('strong')].filter(e=>e.getClientRects().length&&e.textContent.trim()===g.classTitle);
+  if(titles.length!==1)return failure('class');
   const r=find();let mode='live';
   if(r.error){
    if(Object.entries(r.available||{}).some(([name,value])=>g[name]!==value))return failure('mismatch');
