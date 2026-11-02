@@ -15,11 +15,12 @@ module.exports=function setupUpdates(getMain){
  ipcMain.handle('update:state',e=>{if(!allowed(e))throw Error('허용되지 않은 요청');return status;});
  ipcMain.handle('update:check',e=>{if(!allowed(e))throw Error('허용되지 않은 요청');return check();});
  ipcMain.handle('update:start',async e=>{
-  if(!allowed(e)||!updater||busy||!['available','error'].includes(status.phase))return false;
-  const answer=await dialog.showMessageBox(getMain(),{type:'question',buttons:['업데이트','취소'],defaultId:1,cancelId:1,title:'우리 교실 업데이트',message:'새 버전을 다운로드하고 앱을 다시 시작할까요?',detail:'수업 중에는 취소해 주세요. 학급 명단과 설정은 유지됩니다.'});
-  if(answer.response!==0)return false;
-  busy=true;emit({phase:'downloading',percent:0});
+  if(!allowed(e)||!updater||busy||checking||!status.version||!['available','error'].includes(status.phase))return false;
+  busy=true;
   try{
+   const answer=await dialog.showMessageBox(getMain(),{type:'question',buttons:['업데이트','취소'],defaultId:1,cancelId:1,title:'우리 교실 업데이트',message:'새 버전을 다운로드하고 앱을 다시 시작할까요?',detail:'수업 중에는 취소해 주세요. 학급 명단과 설정은 유지됩니다.'});
+   if(answer.response!==0){busy=false;return false;}
+   emit({phase:'downloading',percent:0});
    const files=await updater.downloadUpdate();const installer=files.find(f=>f.toLowerCase().endsWith('.exe'));if(!installer)throw Error('설치 파일이 없습니다.');
    emit({phase:'preparing'});
    const w=getMain();w.webContents.send('update:flush');await new Promise(r=>setTimeout(r,150));w.webContents.session.flushStorageData();
@@ -38,11 +39,17 @@ module.exports=function setupUpdates(getMain){
    emit({phase:'installing'});app.quit();return true;
   }catch(error){busy=false;const detail=String(error?.message||error);await fs.appendFile(path.join(app.getPath('userData'),'update-error.log'),new Date().toISOString()+' '+String(error?.stack||detail)+'\n').catch(()=>{});emit({phase:'error',message:'업데이트하지 못했습니다. 현재 버전을 계속 사용할 수 있습니다. 원인: '+detail});return false;}
  });
- if(!config.owner||!config.repo){emit({phase:'unconfigured'});return;}
  updater=require('./updater-bundle.cjs');updater.autoDownload=false;updater.autoInstallOnAppQuit=false;updater.allowDowngrade=false;updater.disableDifferentialDownload=true;
- updater.setFeedURL({provider:'github',owner:config.owner,repo:config.repo,private:false});
+ updater.setFeedURL(config);
  updater.on('update-not-available',()=>emit({phase:'current',version:null}));
- updater.on('update-available',info=>emit({phase:'available',version:info.version}));
+ updater.on('update-available',info=>{
+  const expected=`classroom-dashboard-nationwide-setup-${info.version}-x64.exe`;
+  const files=info.files;
+  if(!/^\d+\.\d+\.\d+$/.test(info.version)||files?.length!==1||files[0].url!==expected||(info.path&&info.path!==expected)||info.packages){
+   emit({phase:'check-error',version:null,message:'전국용 설치파일을 확인하지 못했습니다. 나중에 다시 확인해 주세요.'});return;
+  }
+  emit({phase:'available',version:info.version});
+ });
  updater.on('download-progress',progress=>emit({phase:'downloading',percent:Math.round(progress.percent)}));
  updater.on('error',()=>{if(busy)emit({phase:'error',message:'업데이트하지 못했습니다. 현재 버전을 계속 사용할 수 있습니다.'});});
  setTimeout(()=>{if(status.phase==='idle')check();},5000).unref();

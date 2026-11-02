@@ -7,7 +7,8 @@ assert.equal(process.platform,'win32');assert.equal(process.env.CLASSROOM_DISPOS
 const input=path.resolve(process.argv[2]),root=fs.mkdtempSync(path.join(process.env.TEMP,'class188-')),profile=path.join(root,'profile');
 const install=process.env.CLASSROOM_QA_EXISTING_FIXTURE||path.join(root,'app');
 if(!path.resolve(install).startsWith(path.join(process.env.TEMP,'class188-'))||path.basename(install)!=='app')throw Error('Unexpected installation fixture path');
-const exe=path.join(install,'우리 교실.exe'),old=path.join(input,'previous.exe'),candidate='classroom-dashboard-setup-1.8.8.exe';
+const version=/^version: (\d+\.\d+\.\d+)\s*$/m.exec(fs.readFileSync(path.join(input,'nationwide.yml'),'utf8'))[1];
+const exe=path.join(install,'우리 교실.exe'),old=path.join(input,'previous.exe'),candidate=`classroom-dashboard-nationwide-setup-${version}-x64.exe`;
 const log=[],pass=s=>{log.push(s);console.log('PASS '+s);},sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let proc,server;
 async function launch(){
@@ -26,7 +27,7 @@ async function fresh(){
  assert.ok(!fs.existsSync(exe)&&!fs.existsSync(profile),'fresh case requires a new installation directory and user profile');
  installFile(path.join(input,candidate));
  let page=await launch();
- assert.equal(await proc.evaluate(({app})=>app.getVersion()),'1.8.8');
+ assert.equal(await proc.evaluate(({app})=>app.getVersion()),version);
  assert.ok(await page.locator('#neisGuide[open]').isVisible());assert.equal(await page.locator('#grade').isDisabled(),true);
  pass('fresh x64 NSIS installation opens the first-school wizard');
  // Exercise the encrypted credential and real IPC with a synthetic authenticated response.
@@ -62,7 +63,7 @@ async function verifyUpgrade(){
  }else{
   await updateThroughApp();
  }
- page=await launch();assert.equal(await proc.evaluate(({app})=>app.getVersion()),'1.8.8');
+ page=await launch();assert.equal(await proc.evaluate(({app})=>app.getVersion()),version);
  const after=await page.evaluate(keys=>Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),Object.keys(before));assert.deepEqual(after,before);
  assert.deepEqual(await page.evaluate(()=>[settings.school.ATPT_OFCDC_SC_CODE,settings.school.SD_SCHUL_CODE,settings.grade,settings.classroom]),['P10','8342104','6','1']);
  assert.ok(fs.existsSync(path.join(profile,'migration-v187','media',photo.id)));assert.ok(fs.existsSync(path.join(profile,'media',photo.id)));
@@ -75,7 +76,8 @@ async function updateThroughApp(){
  server=http.createServer((req,res)=>{
   const name=new URL(req.url,'http://localhost').pathname.slice(1);
   if(!['latest.yml',candidate,candidate+'.blockmap'].includes(name)){res.writeHead(404).end();return;}
-  const file=path.join(input,name);res.writeHead(200,{'Content-Length':fs.statSync(file).size,'Content-Type':'application/octet-stream'});fs.createReadStream(file).pipe(res);
+  // The official legacy client requests latest.yml on this isolated test server.
+  const file=path.join(input,name==='latest.yml'?'nationwide.yml':name);res.writeHead(200,{'Content-Length':fs.statSync(file).size,'Content-Type':'application/octet-stream'});fs.createReadStream(file).pipe(res);
  });
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const original=await proc.evaluate(({app,dialog},url)=>{
@@ -94,10 +96,10 @@ async function updateThroughApp(){
    if(fs.existsSync(errorFile))throw Error(fs.readFileSync(errorFile,'utf8'));
    const state=path.join(recovery,dir,'recovery.json');if(fs.existsSync(state)){let cfg;try{cfg=JSON.parse(fs.readFileSync(state,'utf8').replace(/^\uFEFF/,''));}catch{}if(cfg?.stage==='rolled-back')throw Error('Update rolled back. '+(cfg.error||'Inspect recovery.json'));}
    const file=path.join(recovery,dir,'healthy');if(fs.existsSync(file))healthy=fs.readFileSync(file,'utf8').trim();}
-  if(healthy==='1.8.8')break;await sleep(500);
+  if(healthy===version)break;await sleep(500);
  }
- assert.equal(healthy,'1.8.8','updated candidate wrote the expected health marker');
- pass('installed v1.8.7 manual updater downloaded the local candidate, installed it and relaunched v1.8.8');
+ assert.equal(healthy,version,'updated candidate wrote the expected health marker');
+ pass('installed v1.8.7 manual updater downloaded the local candidate, installed it and relaunched the nationwide version');
  proc=null;
  // Close only the relaunch in this unique disposable install directory.
  execFileSync('powershell.exe',['-NoProfile','-Command',`Get-Process | Where-Object {$_.Path -eq '${exe.replaceAll("'","''")}'} | ForEach-Object {if($_.MainWindowHandle){$_.CloseMainWindow() | Out-Null}}`]);

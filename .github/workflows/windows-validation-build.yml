@@ -1,6 +1,6 @@
 # Windows validation build (not a release).
 # Builds the NSIS installer from this development branch and keeps it only as a workflow artifact.
-# It never publishes: no tag, no GitHub Release, no public latest.yml, so installed apps see no update.
+# It never publishes: no tag, no GitHub Release, no public nationwide.yml, so installed apps see no update.
 # The teacher-facing artifact is uploaded only after the real-installer update scenarios pass.
 name: Windows 검증용 설치 파일
 
@@ -42,10 +42,10 @@ jobs:
         shell: pwsh
         run: |
           $version = (Get-Content app/package.json -Raw | ConvertFrom-Json).version
-          $setup = "dist/classroom-dashboard-setup-$version.exe"
+          $setup = "dist/classroom-dashboard-nationwide-setup-$version-x64.exe"
           if (-not (Test-Path $setup)) { throw "Installer not found: $setup" }
-          if (-not (Select-String -Path dist/latest.yml -Pattern "^version: $version$" -Quiet)) { throw "latest.yml version mismatch" }
-          $files = @($setup, "$setup.blockmap", "dist/latest.yml")
+          if (-not (Select-String -Path dist/nationwide.yml -Pattern "^version: $version$" -Quiet)) { throw "nationwide.yml version mismatch" }
+          $files = @($setup, "$setup.blockmap", "dist/nationwide.yml")
           New-Item -ItemType Directory -Force out | Out-Null
           Copy-Item $files out/
           Get-ChildItem out | ForEach-Object { "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name } | Set-Content out/SHA256SUMS.txt -Encoding utf8
@@ -55,8 +55,8 @@ jobs:
             "커밋: $env:GITHUB_SHA"
             "빌드: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
             ""
-            "검증 전용입니다. GitHub Release에 올리거나 latest.yml을 공개하지 마세요."
-            "latest.yml은 기록용이며 설치할 때는 classroom-dashboard-setup-$version.exe만 실행합니다."
+            "검증 전용입니다. GitHub Release에 올리거나 nationwide.yml을 공개하지 마세요."
+            "nationwide.yml은 기록용이며 설치할 때는 classroom-dashboard-nationwide-setup-$version-x64.exe만 실행합니다."
           ) | Set-Content out/README-검증용.txt -Encoding utf8
           Get-ChildItem out | Format-Table Name, Length
       - name: Keep build for the installer scenarios (internal)
@@ -103,7 +103,7 @@ jobs:
           New-Item -ItemType Directory -Force setups | Out-Null
           foreach ($v in @('1.7.8','1.8.1','1.8.4')) { Invoke-WebRequest "https://github.com/rlasksk030/class/releases/download/v$v/classroom-dashboard-setup-$v.exe" -OutFile "setups/setup-$v.exe" }
           if ((Get-FileHash setups/setup-1.8.4.exe -Algorithm SHA256).Hash.ToLower() -ne 'f72232b8e64c6840da2cca19606ee94c6c04280894ee40e733a58918a0c90d71') { throw 'Published v1.8.4 baseline hash mismatch' }
-          $new = Get-ChildItem build-out -Filter 'classroom-dashboard-setup-*.exe' | Select-Object -First 1
+          $new = Get-ChildItem build-out -Filter 'classroom-dashboard-nationwide-setup-*-x64.exe' | Select-Object -First 1
           Copy-Item $new.FullName setups/setup-new.exe
           Get-ChildItem setups | Format-Table Name, Length
       - name: Scenario ${{ matrix.scenario }}
@@ -138,7 +138,7 @@ jobs:
       - name: Upload validation installer
         uses: actions/upload-artifact@v4
         with:
-          name: 2026-10-02_우리교실_v1.8.5_Windows검증용
+          name: 우리교실_전국용_Windows검증용
           path: out/
           if-no-files-found: error
           retention-days: 30

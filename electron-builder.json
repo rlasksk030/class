@@ -31,13 +31,13 @@
     "installerLanguages": ["ko_KR"],
     "language": "1042",
     "include": "build/installer.nsh",
-    "artifactName": "classroom-dashboard-setup-${version}.exe"
+    "artifactName": "classroom-dashboard-nationwide-setup-${version}-x64.exe"
   },
   "publish": [
     {
-      "provider": "github",
-      "owner": "rlasksk030",
-      "repo": "class"
+      "provider": "generic",
+      "url": "https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/",
+      "channel": "nationwide"
     }
   ]
 }

@@ -1,1 +1,5 @@
-{"provider":"github","owner":"rlasksk030","repo":"class"}
+{
+  "provider": "generic",
+  "url": "https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/",
+  "channel": "nationwide"
+}
