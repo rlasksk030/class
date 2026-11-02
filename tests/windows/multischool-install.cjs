@@ -1,4 +1,6 @@
-// Run only on a disposable Windows VM. Use an unpublished local feed for the real updater.
+// Run on a disposable Windows account: node multischool-install.cjs <fixtures> <fresh|update|installer>.
+// Each mode needs its own clean installer registration or a matching disposable install directory.
+// The update case serves the unpublished candidate on loopback.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const {execFileSync}=require('node:child_process'),{_electron}=require('playwright-core');
 assert.equal(process.platform,'win32');assert.equal(process.env.CLASSROOM_DISPOSABLE_VM,'yes');
@@ -13,9 +15,15 @@ async function launch(){
  const page=await proc.firstWindow();await page.waitForLoadState('domcontentloaded');return page;
 }
 const installFile=file=>execFileSync(file,['/S','/currentuser','/D='+install],{timeout:180000,windowsHide:true});
+const mode=process.argv[3]||'update';
+assert.ok(['fresh','update','installer'].includes(mode),'choose fresh, update or installer');
 async function main(){
  assert.equal(require('crypto').createHash('sha256').update(fs.readFileSync(old)).digest('hex'),'ffbcd03caf69a63f0b77f0dca164f34b05607dfa568a97ccd7ee33dfe1b81741');
- // A fresh installation of the candidate, without any previous school profile.
+ if(mode==='fresh')return fresh();
+ await verifyUpgrade();
+}
+async function fresh(){
+ assert.ok(!fs.existsSync(exe)&&!fs.existsSync(profile),'fresh case requires a new installation directory and user profile');
  installFile(path.join(input,candidate));
  let page=await launch();
  assert.equal(await proc.evaluate(({app})=>app.getVersion()),'1.8.8');
@@ -25,11 +33,12 @@ async function main(){
  await proc.evaluate(()=>{const previous=globalThis.fetch;globalThis.fetch=async(url,options)=>new URL(url).hostname==='open.neis.go.kr'?new Response(JSON.stringify({schoolInfo:[{row:[{SD_SCHUL_CODE:'8342104'}]}]})):previous(url,options);});
  await page.fill('#neisKey','synthetic-qa-key');await page.click('#neisTest');await page.waitForFunction(()=>document.querySelector('#neisStatus').textContent.includes('연결 성공'));
  const secret=fs.readFileSync(path.join(profile,'neis-key.bin'));assert.ok(!secret.includes('synthetic-qa-key'));
+ assert.equal(await page.inputValue('#neisKey'),'');
  assert.ok(!(await page.evaluate(()=>JSON.stringify(localStorage))).includes('synthetic-qa-key'));pass('Windows encrypts the synthetic credential and clears the form');
  await proc.close();proc=null;
- // Establish the official baseline in the same disposable directory. An uninstall is
- // unnecessary and would exercise a different path from the teacher's in-place update.
- fs.renameSync(profile,profile+'-fresh');installFile(old);page=await launch();
+}
+async function verifyUpgrade(){
+ installFile(old);let page=await launch();
  assert.equal(await proc.evaluate(({app})=>app.getVersion()),'1.8.7');
  const photo=await proc.evaluate(async({app,nativeImage,session})=>{
   const store=process.mainModule.require(process.mainModule.require('path').join(app.getAppPath(),'media.cjs')).current();
@@ -47,7 +56,22 @@ async function main(){
   fs.writeFileSync(process.env.CLASSROOM_QA_LOG,'baseline path '+install+'\n'+installed+'\n');
  }
  const before=await page.evaluate(()=>Object.fromEntries(['classRosters','activityCompletion','diaryDrafts'].map(k=>[k,localStorage.getItem(k)])));
- await proc.close();proc=null;page=await launch();
+ await proc.close();proc=null;
+ if(mode==='installer'){
+  installFile(path.join(input,candidate));pass('same-directory NSIS upgrade of the closed v1.8.7 installation');
+ }else{
+  await updateThroughApp();
+ }
+ page=await launch();assert.equal(await proc.evaluate(({app})=>app.getVersion()),'1.8.8');
+ const after=await page.evaluate(keys=>Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),Object.keys(before));assert.deepEqual(after,before);
+ assert.deepEqual(await page.evaluate(()=>[settings.school.ATPT_OFCDC_SC_CODE,settings.school.SD_SCHUL_CODE,settings.grade,settings.classroom]),['P10','8342104','6','1']);
+ assert.ok(fs.existsSync(path.join(profile,'migration-v187','media',photo.id)));assert.ok(fs.existsSync(path.join(profile,'media',photo.id)));
+ assert.equal(await page.evaluate(async()=> (await desktop.diaryStatus('fixture')).linked),true);
+ assert.equal(await proc.evaluate(async({session})=>(await session.fromPartition('persist:hiclass-teacher').cookies.get({name:'synthetic'}))[0]?.value),'session-marker');
+ pass('migration keeps original class, roster, activity, draft, photo, link and login cookie and backs up old media');
+}
+async function updateThroughApp(){
+ const page=await launch();
  server=http.createServer((req,res)=>{
   const name=new URL(req.url,'http://localhost').pathname.slice(1);
   if(!['latest.yml',candidate,candidate+'.blockmap'].includes(name)){res.writeHead(404).end();return;}
@@ -68,6 +92,7 @@ async function main(){
   const recovery=path.join(profile,'update-recovery');
   for(const dir of fs.existsSync(recovery)?fs.readdirSync(recovery):[]){const errorFile=path.join(recovery,dir,'recovery.json.error.txt');
    if(fs.existsSync(errorFile))throw Error(fs.readFileSync(errorFile,'utf8'));
+   const state=path.join(recovery,dir,'recovery.json');if(fs.existsSync(state)){let cfg;try{cfg=JSON.parse(fs.readFileSync(state,'utf8').replace(/^\uFEFF/,''));}catch{}if(cfg?.stage==='rolled-back')throw Error('Update rolled back. '+(cfg.error||'Inspect recovery.json'));}
    const file=path.join(recovery,dir,'healthy');if(fs.existsSync(file))healthy=fs.readFileSync(file,'utf8').trim();}
   if(healthy==='1.8.8')break;await sleep(500);
  }
@@ -76,12 +101,6 @@ async function main(){
  proc=null;
  // Close only the relaunch in this unique disposable install directory.
  execFileSync('powershell.exe',['-NoProfile','-Command',`Get-Process | Where-Object {$_.Path -eq '${exe.replaceAll("'","''")}'} | ForEach-Object {if($_.MainWindowHandle){$_.CloseMainWindow() | Out-Null}}`]);
- await sleep(2500);page=await launch();assert.equal(await proc.evaluate(({app})=>app.getVersion()),'1.8.8');
- const after=await page.evaluate(keys=>Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),Object.keys(before));assert.deepEqual(after,before);
- assert.deepEqual(await page.evaluate(()=>[settings.school.ATPT_OFCDC_SC_CODE,settings.school.SD_SCHUL_CODE,settings.grade,settings.classroom]),['P10','8342104','6','1']);
- assert.ok(fs.existsSync(path.join(profile,'migration-v187','media',photo.id)));assert.ok(fs.existsSync(path.join(profile,'media',photo.id)));
- assert.equal(await page.evaluate(async()=> (await desktop.diaryStatus('fixture')).linked),true);
- assert.equal(await proc.evaluate(async({session})=>(await session.fromPartition('persist:hiclass-teacher').cookies.get({name:'synthetic'}))[0]?.value),'session-marker');
- pass('migration keeps original class, roster, activity, draft, photo, link and login cookie and backs up old media');
+ await sleep(2500);
 }
 main().catch(e=>{console.error(e);console.error('Evidence folder '+root);process.exitCode=1;}).finally(async()=>{if(proc)await proc.close().catch(()=>{});server?.close();console.log(log.length+' Windows checks completed');});
