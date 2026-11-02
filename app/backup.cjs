@@ -7,18 +7,19 @@ module.exports=function setupBackup(getMain){
  async function portable(text){const {backup}=await core.parse(text);backup.media=await media.current().pack(backup.data);const packed=JSON.stringify(backup);if(Buffer.byteLength(packed)>MAX_BYTES)throw Error('사진을 포함한 백업이 200 MB를 초과합니다.');return packed;}
  const MAX_BYTES=200*1024*1024,filters=[{name:'학급 대시보드 백업',extensions:['json']}];
  async function write(file,text){const temp=file+'.'+process.pid+'.tmp';await fs.writeFile(temp,text,'utf8');try{await fs.rename(temp,file);}catch(e){await fs.rm(temp,{force:true});throw e;}}
+ // Windows may have no available Documents folder (for example a redirected profile).
+ function chooserPath(name=''){
+  try{return path.join(app.getPath('documents'),name);}catch{return name;}
+ }
  ipcMain.handle('backup:save',async(e,{name,text}={})=>{
   if(!allowed(e)||typeof text!=='string'||typeof name!=='string')throw Error('허용되지 않은 요청');
-  let defaultPath=path.basename(name);
-  // Windows may have no available Documents folder (for example a redirected profile).
-  try{defaultPath=path.join(app.getPath('documents'),defaultPath);}catch{}
-  const result=await dialog.showSaveDialog(getMain(),{title:'백업 파일 저장',defaultPath,filters});
+  const result=await dialog.showSaveDialog(getMain(),{title:'백업 파일 저장',defaultPath:chooserPath(path.basename(name)),filters});
   if(result.canceled||!result.filePath)return {canceled:true};
   await write(result.filePath,await portable(text));return {saved:true,name:path.basename(result.filePath)};
  });
  ipcMain.handle('backup:open',async e=>{
   if(!allowed(e))throw Error('허용되지 않은 요청');
-  const result=await dialog.showOpenDialog(getMain(),{title:'복원할 백업 파일 선택',defaultPath:app.getPath('documents'),properties:['openFile'],filters:[...filters,{name:'모든 파일',extensions:['*']}]});
+  const result=await dialog.showOpenDialog(getMain(),{title:'복원할 백업 파일 선택',defaultPath:chooserPath(),properties:['openFile'],filters:[...filters,{name:'모든 파일',extensions:['*']}]});
   if(result.canceled||!result.filePaths[0])return {canceled:true};
   const stat=await fs.stat(result.filePaths[0]);if(!stat.isFile()||stat.size>MAX_BYTES)return {text:''};
   return {text:await fs.readFile(result.filePaths[0],'utf8'),name:path.basename(result.filePaths[0])};
