@@ -1,0 +1,73 @@
+{
+  "version": "1.8.7",
+  "sourceTag": "v1.8.7",
+  "previousHead": "625c41077a3d0c4509ab67954ee0a0fbd9aaf849",
+  "architecture": "x64",
+  "files": [
+    {
+      "name": "classroom-dashboard-setup-1.8.7.exe",
+      "size": 99311648,
+      "sha256": "ffbcd03caf69a63f0b77f0dca164f34b05607dfa568a97ccd7ee33dfe1b81741",
+      "sha512": "BvN5HoTu4GWTsredZMU1ZBNeyeoZ1bB7lXrW7TrvvYxLi56t4CTs6dObkxnK1iLEp5fgAK10Om2nia0NCDS91A==",
+      "url": "https://github.com/rlasksk030/class/releases/download/v1.8.7/classroom-dashboard-setup-1.8.7.exe"
+    },
+    {
+      "name": "classroom-dashboard-setup-1.8.7.exe.blockmap",
+      "size": 104740,
+      "sha256": "efaf4d4083dedfea8c771e8da39f1d64532781233e9ed5e34f506abbdbf7d540",
+      "sha512": "TcYQrFlGL855A4aca0aHjgG8//JwycvGh71eHblqSKtseFPirbV9ZMge494wClMDoIHZh8zpGLPFwG2MRytlLw==",
+      "url": "https://github.com/rlasksk030/class/releases/download/v1.8.7/classroom-dashboard-setup-1.8.7.exe.blockmap"
+    },
+    {
+      "name": "latest.yml",
+      "size": 366,
+      "sha256": "1f7cb8b6d7419f47ff188249dfc7d8b42f47427a7b312d762b7aa0626e2a4bfd",
+      "sha512": "3eyqbcW0AjZZQBIULWh7G4j5IJ3/AGOcL/T4M1n0zN0RFaMKJGgCDSUSHGNFP6lMb6MxZLc1YzzRLXo9ee0YNA==",
+      "url": "https://github.com/rlasksk030/class/releases/download/v1.8.7/latest.yml"
+    }
+  ],
+  "packagingCommand": "npm run dist:win",
+  "packagingPlatform": "darwin-arm64",
+  "packagedSourceFiles": [
+    "diary.js",
+    "hiclass-adapter.cjs",
+    "hiclass-photos.cjs",
+    "hiclass-submit.cjs",
+    "hiclass.cjs",
+    "hiclass-attachment-driver.cjs",
+    "hiclass-posts.cjs"
+  ],
+  "packagedSourceMatches": true,
+  "packageProfilePathsFound": false,
+  "blockmapTargetSize": 99311648,
+  "productionSourceEvidence": [
+    {
+      "url": "https://www.hiclass.net/assets/standalone-honGni4d.js",
+      "sha256": "f92aedb6bb694002074add43251ac1f4d64a5a6a5c7156c58ea76c50f14c9cfc"
+    },
+    {
+      "url": "https://www.hiclass.net/assets/NotImplementedPage-BeTLBOYu.js",
+      "sha256": "148f565d5e8c5418a5f80952c90e088c66f1465224fd5cc9a20d8c8b42724568"
+    },
+    {
+      "url": "https://www.hiclass.net/assets/imageResize-CttEbtKQ.js",
+      "sha256": "3d43543c21fd50fc9d840c325312cae83012f01e9fbe241ef7e62922b70047fb"
+    },
+    {
+      "url": "https://www.hiclass.net/assets/index-CRFj0OXr.js",
+      "sha256": "75f15053aa45b054e06a9c7aa92ca73c7c8dfb060212623c91078fe4ef5d573a"
+    }
+  ],
+  "liveAttachmentDriverWired": true,
+  "additionalFeatureTestsRun": false,
+  "testsOmittedByUserRequest": true,
+  "authenticatedEditorObserved": false,
+  "liveHiclassUploadOrPost": "NOT_RUN",
+  "windowsRuntimeChecks": "NOT_RUN",
+  "actionsBaseline": {
+    "totalCount": 15,
+    "lastRunId": 37741006999,
+    "lastAttempt": 1
+  },
+  "pushSkipDirective": "[skip ci]"
+}

@@ -1,0 +1,79 @@
+{
+  "recordedAt": "2026-10-26T03:12:03.440Z",
+  "testedHead": "f3e8d7bc2c5ddf8fc7c97862e29d55247e58efca",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "node": "v24.14.1",
+  "electron": "40.10.6",
+  "productionCodeChanged": false,
+  "totalPassed": 56,
+  "totalFailed": 0,
+  "suites": [
+    {
+      "name": "migration-v178",
+      "scope": "official-v178-extracted-app-on-macos",
+      "passed": 20,
+      "failed": 0,
+      "log": "tests/e2e/.out/hiclass-followup-20261026/migration-first.log",
+      "sha256": "e37549353f2ba6efcbb3be98c26367b34ce93761fe567db1becf062317a22635"
+    },
+    {
+      "name": "hiclass-window",
+      "scope": "offline-fixture",
+      "passed": 11,
+      "failed": 0,
+      "log": "tests/e2e/.out/hiclass-followup-20261026/hiclass-window.log",
+      "sha256": "db718d59e3db7d7cf43c0013b0567261c77802c07c3499ad68c8f88005eece15"
+    },
+    {
+      "name": "hiclass-submit",
+      "scope": "offline-fixture",
+      "passed": 21,
+      "failed": 0,
+      "log": "tests/e2e/.out/hiclass-followup-20261026/hiclass-submit.log",
+      "sha256": "1ef5c9e7959538d1a02bc8534af0dff4efcdd0a466f18cad18924b3176c5cba2"
+    },
+    {
+      "name": "hiclass-photos",
+      "scope": "previous-offline-attachment-driver",
+      "passed": 4,
+      "failed": 0,
+      "log": "tests/e2e/.out/hiclass-followup-20261026/hiclass-photos.log",
+      "sha256": "cde3b5f7c3e3a2ddda41ed68e2bc265642e92bd36bc9d3d3980452e45aea9ea4"
+    }
+  ],
+  "liveService": {
+    "normalAppConnectionOpened": true,
+    "normalProfileAndPersistentSessionUsed": true,
+    "credentialFilesRead": false,
+    "lastObservedOrigin": "https://oauth2.i-screammedia.com",
+    "lastObservedPath": "/login",
+    "authenticatedEditorObserved": false,
+    "userLoginBlockedReason": "user currently unable to perform interactive login",
+    "driverImplemented": false,
+    "attachmentStructureObserved": false,
+    "actualPhotoUploads": 0,
+    "actualPosts": 0,
+    "inspectionProcessPublicationBlocked": true,
+    "productionPhotoPublicationBlocked": true
+  },
+  "migration": {
+    "installerUrl": "https://github.com/rlasksk030/class/releases/download/v1.7.8/classroom-dashboard-setup-1.7.8.exe",
+    "installer": "tests/e2e/.out/hiclass-followup-20261026/release-v178/classroom-dashboard-setup-1.7.8.exe",
+    "installerSize": 99272939,
+    "installerSha256": "bb349a429e57639ede33c0f8f3072762f746d88bc870bab4258ae5ae8b7b50c0",
+    "githubPublishedSha256": "bb349a429e57639ede33c0f8f3072762f746d88bc870bab4258ae5ae8b7b50c0",
+    "asar": "tests/e2e/.out/hiclass-followup-20261026/release-v178/extracted/resources/app.asar",
+    "asarSha256": "244d8805f85dab4f8927832672d14c05daf75b7cf327858f7cd9ebd5a721477c",
+    "extractedApp": "tests/e2e/.out/hiclass-followup-20261026/release-v178/app",
+    "extractedVersion": "1.7.8",
+    "windowsInstallerExecuted": false,
+    "storageMigrationOnMacOS": "PASS",
+    "windowsInstallUpdateRebootClipboardIME": "NOT_RUN"
+  },
+  "remoteHead": "595bfd04f5ee62ce0c1fcda5757396a7f7778441",
+  "pullRequestDraft": true,
+  "newActionsRuns": 0,
+  "pushed": false,
+  "releaseOrVersionChanged": false
+}
