@@ -20,6 +20,8 @@ async function launch(){
    throw Error('offline');
   });
  },[one,two]);
+ // Start the renderer with the fixture already active, including its initial automatic refresh.
+ await page.reload({waitUntil:'domcontentloaded'});
 }
 async function select(school){
  if(!await page.locator('#settingsDialog').isVisible())await page.click('#settings');
