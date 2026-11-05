@@ -100,6 +100,7 @@
  function drawTimer(){timerBanner.hidden=timer.state!=='finished';const remaining=X.timerRemaining(timer,Date.now());$('timerDisplay').textContent=format(remaining);timerButton.textContent=timer.state==='idle'?'⏱ 타이머':timer.state==='finished'?'⏱ 종료':`⏱ ${format(remaining)}`;timerButton.classList.toggle('finished',timer.state==='finished');timerDialog.classList.toggle('finished',timer.state==='finished');$('timerMessage').textContent=timer.state==='finished'?'시간이 다 되었습니다!':timer.state==='paused'?'일시정지':timer.state==='running'?'진행 중':'';$('timerStart').disabled=timer.state==='running';$('timerStart').textContent=timer.state==='paused'?'계속하기':'시작';$('timerPause').disabled=timer.state!=='running';}
  function act(action,duration){if(sound)unlockAudio();timer=X.timerAction(timer,action,Date.now(),duration);put('classTimer',timer);drawTimer();}
  function dismissTimer(){if(timer.state!=='finished')return;act('dismiss');$('timerMinutes').value=Math.floor(timer.duration/60000);$('timerSeconds').value=Math.floor(timer.duration/1000)%60;}
+ function controlTimer(action){if(action==='dismiss')dismissTimer();else if(['start','pause','restart','reset'].includes(action))act(action);}
  // All closing paths, including native Escape, share the same state policy.
  timerDialog.addEventListener('close',()=>{dismissTimer();document.body.append(timerBanner);});
  timerButton.onclick=()=>{drawTimer();timerDialog.append(timerBanner);timerDialog.showModal();};
@@ -118,7 +119,7 @@
  function screen(index){activeScreen=index;diaryTool.activate(index===4);document.body.classList.toggle('diary-active',index===4);whiteboardTool.activate(index===1);randomTool.activate(index===2);activityTool.activate(index===3);document.body.classList.toggle('whiteboard-active',index===1);document.body.classList.toggle('random-active',index===2);document.body.classList.toggle('activity-active',index===3);allTabs.forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));b.tabIndex=i===index?0:-1;});for(const el of [document.querySelector('header'),document.querySelector('main'),document.querySelector('footer'),document.querySelector('.size-controls')])el.inert=index!==0;}
  allTabs.forEach((b,i)=>b.onclick=()=>screen(i));tabs.onkeydown=e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();const next=(activeScreen+(e.key==='ArrowRight'?1:allTabs.length-1))%allTabs.length;screen(next);allTabs[next].focus();}};
  dashboardTab.setAttribute('aria-controls','dashboardMain');document.querySelector('main').id='dashboardMain';document.querySelector('main').setAttribute('role','tabpanel');document.querySelector('main').setAttribute('aria-labelledby','dashboardTab');whiteboardTab.setAttribute('aria-controls','whiteboardScreen');
- window.classroomTools={whiteboard:whiteboardTool,random:randomTool,activity:activityTool,screen,schedule:()=>schedule,timer:()=>timer};
+ window.classroomTools={whiteboard:whiteboardTool,random:randomTool,activity:activityTool,screen,schedule:()=>schedule,timer:()=>timer,controlTimer};
  screen(0);applyPreferences();drawEvents();highlight();timerTick();
  setInterval(()=>{highlight();const today=Core.dateKey();if(today!==historyDay){historyDay=today;archiveMorning(today,morningText);drawEvents();}},1000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){highlight();timerTick();drawEvents();}});
