@@ -20,3 +20,11 @@ button{min-height:2.75rem;padding:.44rem .625rem;font-size:1.125rem;border-radiu
 .pip-activity-body{display:flex;flex-direction:column;flex:1;min-height:0}
 
 .pip-photo{object-fit:contain;pointer-events:auto;user-select:none;border:0;background:transparent}
+
+.timer-pip{display:flex;flex-direction:column;gap:.5rem;text-align:center}
+#pipTimerDisplay{font-family:system-ui,sans-serif;font-variant-numeric:tabular-nums;font-size:4.25rem;font-weight:700;line-height:1.15;letter-spacing:.02em}
+#pipTimerMessage{font-size:1.1rem;min-height:1.5em;color:#626a76}
+.pip-timer-controls{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.pip-timer-controls [data-timer-action="start"]{background:#354d74;color:#fff}
+.timer-pip[data-state="finished"] #pipTimerDisplay,.timer-pip[data-state="finished"] #pipTimerMessage{color:#a13421}
+#pipTimerDismiss{background:#fff0dd;border-color:#dcb47d}
