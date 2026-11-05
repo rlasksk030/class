@@ -9,7 +9,7 @@ async function launch(){
  await page.evaluate(()=>{if(!JSON.parse(localStorage.getItem('settings')||'{}').grade)localStorage.setItem('settings',JSON.stringify({grade:'6',classroom:'1'}));});
  await page.reload();await page.waitForLoadState('domcontentloaded');
 }
-async function preset(seconds){if(!await page.locator('#timerDialog').evaluate(e=>e.open))await page.click('#timerButton');await page.fill('#timerMinutes','0');await page.fill('#timerSeconds',String(seconds));await page.click('#timerSet');}
+async function preset(seconds){if(!await page.locator('#timerDialog').evaluate(e=>e.open))await page.click('#timerButton');await page.fill('#timerMinutes',String(Math.floor(seconds/60)));await page.fill('#timerSeconds',String(seconds%60));await page.click('#timerSet');}
 async function finished(){await preset(1);await page.check('#timerSound');await page.click('#timerStart');await page.waitForFunction(()=>classroomTools.timer().state==='finished');}
 async function idle(){await page.waitForFunction(()=>classroomTools.timer().state==='idle');const t=await state();assert.equal(t.remaining,t.duration);assert.equal(t.deadline,null);assert.equal(await page.textContent('#timerButton'),'⏱ 타이머');assert.equal(await page.isVisible('#timerFinished'),false);}
 (async()=>{try{
