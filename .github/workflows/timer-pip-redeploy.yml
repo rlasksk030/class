@@ -1,0 +1,228 @@
+name: Timer PIP v1.8.11 release
+on:
+  push:
+    branches: [release/timer-pip-redeploy-20261105-v1811]
+    paths: [.github/workflows/timer-pip-redeploy.yml]
+permissions:
+  contents: read
+concurrency:
+  group: timer-pip-v1811-release
+  cancel-in-progress: false
+env:
+  NATIONAL_SHA: d1c5b6fe0146943d71a5e198f44b2b7bf99408c0
+  OKGU_SHA: df126312cc57c4add19cf4caf2772cd9d1fa17d0
+  GH_REPO: rlasksk030/class
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - edition: nationwide
+            sha: d1c5b6fe0146943d71a5e198f44b2b7bf99408c0
+            tag: timer-pip-nationwide-v1.8.11
+            installer: classroom-dashboard-nationwide-setup-1.8.11-x64.exe
+            manifest: nationwide.yml
+          - edition: okgu
+            sha: df126312cc57c4add19cf4caf2772cd9d1fa17d0
+            tag: v1.8.11
+            installer: classroom-dashboard-setup-1.8.11.exe
+            manifest: latest.yml
+    env:
+      SOURCE_SHA: ${{ matrix.sha }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: driver
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.sha }}
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install locked dependencies without Actions cache
+        working-directory: source
+        run: npm ci --no-audit --no-fund
+      - name: Syntax, unit and complete Electron regression tests
+        working-directory: source
+        shell: pwsh
+        run: |
+          npm run check 2>&1 | Tee-Object check.log
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          npm test 2>&1 | Tee-Object unit.log
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          node ../driver/.github/release/e2e.cjs 2>&1 | Tee-Object e2e.log
+          exit $LASTEXITCODE
+      - name: Build native x64 NSIS installer once
+        working-directory: source
+        run: npm run dist:win
+      - name: Verify packaged source and update manifest
+        working-directory: source
+        run: node ../driver/.github/release/verify.cjs ${{ matrix.edition }}
+      - name: Stage candidate privately as draft release
+        working-directory: source
+        shell: pwsh
+        run: |
+          @('PENDING Windows installer gates. Do not publish manually.', "Source: $env:SOURCE_SHA", "Run: https://github.com/$env:GH_REPO/actions/runs/$env:GITHUB_RUN_ID") | Set-Content pending.md -Encoding utf8
+          gh release create '${{ matrix.tag }}' --draft --target '${{ matrix.sha }}' --title '우리 교실 ${{ matrix.edition }} v1.8.11' --notes-file pending.md 'dist/${{ matrix.installer }}' 'dist/${{ matrix.installer }}.blockmap' 'dist/${{ matrix.manifest }}' dist/release-artifacts.json check.log unit.log e2e.log
+          exit $LASTEXITCODE
+
+  installer:
+    needs: build
+    runs-on: windows-2022
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        scenario: [A, B, C, D, E, F, G, H, I]
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.OKGU_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Download staged candidate and original installer baselines
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory setups | Out-Null
+          gh release download v1.8.11 --pattern 'classroom-dashboard-setup-1.8.11.exe' --dir setups
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Rename-Item setups/classroom-dashboard-setup-1.8.11.exe setup-new.exe
+          foreach ($v in @('1.7.8','1.8.1','1.8.4')) { Invoke-WebRequest "https://github.com/rlasksk030/class/releases/download/v$v/classroom-dashboard-setup-$v.exe" -OutFile "setups/setup-$v.exe" }
+          if ((Get-FileHash setups/setup-1.8.4.exe -Algorithm SHA256).Hash.ToLower() -ne 'f72232b8e64c6840da2cca19606ee94c6c04280894ee40e733a58918a0c90d71') { throw 'Baseline hash mismatch' }
+      - name: Original installer scenario ${{ matrix.scenario }}
+        shell: pwsh
+        run: |
+          node tests/windows/installer-scenario.cjs '${{ matrix.scenario }}' setups 2>&1 | Tee-Object 'installer-${{ matrix.scenario }}.log'
+          exit $LASTEXITCODE
+      - name: Diagnose and preserve synthetic reports without Actions artifacts
+        if: always()
+        shell: pwsh
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File tools/windows/classroom-diagnose.ps1 -Backup
+          if (Test-Path 'installer-${{ matrix.scenario }}.log') { gh release upload v1.8.11 'installer-${{ matrix.scenario }}.log' }
+          if (Test-Path 'tests/windows/.out/report-${{ matrix.scenario }}.json') { gh release upload v1.8.11 'tests/windows/.out/report-${{ matrix.scenario }}.json' }
+
+  upgrade:
+    needs: build
+    runs-on: windows-2022
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - edition: nationwide
+            tag: timer-pip-nationwide-v1.8.11
+            previous: https://raw.githubusercontent.com/rlasksk030/class/2357510cc93c2059264660178c78f770ee4a2f1b/classroom-dashboard-nationwide-setup-1.8.10-x64.exe
+            digest: 7d88ae22f8ae05f07bf806f49ac5b117f33408842d48774f8c423430687eceb9
+          - edition: okgu
+            tag: v1.8.11
+            previous: https://github.com/rlasksk030/class/releases/download/v1.8.10/classroom-dashboard-setup-1.8.10.exe
+            digest: 658046879dc31db4a8b483b2f9b981279ea14149ada6d904db9490c321f9e982
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Download candidate and verified previous edition
+        shell: pwsh
+        run: |
+          gh release download '${{ matrix.tag }}' --pattern '*.exe' --dir fixtures
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Invoke-WebRequest '${{ matrix.previous }}' -OutFile fixtures/previous.exe
+          if ((Get-FileHash fixtures/previous.exe -Algorithm SHA256).Hash.ToLower() -ne '${{ matrix.digest }}') { throw 'Previous installer hash mismatch' }
+      - name: Same-folder data preservation and packaged timer PIP
+        shell: pwsh
+        run: |
+          node .github/release/upgrade.cjs '${{ matrix.edition }}' fixtures 2>&1 | Tee-Object 'upgrade-${{ matrix.edition }}.log'
+          exit $LASTEXITCODE
+      - name: Preserve upgrade evidence
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path 'upgrade-${{ matrix.edition }}.log') { gh release upload '${{ matrix.tag }}' 'upgrade-${{ matrix.edition }}.log' }
+
+  channels:
+    needs: build
+    runs-on: windows-2022
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CLASSROOM_DISPOSABLE_VM: 'yes'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Download both candidates and verified legacy baseline
+        shell: pwsh
+        run: |
+          gh release download timer-pip-nationwide-v1.8.11 --pattern '*.exe' --pattern nationwide.yml --dir fixtures
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          gh release download v1.8.11 --pattern '*.exe' --dir fixtures
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Invoke-WebRequest https://github.com/rlasksk030/class/releases/download/v1.8.7/classroom-dashboard-setup-1.8.7.exe -OutFile fixtures/previous.exe
+      - name: Existing channel regression plus new Okgu candidate
+        shell: pwsh
+        run: |
+          node .github/release/channels.cjs fixtures 2>&1 | Tee-Object channels.log
+          exit $LASTEXITCODE
+      - name: Preserve update channel evidence
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path channels.log) { gh release upload timer-pip-nationwide-v1.8.11 channels.log }
+
+  publish:
+    needs: [build, installer, upgrade, channels]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: driver
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: downloads/nationwide
+          path: feed
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: driver
+      - name: Publish only the validated installers to their existing channels
+        working-directory: driver
+        run: node .github/release/publish.cjs

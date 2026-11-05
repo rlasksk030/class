@@ -1,7 +1,7 @@
 // Run inside a checked-out edition after its native Windows build.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const root=process.cwd(),load=name=>require(require.resolve(name,{paths:[root]}));
-const edition=process.argv[2],version='1.8.10',dir=path.resolve(process.argv[3]||'dist');
+const edition=process.argv[2],version='1.8.11',dir=path.resolve(process.argv[3]||'dist');
 assert.ok(['nationwide','okgu'].includes(edition));
 const file=edition==='nationwide'?`classroom-dashboard-nationwide-setup-${version}-x64.exe`:`classroom-dashboard-setup-${version}.exe`;
 const manifest=edition==='nationwide'?'nationwide.yml':'latest.yml';

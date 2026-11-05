@@ -4,8 +4,8 @@ const {execFileSync}=require('node:child_process'),{_electron}=require(require.r
 assert.equal(process.platform,'win32');assert.equal(process.env.GITHUB_ACTIONS,'true');
 const [edition,fixtureArg]=process.argv.slice(2),fixtures=path.resolve(fixtureArg),base=fs.mkdtempSync(path.join(os.tmpdir(),'timer-pip-release-'));
 const install=path.join(base,'app'),profile=path.join(base,'profile'),exe=path.join(install,'우리 교실.exe');
-const candidate=edition==='nationwide'?'classroom-dashboard-nationwide-setup-1.8.10-x64.exe':'classroom-dashboard-setup-1.8.10.exe';
-const baseline=edition==='nationwide'?'1.8.9':'1.8.7';let app,page;
+const candidate=edition==='nationwide'?'classroom-dashboard-nationwide-setup-1.8.11-x64.exe':'classroom-dashboard-setup-1.8.11.exe';
+const baseline='1.8.10';let app,page;
 const installFile=name=>execFileSync(path.join(fixtures,name),['/S','/currentuser','/D='+install],{timeout:240000});
 async function launch(){app=await _electron.launch({executablePath:exe,env:{...process.env,CLASSROOM_TEST_PROFILE:profile},timeout:90000});page=await app.firstWindow();await page.waitForLoadState('domcontentloaded');}
 (async()=>{try{
@@ -21,7 +21,7 @@ async function launch(){app=await _electron.launch({executablePath:exe,env:{...p
  const keys=['settings','classRosters','diaryDrafts','activityCompletion','customReleaseFixture','classTimer'];
  const before=await page.evaluate(keys=>Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),keys);
  const userData=await app.evaluate(({app})=>app.getPath('userData'));await app.close();app=null;
- installFile(candidate);await launch();assert.equal(await app.evaluate(({app})=>app.getVersion()),'1.8.10');
+ installFile(candidate);await launch();assert.equal(await app.evaluate(({app})=>app.getVersion()),'1.8.11');
  assert.equal(await app.evaluate(({app})=>app.getPath('userData')),userData);
  assert.deepEqual(await page.evaluate(keys=>Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),keys),before);
  console.log('PASS '+edition+' same-directory upgrade preserves user data and saved timer');
