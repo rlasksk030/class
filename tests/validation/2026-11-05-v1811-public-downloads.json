@@ -1,0 +1,50 @@
+[
+  {
+    "edition": "nationwide",
+    "name": "classroom-dashboard-nationwide-setup-1.8.11-x64.exe",
+    "size": 99320082,
+    "sha256": "2adf83e8ccd99c6baba20512713748217baa2c0fd9d64d8f4db741340a2264ad",
+    "url": "https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/classroom-dashboard-nationwide-setup-1.8.11-x64.exe",
+    "verified": true
+  },
+  {
+    "edition": "nationwide",
+    "name": "classroom-dashboard-nationwide-setup-1.8.11-x64.exe.blockmap",
+    "size": 104871,
+    "sha256": "e458348b5257ecc2019f562a254307eb39586773379ef0b562803b96b9436aaf",
+    "url": "https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/classroom-dashboard-nationwide-setup-1.8.11-x64.exe.blockmap",
+    "verified": true
+  },
+  {
+    "edition": "nationwide",
+    "name": "nationwide.yml",
+    "size": 399,
+    "sha256": "fb690184b6515ee36dbe0f4435860d5ee230cb159b4db994bd5cb332bcf559a3",
+    "url": "https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/nationwide.yml",
+    "verified": true
+  },
+  {
+    "edition": "okgu",
+    "name": "classroom-dashboard-setup-1.8.11.exe",
+    "size": 99315903,
+    "sha256": "d58add0a174e0ab2615f202ba690de29f73bd28fde71df9a886816d4edf3b855",
+    "url": "https://github.com/rlasksk030/class/releases/download/v1.8.11/classroom-dashboard-setup-1.8.11.exe",
+    "verified": true
+  },
+  {
+    "edition": "okgu",
+    "name": "classroom-dashboard-setup-1.8.11.exe.blockmap",
+    "size": 104886,
+    "sha256": "2fd27568578581846025f4a2cfc95bbf488a29d6ef0e0dd01e40cc7f8cfcd89a",
+    "url": "https://github.com/rlasksk030/class/releases/download/v1.8.11/classroom-dashboard-setup-1.8.11.exe.blockmap",
+    "verified": true
+  },
+  {
+    "edition": "okgu",
+    "name": "latest.yml",
+    "size": 369,
+    "sha256": "4a95f3628e36f98a0951a656cd23a4e2559edc55d2b31a7b8c74ba136078ed4b",
+    "url": "https://github.com/rlasksk030/class/releases/download/v1.8.11/latest.yml",
+    "verified": true
+  }
+]

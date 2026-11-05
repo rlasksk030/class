@@ -50,7 +50,7 @@ async function launch(){const app=await _electron.launch({executablePath:electro
  // ---------- 타이머 ----------
  await page.click('#timerButton');for(const n of [1,3,5,10,15]){await page.click(`[data-minutes="${n}"]`);if((await page.textContent('#timerDisplay'))!==String(n).padStart(2,'0')+':00')ok('타이머 프리셋 '+n,false);}
  await page.fill('#timerMinutes','0');await page.fill('#timerSeconds','3');await page.click('#timerSet');await page.check('#timerSound');await page.click('#timerStart');await page.keyboard.press('Escape');
- await page.waitForTimeout(1200);ok('팝업 닫아도 진행·버튼에 남은 시간',/⏱ 00:0[12]/.test(await page.textContent('#timerButton')),await page.textContent('#timerButton'));
+ await page.waitForFunction(()=>/⏱ 00:0[12]/.test(document.querySelector('#timerButton').textContent));const closedTimerLabel=await page.textContent('#timerButton');ok('팝업 닫아도 진행·버튼에 남은 시간',/⏱ 00:0[12]/.test(closedTimerLabel)&&await page.evaluate(()=>classroomTools.timer().state==='running'&&!document.querySelector('#timerDialog').open),closedTimerLabel);
  await page.waitForTimeout(2600);ok('타이머 완료 표시',(await page.textContent('#timerButton')).includes('종료')&&await page.isVisible('#timerFinished'));await page.click('#timerFinished button');
  await page.click('#timerButton');await page.click('#timerReset');ok('타이머 초기화',(await page.textContent('#timerDisplay'))==='00:03');await page.click('#timerStart');await page.click('#timerPause');ok('일시정지→계속하기',(await page.textContent('#timerStart'))==='계속하기');await page.click('#timerReset');await page.keyboard.press('Escape');
  // ---------- 랜덤 뽑기 ----------

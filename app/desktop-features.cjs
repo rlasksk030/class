@@ -9,7 +9,8 @@ module.exports=function setupDesktop(getMain){
  async function startup(enabled,explicit=false){const result=await applyStartup(enabled===true,explicit);startupWarning=result.warning;if(preferences.startupEnabled!==result.enabled||!fs.existsSync(file)){preferences.startupEnabled=result.enabled;save();}return result.enabled;}
  const startupReady=startup(preferences.startupEnabled===true).catch(e=>{startupWarning=e.message;});
  let pip=null,kind='dashboard',lastState=null,saveTimer;
- const validKind=k=>['dashboard','whiteboard','random','activity'].includes(k);
+ const validKind=k=>['dashboard','whiteboard','random','activity','timer'].includes(k);
+ const pipTitle=k=>'우리 교실 · '+({dashboard:'우리교실',random:'랜덤 뽑기',activity:'활동완료',whiteboard:'화이트보드',timer:'타이머'})[k];
  const fromMain=e=>e.sender===getMain()?.webContents;
  const fromPip=e=>e.sender===pip?.webContents;
  function focusMain(){const w=getMain();if(!w||w.isDestroyed())return;if(w.isMinimized())w.restore();w.show();w.focus();}
@@ -18,8 +19,8 @@ module.exports=function setupDesktop(getMain){
  function update(){if(pip&&!pip.isDestroyed())pip.webContents.send('pip:state',{kind,state:lastState});}
  function open(next){
   if(!validKind(next))throw Error('지원하지 않는 PIP 화면');
-  if(pip&&!pip.isDestroyed()){remember();kind=next;pip.setBounds(bounds(next));pip.setTitle('우리 교실 · '+({dashboard:'우리교실',random:'랜덤 뽑기',activity:'활동완료',whiteboard:'화이트보드'})[kind]);update();pip.show();pip.focus();return;}
-  kind=next;pip=new BrowserWindow({...bounds(kind),minWidth:320,minHeight:220,alwaysOnTop:true,title:'우리 교실 PIP',show:!process.env.CLASSROOM_TEST_HIDDEN,backgroundColor:'#ffffff',webPreferences:{preload:path.join(__dirname,'pip-preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
+  if(pip&&!pip.isDestroyed()){remember();kind=next;pip.setBounds(bounds(next));pip.setTitle(pipTitle(kind));update();pip.show();pip.focus();return;}
+  kind=next;pip=new BrowserWindow({...bounds(kind),minWidth:320,minHeight:220,alwaysOnTop:true,title:pipTitle(kind),show:!process.env.CLASSROOM_TEST_HIDDEN,backgroundColor:'#ffffff',webPreferences:{preload:path.join(__dirname,'pip-preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
   pip.removeMenu();pip.webContents.setWindowOpenHandler(()=>({action:'deny'}));pip.webContents.on('will-navigate',e=>e.preventDefault());
   pip.webContents.on('did-finish-load',update);pip.loadFile(path.join(__dirname,'pip.html'));
   for(const event of ['move','resize'])pip.on(event,()=>{clearTimeout(saveTimer);saveTimer=setTimeout(remember,180)});
@@ -33,10 +34,11 @@ module.exports=function setupDesktop(getMain){
  ipcMain.handle('pip:photo',async(e,ref)=>{if(!fromPip(e)||kind!=='whiteboard'||!lastState?.whiteboard?.blocks?.some(b=>b.type==='image'&&b.photo?.id===ref?.id))throw Error('허용되지 않은 요청');return new Uint8Array(await require('./media.cjs').current().read(ref));});
  ipcMain.handle('pip:get',e=>{if(!fromPip(e))throw Error('허용되지 않은 요청');return {kind,state:lastState};});
  ipcMain.on('input:focus',e=>{if(!fromMain(e)&&!fromPip(e))return;const w=BrowserWindow.fromWebContents(e.sender);if(w&&!w.isDestroyed()){w.focus();w.webContents.focus();}});
- const actions=new Set(['activity-title','activity-toggle','random-draw','random-repeat','whiteboard-edit','expand','timer']);
+ const actions=new Set(['activity-title','activity-toggle','random-draw','random-repeat','whiteboard-edit','expand','timer','timer-action']);
  ipcMain.on('pip:command',(e,command)=>{if(!fromPip(e)||!actions.has(command?.type))return;
-  const permitted={ 'activity-title':'activity','activity-toggle':'activity','random-draw':'random','random-repeat':'random','whiteboard-edit':'whiteboard'};
+  const permitted={ 'activity-title':'activity','activity-toggle':'activity','random-draw':'random','random-repeat':'random','whiteboard-edit':'whiteboard','timer-action':'timer'};
   if(permitted[command.type]&&kind!==permitted[command.type])return;
+  if(command.type==='timer-action'&&!['start','pause','restart','reset','dismiss'].includes(command.action))return;
   if(command.type==='expand'||command.type==='timer')focusMain();
   getMain()?.webContents.send('pip:command',{...command,kind});
   if(command.type==='expand')pip?.close();
