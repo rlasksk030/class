@@ -6,7 +6,7 @@ function expand(name){return scripts[name].split(/\s*&&\s*/).flatMap(command=>{
  m=/^npm run ([\w:-]+)$/.exec(command);assert.ok(m,'Unrecognized test command: '+command);return expand(m[1]);
 });}
 const all=expand('test:e2e');assert.equal(new Set(all).size,all.length);
-const priority=['tests/e2e/timer-startup.e2e.cjs','tests/e2e/regression.e2e.cjs'];
+const priority=['tests/e2e/photos.e2e.cjs','tests/e2e/hiclass-photos.e2e.cjs','tests/e2e/photo-boundaries.e2e.cjs','tests/e2e/photo-transfer.e2e.cjs','tests/e2e/timer-startup.e2e.cjs','tests/e2e/regression.e2e.cjs'];
 for(const file of priority)assert.ok(all.includes(file));
 for(const file of [...priority,...all.filter(f=>!priority.includes(f))]){console.log('\nRUN '+file);execFileSync(process.execPath,[file],{stdio:'inherit'});}
 console.log('PASS entire existing Electron suite: '+all.length+' scripts, no duplicates');

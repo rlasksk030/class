@@ -16,7 +16,7 @@ for(const edition of ['nationwide','okgu']){
  records[edition]=JSON.parse(fs.readFileSync(path.join(dir,'release-artifacts.json')));
 }
 const run=`https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-const evidence={version:'1.8.10',run,windows:{syntax:'PASS',unit:'PASS',electronRegression:'PASS',installerScenarios:['A','B','C','D','E','F','G','H','I'],previousEditionUpgrades:'PASS',packagedTimerPip:'PASS',updateChannels:'PASS'},artifacts:records};
+const evidence={version:'1.8.10',run,nationwideBuildRun:'https://github.com/rlasksk030/class/actions/runs/41974000613',windows:{syntax:'PASS',unit:'PASS',electronRegression:'PASS',installerScenarios:['A','B','C','D','E','F','G','H','I'],previousEditionUpgrades:'PASS',packagedTimerPip:'PASS',updateChannels:'PASS'},artifacts:records};
 fs.writeFileSync('release-validation.json',JSON.stringify(evidence,null,2)+'\n');
 const national=path.resolve('staged/nationwide'),names=records.nationwide.files.map(f=>f.name);
 for(const name of names){assert.equal(path.basename(name),name);fs.copyFileSync(path.join(national,name),path.join(feed,name));}

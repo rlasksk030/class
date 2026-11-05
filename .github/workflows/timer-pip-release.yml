@@ -10,11 +10,11 @@ concurrency:
   cancel-in-progress: false
 env:
   NATIONAL_SHA: 960f2c06f218bbd3a32cc55a1f0d535fb1817408
-  OKGU_SHA: 795a727773c1d62b1e65949763372329f2f5f510
+  OKGU_SHA: 1c03b1124aaacef59db6f437b159ed9e9bab265c
   GH_REPO: rlasksk030/class
 jobs:
   build:
-    runs-on: windows-2022
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
     permissions:
       contents: write
@@ -23,12 +23,16 @@ jobs:
       matrix:
         include:
           - edition: nationwide
+            runner: ubuntu-latest
+            reuse: true
             sha: 960f2c06f218bbd3a32cc55a1f0d535fb1817408
             tag: timer-pip-nationwide-v1.8.10
             installer: classroom-dashboard-nationwide-setup-1.8.10-x64.exe
             manifest: nationwide.yml
           - edition: okgu
-            sha: 795a727773c1d62b1e65949763372329f2f5f510
+            runner: windows-2022
+            reuse: false
+            sha: 1c03b1124aaacef59db6f437b159ed9e9bab265c
             tag: v1.8.10
             installer: classroom-dashboard-setup-1.8.10.exe
             manifest: latest.yml
@@ -48,10 +52,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Reuse the successful immutable nationwide build
+        if: ${{ matrix.reuse }}
+        working-directory: source
+        shell: bash
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          result=$(curl --fail --silent --show-error https://api.github.com/repos/rlasksk030/class/actions/jobs/127068511628 | node -e "let s='';process.stdin.on('data',x=>s+=x).on('end',()=>process.stdout.write(JSON.parse(s).conclusion||''))")
+          test "$result" = success
+          gh release download timer-pip-nationwide-v1.8.10 --pattern '*.exe' --pattern '*.blockmap' --pattern nationwide.yml --pattern release-artifacts.json --dir dist
+          node ../driver/.github/release/verify.cjs nationwide dist download
       - name: Install locked dependencies without Actions cache
+        if: ${{ !matrix.reuse }}
         working-directory: source
         run: npm ci --no-audit --no-fund
       - name: Syntax, unit and complete Electron regression tests
+        if: ${{ !matrix.reuse }}
         working-directory: source
         shell: pwsh
         run: |
@@ -62,12 +78,15 @@ jobs:
           node ../driver/.github/release/e2e.cjs 2>&1 | Tee-Object e2e.log
           exit $LASTEXITCODE
       - name: Build native x64 NSIS installer once
+        if: ${{ !matrix.reuse }}
         working-directory: source
         run: npm run dist:win
       - name: Verify packaged source and update manifest
+        if: ${{ !matrix.reuse }}
         working-directory: source
         run: node ../driver/.github/release/verify.cjs ${{ matrix.edition }}
       - name: Stage candidate privately as draft release
+        if: ${{ !matrix.reuse }}
         working-directory: source
         shell: pwsh
         run: |
