@@ -9,8 +9,8 @@ concurrency:
   group: timer-pip-v1810-release
   cancel-in-progress: false
 env:
-  NATIONAL_SHA: 9f107c428c3c8fcd32e83c0143e75aa083dcf604
-  OKGU_SHA: a15008323e5858c4a72311ccac582aa744ae005c
+  NATIONAL_SHA: 960f2c06f218bbd3a32cc55a1f0d535fb1817408
+  OKGU_SHA: 795a727773c1d62b1e65949763372329f2f5f510
   GH_REPO: rlasksk030/class
 jobs:
   build:
@@ -23,12 +23,12 @@ jobs:
       matrix:
         include:
           - edition: nationwide
-            sha: 9f107c428c3c8fcd32e83c0143e75aa083dcf604
+            sha: 960f2c06f218bbd3a32cc55a1f0d535fb1817408
             tag: timer-pip-nationwide-v1.8.10
             installer: classroom-dashboard-nationwide-setup-1.8.10-x64.exe
             manifest: nationwide.yml
           - edition: okgu
-            sha: a15008323e5858c4a72311ccac582aa744ae005c
+            sha: 795a727773c1d62b1e65949763372329f2f5f510
             tag: v1.8.10
             installer: classroom-dashboard-setup-1.8.10.exe
             manifest: latest.yml
@@ -59,7 +59,7 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           npm test 2>&1 | Tee-Object unit.log
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          npm run test:e2e 2>&1 | Tee-Object e2e.log
+          node ../driver/.github/release/e2e.cjs 2>&1 | Tee-Object e2e.log
           exit $LASTEXITCODE
       - name: Build native x64 NSIS installer once
         working-directory: source
@@ -91,7 +91,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ env.NATIONAL_SHA }}
+          ref: ${{ env.OKGU_SHA }}
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -101,9 +101,9 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory setups | Out-Null
-          gh release download timer-pip-nationwide-v1.8.10 --pattern 'classroom-dashboard-nationwide-setup-1.8.10-x64.exe' --dir setups
+          gh release download v1.8.10 --pattern 'classroom-dashboard-setup-1.8.10.exe' --dir setups
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          Rename-Item setups/classroom-dashboard-nationwide-setup-1.8.10-x64.exe setup-new.exe
+          Rename-Item setups/classroom-dashboard-setup-1.8.10.exe setup-new.exe
           foreach ($v in @('1.7.8','1.8.1','1.8.4')) { Invoke-WebRequest "https://github.com/rlasksk030/class/releases/download/v$v/classroom-dashboard-setup-$v.exe" -OutFile "setups/setup-$v.exe" }
           if ((Get-FileHash setups/setup-1.8.4.exe -Algorithm SHA256).Hash.ToLower() -ne 'f72232b8e64c6840da2cca19606ee94c6c04280894ee40e733a58918a0c90d71') { throw 'Baseline hash mismatch' }
       - name: Original installer scenario ${{ matrix.scenario }}
@@ -116,8 +116,8 @@ jobs:
         shell: pwsh
         run: |
           powershell -NoProfile -ExecutionPolicy Bypass -File tools/windows/classroom-diagnose.ps1 -Backup
-          if (Test-Path 'installer-${{ matrix.scenario }}.log') { gh release upload timer-pip-nationwide-v1.8.10 'installer-${{ matrix.scenario }}.log' }
-          if (Test-Path 'tests/windows/.out/report-${{ matrix.scenario }}.json') { gh release upload timer-pip-nationwide-v1.8.10 'tests/windows/.out/report-${{ matrix.scenario }}.json' }
+          if (Test-Path 'installer-${{ matrix.scenario }}.log') { gh release upload v1.8.10 'installer-${{ matrix.scenario }}.log' }
+          if (Test-Path 'tests/windows/.out/report-${{ matrix.scenario }}.json') { gh release upload v1.8.10 'tests/windows/.out/report-${{ matrix.scenario }}.json' }
 
   upgrade:
     needs: build

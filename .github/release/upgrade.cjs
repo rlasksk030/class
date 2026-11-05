@@ -17,6 +17,7 @@ async function launch(){app=await _electron.launch({executablePath:exe,env:{...p
   put('activityCompletion',{fixture:['synthetic-1']});put('customReleaseFixture',{preserve:true});
   put('classTimer',{duration:60000,remaining:60000,deadline:null,state:'idle'});
  });
+ await page.reload();await page.waitForLoadState('domcontentloaded');
  const keys=['settings','classRosters','diaryDrafts','activityCompletion','customReleaseFixture','classTimer'];
  const before=await page.evaluate(keys=>Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),keys);
  const userData=await app.evaluate(({app})=>app.getPath('userData'));await app.close();app=null;
