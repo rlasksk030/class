@@ -1,10 +1,12 @@
 # 타이머 PIP 사용 안내
 
-전국용과 옥구초 전용 **v1.8.10**에 포함된 기능입니다. Windows 설치·업그레이드 및 PIP 검증을 마치고 2026년 11월 5일 배포했습니다. 검증 결과는 [v1.8.10 배포 기록](tests/validation/2026-11-05-v1810-release.md)에서 확인하세요.
+전국용과 옥구초 전용 **v1.8.11**에 포함된 기능입니다. Windows 설치·업그레이드 및 PIP 검증을 마치고 2026년 11월 5일 배포했습니다. 검증 결과는 [v1.8.11 배포 기록](tests/validation/2026-11-05-v1811-release.md)에서 확인하세요.
 
-[전국용 설치 파일](https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/classroom-dashboard-nationwide-setup-1.8.10-x64.exe) · [옥구초 전용 설치 파일](https://github.com/rlasksk030/class/releases/download/v1.8.10/classroom-dashboard-setup-1.8.10.exe)
+이번 v1.8.11은 v1.8.10과 기능이 같은 재배포본입니다.
 
-사용 중인 판의 설치 파일을 받으세요. 기존 프로그램과 PIP 창을 닫고 기존 설치 폴더에 설치하면 됩니다. 전국용 v1.8.9와 옥구초용 v1.8.7은 설정 → 업데이트에서도 확인할 수 있습니다. 전국용 v1.8.8은 위 전국용 설치 파일을 한 번 직접 설치하세요.
+[전국용 설치 파일](https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/classroom-dashboard-nationwide-setup-1.8.11-x64.exe) · [옥구초 전용 설치 파일](https://github.com/rlasksk030/class/releases/download/v1.8.11/classroom-dashboard-setup-1.8.11.exe)
+
+사용 중인 판의 설치 파일을 받으세요. 기존 프로그램과 PIP 창을 닫고 기존 설치 폴더에 설치하면 됩니다. 전국용 v1.8.9 이상과 옥구초용 v1.8.7 이상은 설정 → 업데이트에서도 확인할 수 있습니다. 전국용 v1.8.8은 위 전국용 설치 파일을 한 번 직접 설치하세요.
 
 1. 화면 아래 **⏱ 타이머**를 누릅니다.
 2. 1·3·5·10·15분 중 하나를 고르거나 분·초를 입력하고 **직접 입력 적용**을 누릅니다.
