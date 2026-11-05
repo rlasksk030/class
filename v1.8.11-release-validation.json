@@ -1,0 +1,80 @@
+{
+  "version": "1.8.11",
+  "run": "https://github.com/rlasksk030/class/actions/runs/41977391612",
+  "nationwideBuildRun": "https://github.com/rlasksk030/class/actions/runs/41977391612",
+  "windows": {
+    "syntax": "PASS",
+    "unit": "PASS",
+    "electronRegression": "PASS",
+    "installerScenarios": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I"
+    ],
+    "previousEditionUpgrades": "PASS",
+    "packagedTimerPip": "PASS",
+    "updateChannels": "PASS"
+  },
+  "artifacts": {
+    "nationwide": {
+      "edition": "nationwide",
+      "version": "1.8.11",
+      "source": "d1c5b6fe0146943d71a5e198f44b2b7bf99408c0",
+      "run": "https://github.com/rlasksk030/class/actions/runs/41977391612",
+      "sourceFiles": 80,
+      "files": [
+        {
+          "name": "classroom-dashboard-nationwide-setup-1.8.11-x64.exe",
+          "size": 99320082,
+          "sha256": "2adf83e8ccd99c6baba20512713748217baa2c0fd9d64d8f4db741340a2264ad",
+          "sha512": "p17wkimfNTX4hrF17OPXxemR4xPLQDvBnHz1bTEqGoTaO9oUJLr6Yv+I3SA33/XBk+5/z+tGoqkWVOpdwjIeMA=="
+        },
+        {
+          "name": "classroom-dashboard-nationwide-setup-1.8.11-x64.exe.blockmap",
+          "size": 104871,
+          "sha256": "e458348b5257ecc2019f562a254307eb39586773379ef0b562803b96b9436aaf",
+          "sha512": "Rlw4Fck0QXbOK3HEeRpr34qMJr7j+a5kiRHuTeVFRI1okbDY5kYpGQac3Kxq+Kc3xncgw56S3IWKbmZ0qWZYGA=="
+        },
+        {
+          "name": "nationwide.yml",
+          "size": 399,
+          "sha256": "fb690184b6515ee36dbe0f4435860d5ee230cb159b4db994bd5cb332bcf559a3",
+          "sha512": "PoAbELwmwb9Z1ECMHToOmXjrOR8+mmWAle8NkXP4aE3PFLe9b8kYHItGJNSz4b9tbJnLGWfojL9xO1A+Qbjjwg=="
+        }
+      ]
+    },
+    "okgu": {
+      "edition": "okgu",
+      "version": "1.8.11",
+      "source": "df126312cc57c4add19cf4caf2772cd9d1fa17d0",
+      "run": "https://github.com/rlasksk030/class/actions/runs/41977391612",
+      "sourceFiles": 76,
+      "files": [
+        {
+          "name": "classroom-dashboard-setup-1.8.11.exe",
+          "size": 99315903,
+          "sha256": "d58add0a174e0ab2615f202ba690de29f73bd28fde71df9a886816d4edf3b855",
+          "sha512": "mhWL8+FQdoLw+cR9rJbqdz43/+IPZpIWHUeSWWSQB40DS6okWj7G8lDJ/9yi4Am78TDUNI1crwQYIKo9zNuVpQ=="
+        },
+        {
+          "name": "classroom-dashboard-setup-1.8.11.exe.blockmap",
+          "size": 104886,
+          "sha256": "2fd27568578581846025f4a2cfc95bbf488a29d6ef0e0dd01e40cc7f8cfcd89a",
+          "sha512": "TUXAmLxuRhiUAa2tZ5X16bcbixIeb3/WSSMV5VFzZF0TTuPRJhSTQEUNEZLwUsL+K8b9mnQXZPjNFH+QaCWu6A=="
+        },
+        {
+          "name": "latest.yml",
+          "size": 369,
+          "sha256": "4a95f3628e36f98a0951a656cd23a4e2559edc55d2b31a7b8c74ba136078ed4b",
+          "sha512": "SKz4Khlwx/vwkRh51AkGAk0xY5jIxOqiB5IWAyuM3V9KpK6dgiIHYM31KaYPF2pynUxaGuQL0J2qv53p7hb3hQ=="
+        }
+      ]
+    }
+  }
+}
