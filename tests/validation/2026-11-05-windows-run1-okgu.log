@@ -1,0 +1,714 @@
+﻿2026-11-05T05:20:41.2096865Z Current runner version: '2.338.2'
+2026-11-05T05:20:41.2353277Z ##[group]Runner Image Provisioner
+2026-11-05T05:20:41.2354047Z Hosted Compute Agent
+2026-11-05T05:20:41.2354579Z Version: 20261021.618
+2026-11-05T05:20:41.2355163Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-11-05T05:20:41.2355817Z Build Date: 2026-10-21T00:45:21Z
+2026-11-05T05:20:41.2356474Z Worker ID: {d48c37ba-fc80-4233-9fac-d74a16aab30d}
+2026-11-05T05:20:41.2357152Z Region: eastus
+2026-11-05T05:20:41.2357617Z Cloud: Azure
+2026-11-05T05:20:41.2358082Z ##[endgroup]
+2026-11-05T05:20:41.2359379Z ##[group]Operating System
+2026-11-05T05:20:41.2359959Z Microsoft Windows Server 2022
+2026-11-05T05:20:41.2360545Z 10.0.20348
+2026-11-05T05:20:41.2361024Z Datacenter
+2026-11-05T05:20:41.2361478Z ##[endgroup]
+2026-11-05T05:20:41.2361945Z ##[group]Runner Image
+2026-11-05T05:20:41.2362457Z Image: windows-2022
+2026-11-05T05:20:41.2362967Z Version: 20261025.346.1
+2026-11-05T05:20:41.2364289Z Included Software: https://github.com/actions/runner-images/blob/win22/20261025.346/images/windows/Windows2022-Readme.md
+2026-11-05T05:20:41.2365715Z Image Release: https://github.com/actions/runner-images/releases/tag/win22%2F20261025.346
+2026-11-05T05:20:41.2366555Z ##[endgroup]
+2026-11-05T05:20:41.2367571Z ##[group]GITHUB_TOKEN Permissions
+2026-11-05T05:20:41.2369281Z Contents: write
+2026-11-05T05:20:41.2369846Z Metadata: read
+2026-11-05T05:20:41.2370321Z ##[endgroup]
+2026-11-05T05:20:41.2372332Z Secret source: Actions
+2026-11-05T05:20:41.2373198Z Cache mode: write
+2026-11-05T05:20:41.2373808Z Prepare workflow directory
+2026-11-05T05:20:41.3471161Z Prepare all required actions
+2026-11-05T05:20:41.3521037Z Getting action download info
+2026-11-05T05:20:41.5109023Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-05T05:20:41.6325000Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-11-05T05:20:42.0961618Z Complete job name: build (okgu, a15008323e5858c4a72311ccac582aa744ae005c, v1.8.10, classroom-dashboard-setup-1.8.10....
+2026-11-05T05:20:42.3550100Z ##[group]Run actions/checkout@v4
+2026-11-05T05:20:42.3551750Z with:
+2026-11-05T05:20:42.3552340Z   path: driver
+2026-11-05T05:20:42.3552952Z   persist-credentials: false
+2026-11-05T05:20:42.3553686Z   repository: rlasksk030/class
+2026-11-05T05:20:42.3560389Z   token: ***
+2026-11-05T05:20:42.3560963Z   ssh-strict: true
+2026-11-05T05:20:42.3561545Z   ssh-user: git
+2026-11-05T05:20:42.3562103Z   clean: true
+2026-11-05T05:20:42.3562700Z   sparse-checkout-cone-mode: true
+2026-11-05T05:20:42.3563431Z   fetch-depth: 1
+2026-11-05T05:20:42.3563944Z   fetch-tags: false
+2026-11-05T05:20:42.3564375Z   show-progress: true
+2026-11-05T05:20:42.3564839Z   lfs: false
+2026-11-05T05:20:42.3565291Z   submodules: false
+2026-11-05T05:20:42.3565740Z   set-safe-directory: true
+2026-11-05T05:20:42.3566247Z   allow-unsafe-pr-checkout: false
+2026-11-05T05:20:42.3566982Z env:
+2026-11-05T05:20:42.3567513Z   NATIONAL_SHA: 9f107c428c3c8fcd32e83c0143e75aa083dcf604
+2026-11-05T05:20:42.3568254Z   OKGU_SHA: a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:20:42.3568868Z   GH_REPO: rlasksk030/class
+2026-11-05T05:20:42.3569425Z   SOURCE_SHA: a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:20:42.3573908Z   GH_TOKEN: ***
+2026-11-05T05:20:42.3574341Z ##[endgroup]
+2026-11-05T05:20:42.6568770Z Syncing repository: rlasksk030/class
+2026-11-05T05:20:42.6570627Z ##[group]Getting Git version info
+2026-11-05T05:20:42.6571308Z Working directory is 'D:\a\class\class\driver'
+2026-11-05T05:20:42.9213680Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-05T05:20:43.5600548Z git version 2.56.0.windows.3
+2026-11-05T05:20:43.5642315Z ##[endgroup]
+2026-11-05T05:20:43.5659944Z Temporarily overriding HOME='D:\a\_temp\97a22559-e93c-4c84-b1ee-b93ae5cf33f0' before making global git config changes
+2026-11-05T05:20:43.5661921Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-05T05:20:43.5671278Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\class\class\driver
+2026-11-05T05:20:43.6579913Z ##[group]Initializing the repository
+2026-11-05T05:20:43.6590936Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\class\class\driver
+2026-11-05T05:20:43.8327406Z Initialized empty Git repository in D:/a/class/class/driver/.git/
+2026-11-05T05:20:43.8372561Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/rlasksk030/class
+2026-11-05T05:20:43.9162043Z ##[endgroup]
+2026-11-05T05:20:43.9171653Z ##[group]Disabling automatic garbage collection
+2026-11-05T05:20:43.9173108Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-05T05:20:43.9449678Z ##[endgroup]
+2026-11-05T05:20:43.9460851Z ##[group]Setting up auth
+2026-11-05T05:20:43.9463198Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-05T05:20:43.9742116Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-05T05:20:46.1085714Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-05T05:20:46.1373726Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-05T05:20:46.5856453Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-05T05:20:46.6145363Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-05T05:20:47.0562160Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-05T05:20:47.0865998Z ##[endgroup]
+2026-11-05T05:20:47.0866820Z ##[group]Fetching the repository
+2026-11-05T05:20:47.0878546Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +bce85085c49f50f5cf95d8c5143cbd71e28aa07f:refs/remotes/origin/release/timer-pip-20261105
+2026-11-05T05:20:48.1482454Z From https://github.com/rlasksk030/class
+2026-11-05T05:20:48.1483479Z  * [new ref]         bce85085c49f50f5cf95d8c5143cbd71e28aa07f -> origin/release/timer-pip-20261105
+2026-11-05T05:20:48.1516077Z ##[endgroup]
+2026-11-05T05:20:48.1516823Z ##[group]Determining the checkout info
+2026-11-05T05:20:48.1519112Z ##[endgroup]
+2026-11-05T05:20:48.1532628Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-11-05T05:20:48.1943900Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-11-05T05:20:48.2215376Z ##[group]Checking out the ref
+2026-11-05T05:20:48.2223615Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B release/timer-pip-20261105 refs/remotes/origin/release/timer-pip-20261105
+2026-11-05T05:20:48.4143353Z Switched to a new branch 'release/timer-pip-20261105'
+2026-11-05T05:20:48.4210004Z branch 'release/timer-pip-20261105' set up to track 'origin/release/timer-pip-20261105'.
+2026-11-05T05:20:48.4256732Z ##[endgroup]
+2026-11-05T05:20:48.4709585Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-05T05:20:48.4960305Z bce85085c49f50f5cf95d8c5143cbd71e28aa07f
+2026-11-05T05:20:48.4991396Z ##[group]Removing auth
+2026-11-05T05:20:48.4998756Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-05T05:20:48.5270331Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-05T05:20:48.9809767Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-05T05:20:49.0087213Z http.https://github.com/.extraheader
+2026-11-05T05:20:49.0124450Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-11-05T05:20:49.0420586Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-05T05:20:49.5131171Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-05T05:20:49.5442664Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-05T05:20:50.0315034Z ##[endgroup]
+2026-11-05T05:20:50.0780647Z ##[group]Run actions/checkout@v4
+2026-11-05T05:20:50.0781090Z with:
+2026-11-05T05:20:50.0781412Z   ref: a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:20:50.0781842Z   path: source
+2026-11-05T05:20:50.0782143Z   persist-credentials: false
+2026-11-05T05:20:50.0782513Z   repository: rlasksk030/class
+2026-11-05T05:20:50.0787222Z   token: ***
+2026-11-05T05:20:50.0787568Z   ssh-strict: true
+2026-11-05T05:20:50.0787859Z   ssh-user: git
+2026-11-05T05:20:50.0788147Z   clean: true
+2026-11-05T05:20:50.0788441Z   sparse-checkout-cone-mode: true
+2026-11-05T05:20:50.0788787Z   fetch-depth: 1
+2026-11-05T05:20:50.0789047Z   fetch-tags: false
+2026-11-05T05:20:50.0789332Z   show-progress: true
+2026-11-05T05:20:50.0789606Z   lfs: false
+2026-11-05T05:20:50.0789847Z   submodules: false
+2026-11-05T05:20:50.0790123Z   set-safe-directory: true
+2026-11-05T05:20:50.0790454Z   allow-unsafe-pr-checkout: false
+2026-11-05T05:20:50.0790793Z env:
+2026-11-05T05:20:50.0791155Z   NATIONAL_SHA: 9f107c428c3c8fcd32e83c0143e75aa083dcf604
+2026-11-05T05:20:50.0791643Z   OKGU_SHA: a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:20:50.0792050Z   GH_REPO: rlasksk030/class
+2026-11-05T05:20:50.0792415Z   SOURCE_SHA: a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:20:50.0796644Z   GH_TOKEN: ***
+2026-11-05T05:20:50.0796888Z ##[endgroup]
+2026-11-05T05:20:50.1827046Z Syncing repository: rlasksk030/class
+2026-11-05T05:20:50.1834815Z ##[group]Getting Git version info
+2026-11-05T05:20:50.1835277Z Working directory is 'D:\a\class\class\source'
+2026-11-05T05:20:50.2683824Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-05T05:20:50.2950132Z git version 2.56.0.windows.3
+2026-11-05T05:20:50.2986343Z ##[endgroup]
+2026-11-05T05:20:50.3001668Z Temporarily overriding HOME='D:\a\_temp\fd65f368-ae22-48cb-a6fc-a34346f094b3' before making global git config changes
+2026-11-05T05:20:50.3002388Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-05T05:20:50.3011562Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\class\class\source
+2026-11-05T05:20:50.3288789Z ##[group]Initializing the repository
+2026-11-05T05:20:50.3297663Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\class\class\source
+2026-11-05T05:20:50.3609189Z Initialized empty Git repository in D:/a/class/class/source/.git/
+2026-11-05T05:20:50.3657541Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/rlasksk030/class
+2026-11-05T05:20:50.3943189Z ##[endgroup]
+2026-11-05T05:20:50.3943583Z ##[group]Disabling automatic garbage collection
+2026-11-05T05:20:50.3951523Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-05T05:20:50.4218371Z ##[endgroup]
+2026-11-05T05:20:50.4218723Z ##[group]Setting up auth
+2026-11-05T05:20:50.4230357Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-05T05:20:50.4510191Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-05T05:20:50.9535537Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-05T05:20:50.9819118Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-05T05:20:51.4384557Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-05T05:20:51.4668514Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-05T05:20:51.9225268Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-05T05:20:51.9506128Z ##[endgroup]
+2026-11-05T05:20:51.9506521Z ##[group]Fetching the repository
+2026-11-05T05:20:51.9518011Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:20:52.3340615Z From https://github.com/rlasksk030/class
+2026-11-05T05:20:52.3341338Z  * branch            a15008323e5858c4a72311ccac582aa744ae005c -> FETCH_HEAD
+2026-11-05T05:20:52.3381073Z ##[endgroup]
+2026-11-05T05:20:52.3381662Z ##[group]Determining the checkout info
+2026-11-05T05:20:52.3384699Z ##[endgroup]
+2026-11-05T05:20:52.3394373Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-11-05T05:20:52.3717336Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-11-05T05:20:52.4002499Z ##[group]Checking out the ref
+2026-11-05T05:20:52.4012074Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:20:52.5675315Z Note: switching to 'a15008323e5858c4a72311ccac582aa744ae005c'.
+2026-11-05T05:20:52.5676559Z 
+2026-11-05T05:20:52.5677277Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-11-05T05:20:52.5677842Z changes and commit them, and you can discard any commits you make in this
+2026-11-05T05:20:52.5678322Z state without impacting any branches by switching back to a branch.
+2026-11-05T05:20:52.5678614Z 
+2026-11-05T05:20:52.5678801Z If you want to create a new branch to retain commits you create, you may
+2026-11-05T05:20:52.5679244Z do so (now or later) by using -c with the switch command. Example:
+2026-11-05T05:20:52.5679502Z 
+2026-11-05T05:20:52.5679637Z   git switch -c <new-branch-name>
+2026-11-05T05:20:52.5679816Z 
+2026-11-05T05:20:52.5679912Z Or undo this operation with:
+2026-11-05T05:20:52.5680074Z 
+2026-11-05T05:20:52.5680185Z   git switch -
+2026-11-05T05:20:52.5680309Z 
+2026-11-05T05:20:52.5680521Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-11-05T05:20:52.5680848Z 
+2026-11-05T05:20:52.5681046Z HEAD is now at a150083 chore: prepare Okgu timer PIP v1.8.10 [skip ci]
+2026-11-05T05:20:52.5744490Z ##[endgroup]
+2026-11-05T05:20:52.6048158Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-05T05:20:52.6299289Z a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:20:52.6331492Z ##[group]Removing auth
+2026-11-05T05:20:52.6339789Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-05T05:20:52.6618077Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-05T05:20:53.1276676Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-05T05:20:53.1523557Z http.https://github.com/.extraheader
+2026-11-05T05:20:53.1557747Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-11-05T05:20:53.1837536Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-05T05:20:53.6309849Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-05T05:20:53.6590328Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-05T05:20:54.1142223Z ##[endgroup]
+2026-11-05T05:20:54.1441864Z ##[group]Run actions/setup-node@v4
+2026-11-05T05:20:54.1442267Z with:
+2026-11-05T05:20:54.1442512Z   node-version: 22
+2026-11-05T05:20:54.1442788Z   always-auth: false
+2026-11-05T05:20:54.1443062Z   check-latest: false
+2026-11-05T05:20:54.1446632Z   token: ***
+2026-11-05T05:20:54.1446840Z env:
+2026-11-05T05:20:54.1447094Z   NATIONAL_SHA: 9f107c428c3c8fcd32e83c0143e75aa083dcf604
+2026-11-05T05:20:54.1447495Z   OKGU_SHA: a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:20:54.1447838Z   GH_REPO: rlasksk030/class
+2026-11-05T05:20:54.1448143Z   SOURCE_SHA: a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:20:54.1451674Z   GH_TOKEN: ***
+2026-11-05T05:20:54.1451879Z ##[endgroup]
+2026-11-05T05:20:54.3144822Z Found in cache @ C:\hostedtoolcache\windows\node\22.23.4\x64
+2026-11-05T05:20:54.3150994Z (node:7600) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-05T05:20:54.3151875Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-05T05:20:54.3154478Z ##[group]Environment details
+2026-11-05T05:20:59.1178850Z node: v22.23.4
+2026-11-05T05:20:59.1179107Z npm: 10.9.9
+2026-11-05T05:20:59.1179279Z yarn: 1.22.22
+2026-11-05T05:20:59.1179708Z ##[endgroup]
+2026-11-05T05:20:59.1427973Z ##[group]Run npm ci --no-audit --no-fund
+2026-11-05T05:20:59.1428378Z [36;1mnpm ci --no-audit --no-fund[0m
+2026-11-05T05:20:59.1531298Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-05T05:20:59.1531736Z env:
+2026-11-05T05:20:59.1532024Z   NATIONAL_SHA: 9f107c428c3c8fcd32e83c0143e75aa083dcf604
+2026-11-05T05:20:59.1532459Z   OKGU_SHA: a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:20:59.1532823Z   GH_REPO: rlasksk030/class
+2026-11-05T05:20:59.1533150Z   SOURCE_SHA: a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:20:59.1537114Z   GH_TOKEN: ***
+2026-11-05T05:20:59.1537347Z ##[endgroup]
+2026-11-05T05:21:03.8159980Z npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2026-11-05T05:21:03.9696035Z npm warn deprecated rimraf@2.6.3: Rimraf versions prior to v4 are no longer supported
+2026-11-05T05:21:04.0081757Z npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-11-05T05:21:04.9681601Z npm warn deprecated boolean@3.2.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+2026-11-05T05:21:10.7606125Z 
+2026-11-05T05:21:10.7606736Z added 285 packages in 11s
+2026-11-05T05:21:15.2441287Z ##[group]Run npm run check 2>&1 | Tee-Object check.log
+2026-11-05T05:21:15.2441767Z [36;1mnpm run check 2>&1 | Tee-Object check.log[0m
+2026-11-05T05:21:15.2442098Z [36;1mif ($LASTEXITCODE) { exit $LASTEXITCODE }[0m
+2026-11-05T05:21:15.2443237Z [36;1mnpm test 2>&1 | Tee-Object unit.log[0m
+2026-11-05T05:21:15.2443547Z [36;1mif ($LASTEXITCODE) { exit $LASTEXITCODE }[0m
+2026-11-05T05:21:15.2443865Z [36;1mnpm run test:e2e 2>&1 | Tee-Object e2e.log[0m
+2026-11-05T05:21:15.2444155Z [36;1mexit $LASTEXITCODE[0m
+2026-11-05T05:21:15.2499031Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-05T05:21:15.2499610Z env:
+2026-11-05T05:21:15.2499977Z   NATIONAL_SHA: 9f107c428c3c8fcd32e83c0143e75aa083dcf604
+2026-11-05T05:21:15.2500530Z   OKGU_SHA: a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:21:15.2501007Z   GH_REPO: rlasksk030/class
+2026-11-05T05:21:15.2501443Z   SOURCE_SHA: a15008323e5858c4a72311ccac582aa744ae005c
+2026-11-05T05:21:15.2507086Z   GH_TOKEN: ***
+2026-11-05T05:21:15.2507394Z ##[endgroup]
+2026-11-05T05:21:16.0701627Z 
+2026-11-05T05:21:16.0708747Z > check
+2026-11-05T05:21:16.0712036Z > node tests/check-syntax.cjs
+2026-11-05T05:21:16.0714094Z 
+2026-11-05T05:21:19.3647352Z 74/74 files parse
+2026-11-05T05:21:19.6831069Z 
+2026-11-05T05:21:19.6834284Z > test
+2026-11-05T05:21:19.6837667Z > node --test app/*.test.cjs
+2026-11-05T05:21:19.6840528Z 
+2026-11-05T05:21:19.7767095Z TAP version 13
+2026-11-05T05:21:19.8801088Z # Subtest: backup keeps user data, drops caches, location and secrets
+2026-11-05T05:21:19.8812655Z ok 1 - backup keeps user data, drops caches, location and secrets
+2026-11-05T05:21:19.8813663Z   ---
+2026-11-05T05:21:19.8819988Z   duration_ms: 15.1355
+2026-11-05T05:21:19.8820766Z   type: 'test'
+2026-11-05T05:21:19.8821365Z   ...
+2026-11-05T05:21:19.8822508Z # Subtest: restore validates format, version and checksum
+2026-11-05T05:21:19.8823717Z ok 2 - restore validates format, version and checksum
+2026-11-05T05:21:19.8824284Z   ---
+2026-11-05T05:21:19.8824696Z   duration_ms: 6.57
+2026-11-05T05:21:19.8825011Z   type: 'test'
+2026-11-05T05:21:19.8826314Z   ...
+2026-11-05T05:21:19.8912665Z # Subtest: restore is all-or-nothing
+2026-11-05T05:21:19.8919110Z ok 3 - restore is all-or-nothing
+2026-11-05T05:21:19.8924633Z   ---
+2026-11-05T05:21:19.8926385Z   duration_ms: 2.9767
+2026-11-05T05:21:19.8928048Z   type: 'test'
+2026-11-05T05:21:19.8929152Z   ...
+2026-11-05T05:21:19.8938495Z # Subtest: backup file name
+2026-11-05T05:21:19.8939159Z ok 4 - backup file name
+2026-11-05T05:21:19.8941939Z   ---
+2026-11-05T05:21:19.8942609Z   duration_ms: 32.7333
+2026-11-05T05:21:19.8948422Z   type: 'test'
+2026-11-05T05:21:19.8948941Z   ...
+2026-11-05T05:21:19.8957732Z # Subtest: restore keeps settings that are never backed up
+2026-11-05T05:21:19.8958743Z ok 5 - restore keeps settings that are never backed up
+2026-11-05T05:21:19.8959460Z   ---
+2026-11-05T05:21:19.8959962Z   duration_ms: 2.9509
+2026-11-05T05:21:19.8960529Z   type: 'test'
+2026-11-05T05:21:19.8961030Z   ...
+2026-11-05T05:21:19.9190451Z # Subtest: untouched boards keep their original titles
+2026-11-05T05:21:19.9191793Z ok 6 - untouched boards keep their original titles
+2026-11-05T05:21:19.9225936Z   ---
+2026-11-05T05:21:19.9234959Z   duration_ms: 1.7377
+2026-11-05T05:21:19.9237040Z   type: 'test'
+2026-11-05T05:21:19.9239411Z   ...
+2026-11-05T05:21:19.9241334Z # Subtest: custom titles are trimmed, single-line and limited to 30 characters
+2026-11-05T05:21:19.9242677Z ok 7 - custom titles are trimmed, single-line and limited to 30 characters
+2026-11-05T05:21:19.9244288Z   ---
+2026-11-05T05:21:19.9245206Z   duration_ms: 0.3453
+2026-11-05T05:21:19.9245869Z   type: 'test'
+2026-11-05T05:21:19.9246578Z   ...
+2026-11-05T05:21:19.9247206Z # Subtest: Korean midnight switches the date
+2026-11-05T05:21:19.9247988Z ok 8 - Korean midnight switches the date
+2026-11-05T05:21:19.9248615Z   ---
+2026-11-05T05:21:19.9249113Z   duration_ms: 37.4395
+2026-11-05T05:21:19.9252941Z   type: 'test'
+2026-11-05T05:21:19.9253409Z   ...
+2026-11-05T05:21:19.9254410Z # Subtest: overrides always win including deliberately empty menus
+2026-11-05T05:21:19.9255464Z ok 9 - overrides always win including deliberately empty menus
+2026-11-05T05:21:19.9256602Z   ---
+2026-11-05T05:21:19.9257284Z   duration_ms: 1.3592
+2026-11-05T05:21:19.9257892Z   type: 'test'
+2026-11-05T05:21:19.9258453Z   ...
+2026-11-05T05:21:19.9259192Z # Subtest: school, class, date and card caches are isolated
+2026-11-05T05:21:19.9260227Z ok 10 - school, class, date and card caches are isolated
+2026-11-05T05:21:19.9261036Z   ---
+2026-11-05T05:21:19.9261546Z   duration_ms: 0.3366
+2026-11-05T05:21:19.9262112Z   type: 'test'
+2026-11-05T05:21:19.9262624Z   ...
+2026-11-05T05:21:19.9263333Z # Subtest: no-data differs from service error
+2026-11-05T05:21:19.9264205Z ok 11 - no-data differs from service error
+2026-11-05T05:21:19.9264907Z   ---
+2026-11-05T05:21:19.9265473Z   duration_ms: 0.5832
+2026-11-05T05:21:19.9266069Z   type: 'test'
+2026-11-05T05:21:19.9266629Z   ...
+2026-11-05T05:21:19.9267498Z # Subtest: morning content persists across dates and migrates the latest past note
+2026-11-05T05:21:19.9268824Z ok 12 - morning content persists across dates and migrates the latest past note
+2026-11-05T05:21:19.9269525Z   ---
+2026-11-05T05:21:19.9269828Z   duration_ms: 0.3532
+2026-11-05T05:21:19.9270186Z   type: 'test'
+2026-11-05T05:21:19.9270501Z   ...
+2026-11-05T05:21:19.9827697Z # Subtest: timer dismissal preserves running, paused and idle states
+2026-11-05T05:21:19.9829563Z ok 13 - timer dismissal preserves running, paused and idle states
+2026-11-05T05:21:19.9830550Z   ---
+2026-11-05T05:21:19.9831137Z   duration_ms: 1.7315
+2026-11-05T05:21:19.9834233Z   type: 'test'
+2026-11-05T05:21:19.9834939Z   ...
+2026-11-05T05:21:19.9836578Z # Subtest: finished dismissal restores the configured duration and can restart immediately
+2026-11-05T05:21:19.9839655Z ok 14 - finished dismissal restores the configured duration and can restart immediately
+2026-11-05T05:21:19.9840711Z   ---
+2026-11-05T05:21:19.9841254Z   duration_ms: 0.3086
+2026-11-05T05:21:19.9841842Z   type: 'test'
+2026-11-05T05:21:19.9842359Z   ...
+2026-11-05T05:21:19.9844616Z # Subtest: period boundaries, breaks, removed periods and end of day
+2026-11-05T05:21:19.9851416Z ok 15 - period boundaries, breaks, removed periods and end of day
+2026-11-05T05:21:19.9857256Z   ---
+2026-11-05T05:21:19.9859820Z   duration_ms: 0.641
+2026-11-05T05:21:19.9860527Z   type: 'test'
+2026-11-05T05:21:19.9861054Z   ...
+2026-11-05T05:21:19.9861975Z # Subtest: timer uses deadlines, pauses and resumes without accumulating drift
+2026-11-05T05:21:19.9864891Z ok 16 - timer uses deadlines, pauses and resumes without accumulating drift
+2026-11-05T05:21:19.9866379Z   ---
+2026-11-05T05:21:19.9866968Z   duration_ms: 0.2978
+2026-11-05T05:21:19.9868580Z   type: 'test'
+2026-11-05T05:21:19.9870669Z   ...
+2026-11-05T05:21:19.9877081Z # Subtest: yesterday and D-Day use calendar dates across month, leap year and year boundaries
+2026-11-05T05:21:19.9879664Z ok 17 - yesterday and D-Day use calendar dates across month, leap year and year boundaries
+2026-11-05T05:21:19.9881566Z   ---
+2026-11-05T05:21:19.9882985Z   duration_ms: 18.3032
+2026-11-05T05:21:19.9883605Z   type: 'test'
+2026-11-05T05:21:19.9884071Z   ...
+2026-11-05T05:21:20.0007101Z # Subtest: login page and other sites are step 1
+2026-11-05T05:21:20.0034324Z ok 18 - login page and other sites are step 1
+2026-11-05T05:21:20.0034924Z   ---
+2026-11-05T05:21:20.0037950Z   duration_ms: 1.9485
+2026-11-05T05:21:20.0039189Z   type: 'test'
+2026-11-05T05:21:20.0041696Z   ...
+2026-11-05T05:21:20.0046980Z # Subtest: logged in without a class is step 2
+2026-11-05T05:21:20.0049353Z ok 19 - logged in without a class is step 2
+2026-11-05T05:21:20.0051390Z   ---
+2026-11-05T05:21:20.0055099Z   duration_ms: 0.5316
+2026-11-05T05:21:20.0064476Z   type: 'test'
+2026-11-05T05:21:20.0071819Z   ...
+2026-11-05T05:21:20.0074039Z # Subtest: class home only is step 3 with a specific next step, never linked
+2026-11-05T05:21:20.0077643Z ok 20 - class home only is step 3 with a specific next step, never linked
+2026-11-05T05:21:20.0078750Z   ---
+2026-11-05T05:21:20.0079233Z   duration_ms: 0.3844
+2026-11-05T05:21:20.0080016Z   type: 'test'
+2026-11-05T05:21:20.0080431Z   ...
+2026-11-05T05:21:20.0081160Z # Subtest: note board with class title is step 4 and keeps the strict URL rule
+2026-11-05T05:21:20.0082251Z ok 21 - note board with class title is step 4 and keeps the strict URL rule
+2026-11-05T05:21:20.0082968Z   ---
+2026-11-05T05:21:20.0083793Z   duration_ms: 0.3972
+2026-11-05T05:21:20.0084523Z   type: 'test'
+2026-11-05T05:21:20.0085072Z   ...
+2026-11-05T05:21:20.0085713Z # Subtest: class title grade/class check
+2026-11-05T05:21:20.0086611Z ok 22 - class title grade/class check
+2026-11-05T05:21:20.0087269Z   ---
+2026-11-05T05:21:20.0087820Z   duration_ms: 1.2951
+2026-11-05T05:21:20.0088379Z   type: 'test'
+2026-11-05T05:21:20.0088863Z   ...
+2026-11-05T05:21:20.0261327Z # Subtest: explicit authentication allows HTTPS popups with isolated persistent session
+2026-11-05T05:21:20.0284703Z ok 23 - explicit authentication allows HTTPS popups with isolated persistent session
+2026-11-05T05:21:20.0286526Z   ---
+2026-11-05T05:21:20.0287222Z   duration_ms: 1.7644
+2026-11-05T05:21:20.0289225Z   type: 'test'
+2026-11-05T05:21:20.0290303Z   ...
+2026-11-05T05:21:20.0291218Z # Subtest: background auth requests stop for explicit relogin
+2026-11-05T05:21:20.0292998Z ok 24 - background auth requests stop for explicit relogin
+2026-11-05T05:21:20.0294299Z   ---
+2026-11-05T05:21:20.0294950Z   duration_ms: 0.7604
+2026-11-05T05:21:20.0295811Z   type: 'test'
+2026-11-05T05:21:20.0296351Z   ...
+2026-11-05T05:21:20.0297129Z # Subtest: unknown background popup fails closed with explanation
+2026-11-05T05:21:20.0298936Z ok 25 - unknown background popup fails closed with explanation
+2026-11-05T05:21:20.0304480Z   ---
+2026-11-05T05:21:20.0305164Z   duration_ms: 0.4809
+2026-11-05T05:21:20.0310248Z   type: 'test'
+2026-11-05T05:21:20.0313103Z   ...
+2026-11-05T05:21:20.0314215Z # Subtest: unsafe schemes never create windows
+2026-11-05T05:21:20.0315225Z ok 26 - unsafe schemes never create windows
+2026-11-05T05:21:20.0321008Z   ---
+2026-11-05T05:21:20.0322980Z   duration_ms: 0.5605
+2026-11-05T05:21:20.0323781Z   type: 'test'
+2026-11-05T05:21:20.0324870Z   ...
+2026-11-05T05:21:20.0327243Z # Subtest: background interruption propagates before final publication
+2026-11-05T05:21:20.0329079Z ok 27 - background interruption propagates before final publication
+2026-11-05T05:21:20.0332039Z   ---
+2026-11-05T05:21:20.0332611Z   duration_ms: 0.8732
+2026-11-05T05:21:20.0333186Z   type: 'test'
+2026-11-05T05:21:20.0333709Z   ...
+2026-11-05T05:21:20.1385637Z # Subtest: photo files: original bytes, content identity, file name collisions and restart
+2026-11-05T05:21:20.1387464Z ok 28 - photo files: original bytes, content identity, file name collisions and restart
+2026-11-05T05:21:20.1388301Z   ---
+2026-11-05T05:21:20.1388880Z   duration_ms: 58.5952
+2026-11-05T05:21:20.1389489Z   type: 'test'
+2026-11-05T05:21:20.1390019Z   ...
+2026-11-05T05:21:20.1486370Z # Subtest: invalid, corrupt, disguised, excessive and traversal inputs are rejected
+2026-11-05T05:21:20.1487530Z ok 29 - invalid, corrupt, disguised, excessive and traversal inputs are rejected
+2026-11-05T05:21:20.1488349Z   ---
+2026-11-05T05:21:20.1488764Z   duration_ms: 9.233
+2026-11-05T05:21:20.1489228Z   type: 'test'
+2026-11-05T05:21:20.1489644Z   ...
+2026-11-05T05:21:20.1715492Z # Subtest: symbolic links and corrupted existing photos are never followed or replaced
+2026-11-05T05:21:20.1718689Z ok 30 - symbolic links and corrupted existing photos are never followed or replaced
+2026-11-05T05:21:20.1721667Z   ---
+2026-11-05T05:21:20.1723300Z   duration_ms: 24.3714
+2026-11-05T05:21:20.1725731Z   type: 'test'
+2026-11-05T05:21:20.1726925Z   ...
+2026-11-05T05:21:20.2261247Z # Subtest: portable backup contains draft, whiteboard and registration-history photos; restore validates before references
+2026-11-05T05:21:20.2272098Z ok 31 - portable backup contains draft, whiteboard and registration-history photos; restore validates before references
+2026-11-05T05:21:20.2273453Z   ---
+2026-11-05T05:21:20.2273797Z   duration_ms: 51.0494
+2026-11-05T05:21:20.2274458Z   type: 'test'
+2026-11-05T05:21:20.2274914Z   ...
+2026-11-05T05:21:20.2276196Z # Subtest: duplicate hash preserves legacy text hashes and includes image bytes and order, never names
+2026-11-05T05:21:20.2278697Z ok 32 - duplicate hash preserves legacy text hashes and includes image bytes and order, never names
+2026-11-05T05:21:20.2279592Z   ---
+2026-11-05T05:21:20.2296807Z   duration_ms: 1.5993
+2026-11-05T05:21:20.2297448Z   type: 'test'
+2026-11-05T05:21:20.2297927Z   ...
+2026-11-05T05:21:20.2299092Z # Subtest: mock attachment receipt: complete upload, editor order and published proof all required
+2026-11-05T05:21:20.2300849Z ok 33 - mock attachment receipt: complete upload, editor order and published proof all required
+2026-11-05T05:21:20.2301697Z   ---
+2026-11-05T05:21:20.2301998Z   duration_ms: 1.8562
+2026-11-05T05:21:20.2302347Z   type: 'test'
+2026-11-05T05:21:20.2302642Z   ...
+2026-11-05T05:21:20.2405502Z # Subtest: startup command parser accepts quoted Windows paths without splitting spaces
+2026-11-05T05:21:20.2408646Z ok 34 - startup command parser accepts quoted Windows paths without splitting spaces
+2026-11-05T05:21:20.2412476Z   ---
+2026-11-05T05:21:20.2414873Z   duration_ms: 2.5932
+2026-11-05T05:21:20.2420939Z   type: 'test'
+2026-11-05T05:21:20.2421645Z   ...
+2026-11-05T05:21:20.2423591Z # Subtest: startup picks newest verified version, stable installed path breaks equal-version ties
+2026-11-05T05:21:20.2426081Z ok 35 - startup picks newest verified version, stable installed path breaks equal-version ties
+2026-11-05T05:21:20.2427436Z   ---
+2026-11-05T05:21:20.2428648Z   duration_ms: 0.5263
+2026-11-05T05:21:20.2429716Z   type: 'test'
+2026-11-05T05:21:20.2430392Z   ...
+2026-11-05T05:21:20.2431716Z # Subtest: already correct ON is idempotent and unrelated startup entries are untouched
+2026-11-05T05:21:20.2433853Z ok 36 - already correct ON is idempotent and unrelated startup entries are untouched
+2026-11-05T05:21:20.2435673Z   ---
+2026-11-05T05:21:20.2437847Z   duration_ms: 0.4377
+2026-11-05T05:21:20.2439577Z   type: 'test'
+2026-11-05T05:21:20.2441484Z   ...
+2026-11-05T05:21:20.2443787Z # Subtest: legacy Run and user shortcut duplicates are scoped for cleanup
+2026-11-05T05:21:20.2445600Z ok 37 - legacy Run and user shortcut duplicates are scoped for cleanup
+2026-11-05T05:21:20.2446966Z   ---
+2026-11-05T05:21:20.2448752Z   duration_ms: 0.2364
+2026-11-05T05:21:20.2451117Z   type: 'test'
+2026-11-05T05:21:20.2453069Z   ...
+2026-11-05T05:21:20.2455664Z # Subtest: OFF removes every owned user entry including disabled registrations
+2026-11-05T05:21:20.2457820Z ok 38 - OFF removes every owned user entry including disabled registrations
+2026-11-05T05:21:20.2459055Z   ---
+2026-11-05T05:21:20.2460308Z   duration_ms: 1.1333
+2026-11-05T05:21:20.2461939Z   type: 'test'
+2026-11-05T05:21:20.2464986Z   ...
+2026-11-05T05:21:20.2466659Z # Subtest: Windows startup OFF is preserved on launch; explicit ON can enable it
+2026-11-05T05:21:20.2467956Z ok 39 - Windows startup OFF is preserved on launch; explicit ON can enable it
+2026-11-05T05:21:20.2469735Z   ---
+2026-11-05T05:21:20.2471318Z   duration_ms: 0.2425
+2026-11-05T05:21:20.2473112Z   type: 'test'
+2026-11-05T05:21:20.2475280Z   ...
+2026-11-05T05:21:20.2477523Z # Subtest: old canonical executable is replaced only when the verified target differs
+2026-11-05T05:21:20.2479238Z ok 40 - old canonical executable is replaced only when the verified target differs
+2026-11-05T05:21:20.2480869Z   ---
+2026-11-05T05:21:20.2483003Z   duration_ms: 0.3869
+2026-11-05T05:21:20.2484900Z   type: 'test'
+2026-11-05T05:21:20.2486602Z   ...
+2026-11-05T05:21:20.2489200Z # Subtest: stale machine Run and common shortcut require administrator review, never mutation
+2026-11-05T05:21:20.2491595Z ok 41 - stale machine Run and common shortcut require administrator review, never mutation
+2026-11-05T05:21:20.2492442Z   ---
+2026-11-05T05:21:20.2494987Z   duration_ms: 1.0833
+2026-11-05T05:21:20.2497398Z   type: 'test'
+2026-11-05T05:21:20.2499150Z   ...
+2026-11-05T05:21:20.2501244Z # Subtest: one correct machine entry can stay while duplicate user entries are removed
+2026-11-05T05:21:20.2503123Z ok 42 - one correct machine entry can stay while duplicate user entries are removed
+2026-11-05T05:21:20.2504343Z   ---
+2026-11-05T05:21:20.2506170Z   duration_ms: 0.885
+2026-11-05T05:21:20.2508028Z   type: 'test'
+2026-11-05T05:21:20.2509823Z   ...
+2026-11-05T05:21:20.2511968Z # Subtest: a name collision belonging to another program is not overwritten
+2026-11-05T05:21:20.2513451Z ok 43 - a name collision belonging to another program is not overwritten
+2026-11-05T05:21:20.2514656Z   ---
+2026-11-05T05:21:20.2516516Z   duration_ms: 0.6042
+2026-11-05T05:21:20.2518300Z   type: 'test'
+2026-11-05T05:21:20.2520082Z   ...
+2026-11-05T05:21:20.2523103Z # Subtest: development and isolated test profiles never access real Windows startup registration
+2026-11-05T05:21:20.2526517Z ok 44 - development and isolated test profiles never access real Windows startup registration
+2026-11-05T05:21:20.2528079Z   ---
+2026-11-05T05:21:20.2528424Z   duration_ms: 1.508
+2026-11-05T05:21:20.2530263Z   type: 'test'
+2026-11-05T05:21:20.2532266Z   ...
+2026-11-05T05:21:20.2534672Z # Subtest: registry access denied is reported without attempting registration
+2026-11-05T05:21:20.2536073Z ok 45 - registry access denied is reported without attempting registration
+2026-11-05T05:21:20.2537067Z   ---
+2026-11-05T05:21:20.2538149Z   duration_ms: 0.4362
+2026-11-05T05:21:20.2539634Z   type: 'test'
+2026-11-05T05:21:20.2542649Z   ...
+2026-11-05T05:21:20.2543737Z # Subtest: timer PIP reuses one always-on-top window and remembers separate bounds across reopen
+2026-11-05T05:21:20.2546436Z ok 46 - timer PIP reuses one always-on-top window and remembers separate bounds across reopen
+2026-11-05T05:21:20.2547787Z   ---
+2026-11-05T05:21:20.2549944Z   duration_ms: 37.595
+2026-11-05T05:21:20.2551679Z   type: 'test'
+2026-11-05T05:21:20.2553069Z   ...
+2026-11-05T05:21:20.2556026Z # Subtest: timer actions require the current timer PIP sender, kind and a supported action
+2026-11-05T05:21:20.2558605Z ok 47 - timer actions require the current timer PIP sender, kind and a supported action
+2026-11-05T05:21:20.2559461Z   ---
+2026-11-05T05:21:20.2561659Z   duration_ms: 7.9307
+2026-11-05T05:21:20.2563245Z   type: 'test'
+2026-11-05T05:21:20.2565005Z   ...
+2026-11-05T05:21:20.2567425Z # Subtest: timer PIP renders all states, preserves buttons during ticks and sends controls
+2026-11-05T05:21:20.2568959Z ok 48 - timer PIP renders all states, preserves buttons during ticks and sends controls
+2026-11-05T05:21:20.2569916Z   ---
+2026-11-05T05:21:20.2572150Z   duration_ms: 4.9597
+2026-11-05T05:21:20.2573817Z   type: 'test'
+2026-11-05T05:21:20.2575481Z   ...
+2026-11-05T05:21:20.2577695Z # Subtest: main renderer publishes the same timer to both PIPs and routes expand to the timer dialog
+2026-11-05T05:21:20.2579366Z ok 49 - main renderer publishes the same timer to both PIPs and routes expand to the timer dialog
+2026-11-05T05:21:20.2580244Z   ---
+2026-11-05T05:21:20.2581947Z   duration_ms: 35.5258
+2026-11-05T05:21:20.2583755Z   type: 'test'
+2026-11-05T05:21:20.2585563Z   ...
+2026-11-05T05:21:20.2588603Z # Subtest: timer bounds recover from removed monitors and clamp to the available work area
+2026-11-05T05:21:20.2590598Z ok 50 - timer bounds recover from removed monitors and clamp to the available work area
+2026-11-05T05:21:20.2591817Z   ---
+2026-11-05T05:21:20.2593268Z   duration_ms: 0.3369
+2026-11-05T05:21:20.2594955Z   type: 'test'
+2026-11-05T05:21:20.2596515Z   ...
+2026-11-05T05:21:20.2598614Z 1..50
+2026-11-05T05:21:20.2600717Z # tests 50
+2026-11-05T05:21:20.2603860Z # suites 0
+2026-11-05T05:21:20.2604379Z # pass 50
+2026-11-05T05:21:20.2606512Z # fail 0
+2026-11-05T05:21:20.2608254Z # cancelled 0
+2026-11-05T05:21:20.2610161Z # skipped 0
+2026-11-05T05:21:20.2611969Z # todo 0
+2026-11-05T05:21:20.2613789Z # duration_ms 498.1892
+2026-11-05T05:21:20.5667013Z 
+2026-11-05T05:21:20.5669260Z > test:e2e
+2026-11-05T05:21:20.5674265Z > node tests/e2e/board-titles.e2e.cjs && node tests/e2e/v182-features.e2e.cjs && node tests/e2e/regression.e2e.cjs && node tests/e2e/hiclass-link.e2e.cjs && node tests/e2e/recovery.e2e.cjs && node tests/e2e/timetable-layout.e2e.cjs && node tests/e2e/diary-drafts.e2e.cjs && node tests/e2e/hiclass-recipients.e2e.cjs && node tests/e2e/hiclass-submit.e2e.cjs && node tests/e2e/timer-startup.e2e.cjs && node tests/e2e/diary-layout.e2e.cjs && node tests/e2e/hiclass-window.e2e.cjs && npm run test:photos
+2026-11-05T05:21:20.5676067Z 
+2026-11-05T05:21:25.7584625Z PASS 1. 기본 제목 표시 — ☀ 아침활동
+2026-11-05T05:21:25.7623770Z PASS 10a. 잠금 시 연필 숨김
+2026-11-05T05:21:25.8439966Z PASS 10b. 잠금 시 더블클릭 편집 불가
+2026-11-05T05:21:25.8901672Z PASS 11a. 잠금 해제
+2026-11-05T05:21:25.8929808Z PASS 11b. 잠금 해제 시 연필 표시
+2026-11-05T05:21:26.2217738Z PASS 4a. 편집 중 헤더 높이 유지 — 77 vs 77
+2026-11-05T05:21:26.2439292Z PASS 2/4. 아침활동 Enter 저장
+2026-11-05T05:21:26.3092740Z PASS 5. Esc 취소
+2026-11-05T05:21:26.4106305Z PASS 3/6. 안내사항 바깥 클릭 저장 — ✳ 꼭 확인하세요
+2026-11-05T05:21:26.5512258Z PASS 13a. 최대 30자 제한 — 30/30
+2026-11-05T05:21:26.5513229Z PASS 13b. 긴 제목에서도 보드 크기·위치 불변 — ellipsis=true
+2026-11-05T05:21:26.5513984Z PASS 13c. 제목 스타일 불변
+2026-11-05T05:21:27.2880624Z PASS 13d. 좁은 창에서도 헤더 넘침 없음
+2026-11-05T05:21:27.8795950Z PASS 9. 기본 제목 복원
+2026-11-05T05:21:28.7735936Z PASS 12a. 터치 길게 누르기로 편집 시작
+2026-11-05T05:21:29.0286403Z PASS 12b. 터치 바깥 탭 저장 — ✳ 알립니다
+2026-11-05T05:21:29.2714106Z PASS 12c. 연필 터치로 편집 시작
+2026-11-05T05:21:29.3563983Z PASS 10c. 편집 중 잠그면 편집 종료·연필 숨김
+2026-11-05T05:21:29.3588462Z PASS 8a. 본문 내용 유지(화면·저장소) — 책 읽기 20분
+2026-11-05T05:21:29.3589159Z 일기 쓰기 / 체육복 챙기기
+2026-11-05T05:21:31.1740446Z PASS 7. 재실행 후 제목 유지
+2026-11-05T05:21:31.1756777Z PASS 8b. 재실행 후 본문 유지
+2026-11-05T05:21:31.1794812Z PASS 10d. 재실행 후 잠금 유지·연필 숨김
+2026-11-05T05:21:31.2723802Z PASS health. 업데이트 헬스체크 조건
+2026-11-05T05:21:31.2738643Z PASS store. 제목·본문 별도 키
+2026-11-05T05:21:31.3388745Z 
+2026-11-05T05:21:31.3390111Z 24/24 passed
+2026-11-05T05:21:34.3799742Z PASS A. 정상 수업일 시간표
+2026-11-05T05:21:34.3871699Z PASS A. 정상 급식
+2026-11-05T05:21:35.0646959Z PASS C. API 장애 + 캐시 → 저장된 시간표 유지 — 연결 실패 · 저장된 정보 · 오전 05:21
+2026-11-05T05:21:35.0711917Z PASS C. API 장애 + 캐시 → 저장된 급식 유지
+2026-11-05T05:21:36.3708561Z PASS B. 휴일(정상 응답+0건) 시간표 — 오늘은 등록된 수업이 없습니다.
+2026-11-05T05:21:36.3710326Z PASS B. 급식 없는 날 — 오늘은 급식이 없습니다.
+2026-11-05T05:21:36.3721582Z PASS B. 휴일은 오류 문구 없음
+2026-11-05T05:21:37.7623755Z PASS D. API 장애 + 캐시 없음 → 작은 안내
+2026-11-05T05:21:37.7740253Z PASS 방학에도 다른 보드 정상
+2026-11-05T05:21:38.5992328Z PASS 캐시 복구: 연결 회복 시 자동 재조회
+2026-11-05T05:21:38.9475565Z PASS WB. 초기 실행취소/다시실행 비활성
+2026-11-05T05:21:40.5571831Z PASS WB. 텍스트 생성·자동저장
+2026-11-05T05:21:40.5698254Z PASS WB. 실행취소 활성/다시실행 비활성
+2026-11-05T05:21:40.6108454Z PASS WB. 입력 묶음 한 번에 취소 — ["@0.204,0.288#36"]
+2026-11-05T05:21:40.6506989Z PASS WB. 블록 생성 취소
+2026-11-05T05:21:40.6566025Z PASS WB. 되돌릴 것 없으면 비활성
+2026-11-05T05:21:40.7381457Z PASS WB. 다시 실행 2회
+2026-11-05T05:21:40.8970266Z PASS WB. 이동
+2026-11-05T05:21:40.9350866Z PASS WB. 이동 취소 — 오늘 준비물@0.204,0.288#36 vs 오늘 준비물@0.204,0.288#36
+2026-11-05T05:21:40.9818330Z PASS WB. 이동 다시 실행
+2026-11-05T05:21:41.1188831Z PASS WB. 글씨 크기 변경 취소 — 오늘 준비물@0.408,0.480#40
+2026-11-05T05:21:41.2863231Z PASS WB. 텍스트 수정 + 바깥 클릭 시 기록
+2026-11-05T05:21:41.4009666Z PASS WB. 삭제→취소→다시 실행 — 1/2/1
+2026-11-05T05:21:41.6509663Z PASS WB. 판서도 같은 기록으로 취소/다시
+2026-11-05T05:21:41.7206196Z PASS WB. 전체 지우기(확인창 유지)
+2026-11-05T05:21:41.7657673Z PASS WB. 전체 지우기 후 실행 취소
+2026-11-05T05:21:41.8114352Z PASS WB. Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z
+2026-11-05T05:21:43.5098144Z PASS WB. 취소 후 상태가 재실행 후 유지
+2026-11-05T05:21:43.5159422Z PASS WB. 대시보드에서는 단축키 무시
+2026-11-05T05:21:44.8291753Z PASS BK. 백업 완료 메시지 — 백업이 완료되었습니다. (backup-out.json)
+2026-11-05T05:21:44.8299368Z PASS BK. schemaVersion·appVersion·createdAt — 1.8.10
+2026-11-05T05:21:44.8300128Z PASS BK. 사용자 데이터 포함
+2026-11-05T05:21:44.8300631Z PASS BK. 민감정보·캐시·위치 제외
+2026-11-05T05:21:44.8304421Z PASS BK. 로그인 세션(Partitions)은 백업 대상 아님 — blob_storage,Cache,Code Cache,DawnGraphiteCache,DawnWebGPUCache,desktop-settings.json,DevToolsActivePort,DIPS,DIPS-wal,GPUCache,Local State,Local Storage,lockfile,Network,Preferences,Session Storage,Shared Dictionary
+2026-11-05T05:21:45.2741782Z PASS BK. 잘못된 파일 거부
+2026-11-05T05:21:45.7269588Z PASS BK. 손상 파일 거부, 기존 데이터 유지
+2026-11-05T05:21:46.2858771Z PASS BK. 확인창 취소 시 변경 없음
+2026-11-05T05:21:49.2058241Z PASS BK. 복원 후 화면을 실제로 다시 불러옴(저장 차단 해제)
+2026-11-05T05:21:49.2606818Z PASS BK. 복원 후 다시 불러오기·값 복원
+2026-11-05T05:21:49.2620058Z PASS BK. 복원 시 화이트보드 덮어쓰기 없음
+2026-11-05T05:21:49.2621989Z PASS BK. 복원 전 자동 보관본 생성
+2026-11-05T05:21:49.2637544Z PASS BK. 복원해도 이 PC의 제외 항목(API 키)은 유지
+2026-11-05T05:21:49.2648544Z PASS health. 업데이트 헬스체크 조건
+2026-11-05T05:21:49.3280090Z 
+2026-11-05T05:21:49.3281344Z 43/43 passed
+2026-11-05T05:21:52.3161481Z PASS 시간표 자동 조회
+2026-11-05T05:21:52.3193658Z PASS 현재 교시 자동 강조
+2026-11-05T05:21:52.4382342Z PASS 시간표 당일 직접 수정
+2026-11-05T05:21:52.5305112Z PASS 원래 시간표로 되돌리기
+2026-11-05T05:21:52.6378724Z PASS 안내사항 어제 내용 불러오기
+2026-11-05T05:21:52.7330068Z PASS 안내사항 저장
+2026-11-05T05:21:53.0290494Z PASS D-Day 최대 2개 표시(가까운 순)
+2026-11-05T05:21:53.1222509Z PASS D-Day 제목/날짜 수정·당일 D-Day
+2026-11-05T05:21:53.1567426Z PASS D-Day 글씨 18px 이상 — 18px
+2026-11-05T05:21:53.3762238Z PASS D-Day 삭제·없으면 영역 숨김
+2026-11-05T05:21:53.4672973Z PASS 보드 숨김(자리 유지)
+2026-11-05T05:21:53.5601499Z PASS 보드별 글씨 크기
+2026-11-05T05:21:53.8214312Z PASS 보드 크기 조절·기본 크기 복원 — 220→259→220
+2026-11-05T05:21:55.5297684Z FAIL 팝업 닫아도 진행·버튼에 남은 시간 — ⏱ 00:02
+2026-11-05T05:21:58.1371071Z PASS 타이머 완료 표시
+2026-11-05T05:21:58.2610407Z PASS 타이머 초기화
+2026-11-05T05:21:58.3667264Z PASS 일시정지→계속하기
+2026-11-05T05:22:00.4382467Z PASS 1명 뽑기
+2026-11-05T05:22:02.2962665Z PASS 여러 명 뽑기
+2026-11-05T05:22:02.2981511Z PASS 한 라운드 중복 없음
+2026-11-05T05:22:02.7561070Z PASS 남은 인원 초과 시 안내
+2026-11-05T05:22:02.8375786Z PASS 오늘 제외
+2026-11-05T05:22:02.8535319Z PASS 전체 다시 포함
+2026-11-05T05:22:02.9002219Z PASS 새 라운드
+2026-11-05T05:22:02.9935907Z PASS 모둠 자동 편성·다시 섞기
+2026-11-05T05:22:03.1355431Z PASS 학부모·학생 모두 OFF 안내
+2026-11-05T05:22:03.1829075Z PASS 모두 OFF면 등록 차단(하이클래스 호출 없음)
+2026-11-05T05:22:03.3828517Z PASS 수신대상 4개 조합 초안과 함께 저장
+2026-11-05T05:22:03.7189896Z PASS 선택 시 등록 요청 전달·실패해도 초안 유지
+2026-11-05T05:22:04.0506734Z PASS 하이클래스 자동화 실패가 앱을 멈추지 않음
+2026-11-05T05:22:04.0654543Z PASS 날짜별 초안(새 날짜는 빈 본문)
+2026-11-05T05:22:04.0763666Z PASS 기존 날짜 초안 복원
+2026-11-05T05:22:04.1555220Z PASS 잠금 시 편집 버튼·설정 숨김
+2026-11-05T05:22:04.2039472Z PASS 잠금 해제
+2026-11-05T05:22:05.8071224Z PASS 재실행 후 명단 유지
+2026-11-05T05:22:05.8693943Z PASS 재실행 후 알림장 초안 유지
+2026-11-05T05:22:05.9336052Z 
+2026-11-05T05:22:05.9337758Z 35/36 passed
+2026-11-05T05:22:05.9743545Z ##[error]Process completed with exit code 1.
+2026-11-05T05:22:05.9957602Z Post job cleanup.
+2026-11-05T05:22:06.1849304Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-05T05:22:06.2211040Z git version 2.56.0.windows.3
+2026-11-05T05:22:06.2277982Z Temporarily overriding HOME='D:\a\_temp\9f9f1a8c-cfb3-4c69-a173-e119c609ad18' before making global git config changes
+2026-11-05T05:22:06.2279903Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-05T05:22:06.2294135Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\class\class\source
+2026-11-05T05:22:06.2623840Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-05T05:22:06.2975881Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-05T05:22:06.7546737Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-05T05:22:06.7827108Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-05T05:22:07.2378967Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-05T05:22:07.2666243Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-05T05:22:07.7488222Z Post job cleanup.
+2026-11-05T05:22:07.9295259Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-05T05:22:07.9559136Z git version 2.56.0.windows.3
+2026-11-05T05:22:07.9618033Z Temporarily overriding HOME='D:\a\_temp\75f0de6c-1f54-443f-ab79-e6ad1d59aa93' before making global git config changes
+2026-11-05T05:22:07.9619521Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-05T05:22:07.9629675Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\class\class\driver
+2026-11-05T05:22:07.9910179Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-05T05:22:08.0194297Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-05T05:22:08.4903865Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-05T05:22:08.5191110Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-05T05:22:08.9909340Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-05T05:22:09.0195368Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-05T05:22:09.4914002Z Cleaning up orphan processes
+2026-11-05T05:22:09.5398171Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
