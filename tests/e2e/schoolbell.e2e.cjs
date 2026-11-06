@@ -56,9 +56,11 @@ const state=async()=>page.evaluate(()=>desktop.diaryServiceStatus([academicYear(
  },browser);
  assert.deepEqual(isolated,{sandbox:true,node:false,preload:false,rejected:true});pass('remote window has no preload, Node or trusted IPC access');
  await app.evaluate(({BrowserWindow},id)=>BrowserWindow.fromId(id).loadURL('https://schoolbell-e.com/ko/classes/synthetic/notes'),browser);
- await page.fill('#schoolbellSchool','다른초등학교');await page.fill('#schoolbellGrade','6');await page.fill('#schoolbellClass','1');
+ await page.fill('#schoolbellSchool','다른초등학교');await page.fill('#schoolbellYear',to.year);await page.fill('#schoolbellGrade','6');await page.fill('#schoolbellClass','1');
  await page.click('#schoolbellLink');await ready();assert.match(await page.textContent('#diaryStatus'),/다릅니다/);assert.equal((await state()).link,null);pass('wrong school blocks manual class confirmation');
- await page.fill('#schoolbellSchool','옥구초등학교');await page.click('#schoolbellLink');await ready();assert.equal((await state()).link.confirmation,'teacher-manual');pass('matching teacher confirmation is explicitly manual, never authenticated success');
+ await page.fill('#schoolbellSchool','옥구초등학교');await page.fill('#schoolbellYear',String(Number(to.year)-1));
+ await page.click('#schoolbellLink');await ready();assert.equal((await state()).link,null);pass('wrong academic year blocks manual class confirmation');
+ await page.fill('#schoolbellYear',to.year);await page.click('#schoolbellLink');await ready();assert.equal((await state()).link.confirmation,'teacher-manual');pass('matching teacher confirmation is explicitly manual, never authenticated success');
  const payload=await note();
  await page.click('#schoolbellPrepare');await ready();let st=await state();assert.equal(st.posts.length,1);assert.equal(st.posts[0].status,'manual-pending');
  await page.click('#schoolbellCopyBody');await ready();assert.equal(await app.evaluate(({clipboard})=>clipboard.readText()),payload.body);
@@ -104,6 +106,13 @@ const state=async()=>page.evaluate(()=>desktop.diaryServiceStatus([academicYear(
   const handler=ipcMain._invokeHandlers.get('schoolbell:publish');
   return handler({sender:w.webContents,senderFrame:w.webContents.mainFrame},{});
  });
- assert.equal(ipc.status,'blocked');pass('automatic Schoolbell publication disabled in main process');
+ assert.equal(ipc.status,'blocked');assert.equal(await page.locator('#schoolbellPublish').isDisabled(),true);
+ assert.equal((await page.evaluate(()=>desktop.schoolbellPublish({enabled:true,gate:true,permission:'approved'}))).status,'blocked');
+ pass('automatic Schoolbell publication disabled in main process and UI; renderer cannot opt in');
+ const officialLogin='https://v4.schoolbell-e.com/ko/gate/login?return_uri=https:%2F%2Fschoolbell-e.com%2Fko%2Fmain';
+ const allowedRedirect=await app.evaluate(({BrowserWindow},url)=>{
+  const w=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('https:'));let blocked=false;
+  w.webContents.emit('will-redirect',{preventDefault(){blocked=true;}},url);return !blocked;
+ },officialLogin);assert.equal(allowedRedirect,true);pass('observed official login redirect passes navigation guard');
  console.log(count+'/'+count+' passed');
 }finally{if(app)await app.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

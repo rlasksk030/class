@@ -2,9 +2,12 @@
 const {BrowserWindow,ipcMain,dialog,clipboard,shell} = require('electron');
 const fs = require('node:fs/promises'), path = require('node:path');
 const services = require('./diary-services.cjs');
+const capability = require('./schoolbell-capability.cjs');
 const {bounded} = require('./hiclass-navigation.cjs');
 module.exports = function setup(main) {
  const profile = require('./school-profile.cjs').get(), store = services.createStore(profile);
+ // No live driver is installed. Only reviewed code can supply one; IPC cannot change the gate.
+ const publisher=require('./schoolbell-publish.cjs').createPublisher({profile,store,readPhoto:ref=>require('./media.cjs').current().read(ref)});
  const windows = new Map(); let busy = false;
  const expectedSchool = () => profile.config.active?.school.SCHUL_NM || require('./school.js').legacy.SCHUL_NM;
  const message = '학교종이 작업을 마치지 못했습니다. 초안과 사진은 유지됩니다. 게시 여부는 학교종이에서 확인해 주세요.';
@@ -23,10 +26,13 @@ module.exports = function setup(main) {
  const status = key => {
   const row = store.get(key);
   return {service:row.service,link:row.schoolbell ? {confirmation:row.schoolbell.confirmation} : null,
-   automatic:false,posts:Object.entries(row.posts).map(([hash,p])=>({hash,...p}))};
+   automatic:false,capability:capability.status(),posts:Object.entries(row.posts).map(([hash,p])=>({hash,...p})),
+   automaticPosts:Object.entries(row.automaticPosts||{}).map(([id,p])=>({id,...p}))};
  };
  async function open(key) {
   services.classKey(key);
+  const saved=store.get(key).schoolbell?.url;
+  const destination=saved?services.safeURL(saved,true):services.HOME;
   for (const [other,w] of windows) if (other !== key && !w.isDestroyed()) w.close();
   let w = windows.get(key);
   if (!w || w.isDestroyed()) {
@@ -44,10 +50,10 @@ module.exports = function setup(main) {
     try { services.safeURL(url); void w.loadURL(url).catch(()=>{}); } catch {}
     return {action:'deny'};
    });
-   try { await bounded(()=>w.loadURL(store.get(key).schoolbell?.url || services.HOME),20000,()=>{if(!w.isDestroyed())w.webContents.stop();}); }
+   try { await bounded(()=>w.loadURL(destination),20000,()=>{if(!w.isDestroyed())w.webContents.stop();}); }
    catch(error) { w.schoolbellLoadFailed=true;throw error; }
   } else if(w.schoolbellLoadFailed) {
-   await bounded(()=>w.loadURL(store.get(key).schoolbell?.url || services.HOME),20000,()=>{if(!w.isDestroyed())w.webContents.stop();});
+   await bounded(()=>w.loadURL(destination),20000,()=>{if(!w.isDestroyed())w.webContents.stop();});
   }
   w.show(); w.focus(); return w;
  }
@@ -71,13 +77,13 @@ module.exports = function setup(main) {
  handle('schoolbell:link',async value=>{
   const to=target(value), w=windows.get(to.classKey);
   if (!w || w.isDestroyed() || w.schoolbellLoadFailed) fail('학교종이 창을 먼저 열고 담당 학급의 알림장으로 이동해 주세요.');
-  if (!services.matchTarget({schoolName:expectedSchool(),grade:to.grade,classroom:to.classroom},to.observed||{}))
-   fail('학교 또는 학년·반이 우리 교실 설정과 다릅니다. 담당 학급을 다시 확인해 주세요.');
+  if (!services.matchTarget({schoolName:expectedSchool(),year:to.year,grade:to.grade,classroom:to.classroom},to.observed||{}))
+   fail('학교 또는 학년도·학년·반이 우리 교실 설정과 다릅니다. 담당 학급을 다시 확인해 주세요.');
   let url;
   try { url=services.safeURL(w.webContents.getURL(),true); } catch(e) { fail(e.message); }
   const answer=await dialog.showMessageBox(main(),{type:'question',buttons:['취소','직접 확인했습니다'],defaultId:0,cancelId:0,
    message:'학교종이 담당 학급을 직접 확인하셨나요?',
-   detail:expectedSchool()+' '+to.grade+'학년 '+to.classroom+'반\n학교종이의 학교명·학급명, 담임 권한, 알림장 게시판을 직접 확인한 경우에만 진행하세요.\n앱에서 로그인·학급 일치 여부를 자동 검증하지 않습니다.'});
+   detail:expectedSchool()+' '+to.year+'학년도 '+to.grade+'학년 '+to.classroom+'반\n학교종이의 학교명·학급명, 담임 권한, 알림장 게시판을 직접 확인한 경우에만 진행하세요.\n앱에서 로그인·학급 일치 여부를 자동 검증하지 않습니다.'});
   if(answer.response!==1) return {status:'cancelled',message:'학급 확인을 취소했습니다.'};
   if(w.isDestroyed() || w.webContents.getURL()!==url) fail('학교종이 화면이 바뀌었습니다. 담당 학급을 다시 확인해 주세요.');
   store.link(to.classKey,url);
@@ -131,6 +137,18 @@ module.exports = function setup(main) {
   return {...result,message:yes?'수동 게시 · 사용자 확인 기록을 저장했습니다. 초안과 사진은 보존됩니다.':'미게시 확인을 기록했습니다. 초안으로 다시 준비할 수 있습니다.'};
  });
  // Explicit IPC guard as well as disabled UI; no settings flag can enable unverified automatic posting.
- handle('schoolbell:publish',()=>({status:'blocked',message:'학교종이 자동 등록은 공식 허용 방식과 실제 검증 전까지 사용할 수 없습니다.'}));
+ handle('schoolbell:publish',value=>publisher.publish(value));
+ handle('schoolbell:resolve-automatic',async ({classKey,id,outcome})=>{
+  const post=store.get(classKey).automaticPosts?.[id];
+  if(!post||!['auto-pending','auto-uncertain'].includes(post.status)||
+     !['auto-user-confirmed','auto-user-not-posted'].includes(outcome))fail('확인할 자동 등록 시도가 없습니다.');
+  const answer=await dialog.showMessageBox(main(),{type:'question',buttons:['취소','직접 확인 기록'],defaultId:0,cancelId:0,
+   message:'학교종이에서 실제 게시물을 확인하셨나요?',
+   detail:expectedSchool()+' · '+classKey+'\n'+post.date+' · 사진 '+post.photoCount+'장\n'+
+    (outcome==='auto-user-confirmed'?'게시물·본문·사진을 모두 확인한 경우에만 기록하세요. 자동 검증 성공으로 변경하지 않습니다.':
+    '게시되지 않은 것이 확실할 때만 기록하세요. 불확실하면 취소하세요. 기존 시도 기록은 보존됩니다.')});
+  if(answer.response!==1)return {status:'cancelled',message:'기록을 유지했습니다. 자동 재전송하지 않습니다.'};
+  return {...store.resolveAutomatic(classKey,id,outcome),message:'사용자 확인을 별도로 기록했습니다. 초안과 사진은 유지됩니다.'};
+ });
  return () => !busy && [...windows.values()].every(w=>w.isDestroyed());
 };

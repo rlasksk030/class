@@ -50,3 +50,34 @@ test('corrupt state fails closed and file is preserved; prototype-like class nam
  store.select('__proto__','schoolbell');assert.equal(store.get('__proto__').service,'schoolbell');assert.equal({}.service,undefined);
  const file=path.join(p.dir,'diary-services.json');fs.writeFileSync(file,'corrupt');assert.throws(()=>store.select(note.classKey,'schoolbell'));assert.equal(fs.readFileSync(file,'utf8'),'corrupt');
 });
+test('observed v4 login returns are navigation-only, unknown redirects and credentials are denied',()=>{
+ const base='https://v4.schoolbell-e.com/ko/gate/login?return_uri=';
+ const good=base+encodeURIComponent('https://schoolbell-e.com/ko/main');
+ assert.equal(s.safeURL(good),good);assert.throws(()=>s.safeURL(good,true));
+ for(const url of [base+encodeURIComponent('https://evil.invalid/'),good+'&token=secret',good+'&return_uri=x',
+  base+encodeURIComponent('https://schoolbell-e.com/ko/main?token=secret'),base+encodeURIComponent('https://schoolbell-e.com@evil.invalid/ko/main'),
+  'https://schoolbell-e.com/ko/classes/1?return_uri=x'])assert.throws(()=>s.safeURL(url));
+ assert.throws(()=>s.safeURL('https://schoolbell-e.com/ko/main/home',true));
+ const e={schoolName:'가상초등학교',year:'2026',grade:'6',classroom:'1'};
+ assert.ok(s.matchTarget(e,e));assert.ok(!s.matchTarget(e,{...e,year:'2025'}));assert.ok(!s.matchTarget(e,{...e,year:undefined}));
+ for(const date of ['2026-02-30','2026-13-01','2026-00-01'])assert.throws(()=>s.payload({...note,date}));
+});
+test('manual and automatic records block one another; unresolved restart cannot become success by user confirmation',t=>{
+ const p=profile(t),store=ready(p),auto=store.beginAutomatic(note);
+ assert.equal(s.createStore(p).get(note.classKey).automaticPosts[auto.id].status,'auto-pending');
+ assert.equal(store.prepare({...note,title:'Changed'}).blocked,true);assert.equal(store.beginAutomatic({...note,title:'Changed'}).blocked,true);
+ assert.throws(()=>store.automaticState(note.classKey,auto.id,{status:'auto-success',stage:'verifying'}));
+ assert.throws(()=>store.resolveAutomatic(note.classKey,auto.id,'auto-success'));
+ store.resolveAutomatic(note.classKey,auto.id,'auto-user-not-posted');
+ const next=store.beginAutomatic(note);assert.notEqual(next.id,auto.id);assert.equal(Object.keys(store.get(note.classKey).automaticPosts).length,2);
+ store.resolveAutomatic(note.classKey,next.id,'auto-user-confirmed');assert.equal(store.prepare(note).blocked,true);
+ const other={...note,title:'New draft'},manual=store.prepare(other);assert.equal(store.beginAutomatic(other).blocked,true);
+ store.resolve(note.classKey,manual.hash,'manual-not-posted');assert.ok(store.beginAutomatic(other).id);
+});
+test('malformed automatic state fails closed without overwriting audit data',t=>{
+ const p=profile(t),store=ready(p);store.beginAutomatic(note);
+ const file=path.join(p.dir,'diary-services.json'),data=JSON.parse(fs.readFileSync(file));
+ Object.values(data.classes[note.classKey].automaticPosts)[0].status='invented';
+ const raw=JSON.stringify(data);fs.writeFileSync(file,raw);
+ assert.throws(()=>store.beginAutomatic(note));assert.equal(fs.readFileSync(file,'utf8'),raw);
+});
