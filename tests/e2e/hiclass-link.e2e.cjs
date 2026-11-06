@@ -50,9 +50,11 @@ const waitText=async(page,sel,re,ms=8000)=>{const end=Date.now()+ms;while(Date.n
  await app.close();
  // Cancel in the confirmation: nothing saved for another class.
  fs.rmSync(path.join(PROFILE,'hiclass-links.json'),{force:true});
- ({app,page}=await launch(0));await page.click('#diaryTab');await page.click('#diaryConnect');await page.waitForTimeout(500);await hiclassGo(app,'/main/clazzes/c1/note/n1');
+ ({app,page}=await launch(0));await page.click('#diaryTab');await page.click('#diaryConnect');await page.waitForFunction(()=>!document.querySelector('#diaryConnect').disabled);await hiclassGo(app,'/main/clazzes/c1/note/n1');
  const cancel=await waitText(page,'#diaryLinkMessage',/취소/);ok('확인창 [취소] 시 저장 안 함',/연결을 취소했습니다/.test(cancel)&&!fs.existsSync(path.join(PROFILE,'hiclass-links.json')));
- await page.click('#diaryConnect');await waitText(page,'#diaryLinkMessage',/연결을 취소했습니다/);ok('[하이클래스 연결하기]로 다시 확인창',(await app.evaluate(()=>globalThis.dialogs.length))===2);
+ await page.click('#diaryConnect');await page.waitForFunction(()=>!document.querySelector('#diaryConnect').disabled);
+ for(let i=0;i<40&&(await app.evaluate(()=>globalThis.dialogs.length))<2;i++)await page.waitForTimeout(200);
+ await waitText(page,'#diaryLinkMessage',/연결을 취소했습니다/);ok('[하이클래스 연결하기]로 다시 확인창',(await app.evaluate(()=>globalThis.dialogs.length))===2);
  await app.close();
  const f=results.filter(r=>!r[1]);console.log(`\n${results.length-f.length}/${results.length} passed`);process.exit(f.length?1:0);
 })().catch(e=>{console.error(e);process.exit(2);});
