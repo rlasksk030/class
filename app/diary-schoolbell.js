@@ -1,5 +1,5 @@
-// Common editor remains in diary.js; this controller only manages service choice/manual handoff.
-window.createDiaryServices = function({root,readNote,save,target,isBusy,status,photoHelp,onHiclass}) {
+// Common editor owns draft snapshots/completion. Production capability remains code-gated.
+window.createDiaryServices = function({root,readNote,save,target,isBusy,status,photoHelp,onHiclass,onAutomaticPublish}) {
  const $ = id=>root.querySelector('#'+id);
  const selector=document.createElement('label');
  selector.className='diary-service-selector';
@@ -25,14 +25,15 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
  $('diaryHiclass').after(panel);
  const autoButton=document.createElement('button');autoButton.id='schoolbellPublish';autoButton.textContent='학교종이 등록';autoButton.disabled=true;autoButton.hidden=true;
  autoButton.title='공식 허용 방식과 실제 게시 검증 대기';$('diaryPublish').after(autoButton);
- let service='hiclass',busy=false,loading=false,generation=0,currentKey='';
+ let service='hiclass',busy=false,loading=false,generation=0,currentKey='',automaticEnabled=false;
  const controls=()=>[...panel.querySelectorAll('button:not([title])')];
  function paint(data) {
   service=data.service||'hiclass'; $('diaryService').value=service;
   const manual=service==='schoolbell';
   $('diaryHiclass').hidden=manual;panel.hidden=!manual;
   root.querySelector('.diary-recipients').hidden=manual;$('diaryPublish').hidden=manual;
-  autoButton.hidden=!manual;autoButton.disabled=true;
+  automaticEnabled=data.capability?.enabled===true;
+  autoButton.hidden=!manual;autoButton.disabled=!automaticEnabled||busy;
   $('schoolbellAutomaticState').textContent=data.capability?.message||'자동 등록 잠김 · 연결 정보를 확인할 수 없습니다.';
   photoHelp.textContent=manual?'사진은 초안에 보관됩니다. 번호순으로 저장한 파일을 학교종이에 직접 첨부하고 개수와 순서를 확인하세요.':'사진은 표시된 순서로 하이클래스에 첨부됩니다. 업로드와 등록 확인이 끝날 때까지 초안을 보존합니다.';
   $('schoolbellState').textContent=data.link?'담당 학급 직접 확인 기록 있음 · 로그인 상태 미검증':'담당 학급 확인 필요';
@@ -65,18 +66,18 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
  }
  async function refresh() {
   const id=++generation,to=target();currentKey=to.classKey;
-  loading=true;$('diaryService').disabled=true;
+  loading=true;automaticEnabled=false;autoButton.disabled=true;$('diaryService').disabled=true;
   try {
    const data=await desktop.diaryServiceStatus(to.classKey);
    if(id!==generation||to.classKey!==target().classKey)return;
    if(data.status)throw Error();
    paint(data);
    loading=false;$('diaryService').disabled=false;$('diaryPublish').disabled=isBusy();
-  } catch { loading=false;service='unavailable';status('발행 서비스 설정을 읽지 못했습니다. 다시 알림장을 열어 주세요.');$('diaryService').disabled=true;$('diaryPublish').disabled=true; }
+  } catch { if(id!==generation||to.classKey!==target().classKey)return;loading=false;service='unavailable';status('발행 서비스 설정을 읽지 못했습니다. 다시 알림장을 열어 주세요.');$('diaryService').disabled=true;$('diaryPublish').disabled=true; }
  }
  async function run(action) {
   if(busy||loading||isBusy()||!save())return;
-  const origin=target().classKey;busy=true;$('diaryService').disabled=true;
+  const origin=target().classKey;busy=true;autoButton.disabled=true;$('diaryService').disabled=true;
   for(const b of controls())b.disabled=true;
   try { const result=await action();if(origin===target().classKey)status(result?.message||'작업 결과를 확인해 주세요.');return result; }
   catch { if(origin===target().classKey)status('학교종이 작업을 마치지 못했습니다. 초안과 사진은 유지됩니다.'); }
@@ -101,5 +102,9 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
  });
  for(const part of ['Title','Body'])$('schoolbellCopy'+part).onclick=()=>run(()=>desktop.schoolbellCopy({note:readNote(),part:part.toLowerCase()}));
  $('schoolbellPhotos').onclick=()=>run(()=>desktop.schoolbellPhotos(readNote()));
+ autoButton.onclick=()=>{
+  if(service!=='schoolbell'||!automaticEnabled||typeof onAutomaticPublish!=='function')return;
+  return run(onAutomaticPublish);
+ };
  return {refresh,busy:()=>busy||loading,service:()=>service};
 };
