@@ -2,19 +2,19 @@
 
 `app/schoolbell-prepared-driver.cjs`는 기존 `schoolbell-publish.cjs` 계약을 구현하는 **시험 학급용 사전 드라이버**다. 2026-11-09 후속 작업에서 `schoolbell.cjs`에 `createRuntimeDriver`를 연결했다. capability=false와 기본 권한/증거 공급자 부재 때문에 실제 앱의 자동 조작은 차단된다. driver=null은 더 이상 현재 상태가 아니다.
 
-최신 연결부 진행은 [앱 흐름 후속 기록](2026-11-09-schoolbell-app-flow.md), 기존 실제 A/B/C 결과는 [이전 실서비스 기록](2026-11-09-schoolbell-electron-live.md)을 기준으로 한다. 아래 기본 증거 계약은 유지한다. 앱의 실제 세션에서 이 계약 전체를 충족한 것은 아니다.
+최신 연결부 진행은 [최종 guard 결합 기록](2026-11-09-schoolbell-final-connection.md) 및 [목록/원본 연결 기록](2026-11-09-schoolbell-integration-ports.md), 기존 실제 A/B/C 결과는 [이전 실서비스 기록](2026-11-09-schoolbell-electron-live.md)을 기준으로 한다. 아래 기본 증거 계약은 유지한다. 앱의 실제 세션에서 이 계약 전체를 충족한 것은 아니다.
 
 ### 구체화된 Electron 연결부
 
 - `schoolbell-observed-composer.cjs`: 격리 world의 native 제목/본문 편집, 사진 원본 File 전달, 변경 revision, 같은 조작 안의 DOM guard, 단일 보내기.
 - `schoolbell-editor-text.cjs`, `probeAttachments`: 관찰한 Froala 문단과 파일명/확장자/용량 분리. 미리보기나 파일명을 독립 원본으로 취급하지 않는다.
-- `schoolbell-observed-post.cjs`: classnews 경로/유일한 제목/전문/파일 순서 검사 및 실제 첨부 목록 클릭 → Electron 다운로드 → 원본 해시 비교. ID·날짜·권한은 추정하지 않는다.
+- `schoolbell-observed-post.cjs`: classnews 경로/게시물 ID와 제목/전문/파일 순서 검사 및 실제 첨부 목록 클릭 → Electron 다운로드 → 원본 해시 비교. ID·날짜·권한은 추정하지 않는다.
 - `schoolbell-electron-driver.cjs`는 기존 `readPublished` 공급자 또는 `readPublishedMetadata` + 관찰 UI 원본 다운로드를 사용한다. metadata는 원래 학급으로 재조회한 `complete, refreshed, boardURL, id, date, scope`를 요구한다. 관찰 기반 공급자를 연결했지만 앱 실제 로그인 세션에서의 실행은 아직 검증하지 못했다.
 - 게시 후 schoolnews로 이동해도 재게시하지 않는다. 읽기 공급자가 원래 classnews로 돌아온 뒤 binding과 결과를 검증한다. 실제 서비스 이동을 관찰했고 로컬 Electron 회귀를 추가했다.
 
 `schoolbell-live-context.cjs`는 동일 앱 세션의 임시 읽기 창에서 관찰한 학급정보·계정·명단·초대 화면을 읽는다. 확인 가능한 학급 종류/학년·반/빈 명단 슬롯과 미확인 학교·학년도/계정·권한/가입 인원/필수 알림을 분리한다. 부분 사실만으로 권한을 통과시키지 않는다.
 
-`schoolbell-live-posts.cjs`는 실제 카드 부모의 `data-letter-id`와 날짜 tooltip을 수집하고 원래 학급 재조회에 연결한다. 다운로드 전후에도 같은 게시물 ID를 요구한다. 가상 스크롤의 전체 범위는 확인되지 않아 baseline은 `complete:false`다. 날짜 의미, 게시 전 독립 원본, 목록 완결성과 원자적 `guardDOM`은 계속 필요하다. 합성 fixture 속성을 운영 근거로 사용하지 않는다.
+`schoolbell-live-posts.cjs`는 실제 카드 부모의 `data-letter-id`와 날짜 tooltip을 수집하고 원래 학급 재조회에 연결한다. 다운로드 전후에도 같은 게시물 ID를 요구한다. 실제 목록 끝 표시와 scroll owner를 관찰해 전체 범위 collector를 연결했다. 검색/로딩/끝 미확인 또는 단일 DOM 샘플은 완료로 취급하지 않는다. 기본 최종 `guardDOM`도 연결했으나 실제 앱 세션의 신원·권한·날짜 및 게시 전 독립 원본/전체 목록 동작은 아직 미검증이다. 합성 fixture 속성을 운영 근거로 사용하지 않는다.
 
 ## 확정한 구현과 선택자
 
@@ -28,7 +28,7 @@
 
 target은 `schoolId, schoolName, year, grade, classroom, classKey`다. 승인 객체는 공식 근거 참조, `electron-ui` 방식, 같은 학교/학급, 승인된 시험 학급, `read/input/attachments/submit`의 개별 범위를 요구한다. 이는 운영 활성화 승인 자체가 아니다. 실제 공식 답변과 적용 범위를 코드 검토하고 별도 실서비스 검증을 마쳐야 운영 연결을 논의할 수 있다.
 
-`readContext`는 학교명·학년도·학년·반·학교 ID·게시판 ID, 로그인/교사/학급 승인, 인원 확인(학생 0·학부모 0), 외부 알림 없음, 시험 학급 승인, 검증 시각, 현재 계정/화면 연결 식별값을 제공해야 한다. 선택된 학급과 로컬 학교 ID를 연결하는 근거도 실제 UI로 구현해야 한다. 기본 15초보다 오래된 증거·미래 시각·항목 누락·세션/계정/학급 변경은 차단한다. 사용자 진술이나 작성 버튼 존재만으로 `identityVerified`/`authorityVerified`/`recipientsVerified`를 true로 만들 수 없다.
+`readContext`는 학교명·학년도·학년·반·학교 ID·게시판 ID, 로그인/교사/학급 승인, 인원 확인(학생 0·학부모 0), 알림 대상 검증, 시험 학급 승인, 검증 시각, 현재 계정/화면 연결 식별값을 제공해야 한다. 선택된 학급과 로컬 학교 ID를 연결하는 근거도 실제 UI로 구현해야 한다. 기본 15초보다 오래된 증거·미래 시각·항목 누락·세션/계정/학급 변경은 차단한다. 필수 관리자 본인 알림은 현재 교사만 수신한다는 실제 UI 근거와 같은 actor/board/school/class에 한정된 main-process `selfNotice` 승인이 모두 있어야 한다. 빈 대상 표만으로 승인하지 않는다. 시도 중 대상 의미 변경도 차단한다. 사용자 진술이나 작성 버튼 존재만으로 `identityVerified`/`authorityVerified`/`recipientsVerified`를 true로 만들 수 없다.
 
 ## Bridge 메서드 계약
 
@@ -38,9 +38,9 @@ target은 `schoolId, schoolName, year, grade, classroom, classKey`다. 승인 �
 |---|---|
 | `readContext(null, signal)` | 위 신원·권한·대상·인원 증거. 현재 UI를 새로 읽어 반환 |
 | `readStructure(probe, signal)` | 전달된 기존 probe를 해당 작성 화면 DOM에 읽기 전용으로 적용 |
-| `readBaseline({note}, signal)` | `complete:true, refreshed:true, posts`를 반환. 페이지 범위/로딩이 끝나지 않으면 complete=false. ID 중복이나 결과 누락 시 차단 |
-| `openComposer(request, signal)` | 검증한 대상의 작성 화면 열기. 실제 탐색 경로는 별도 관찰 필요 |
-| `readDate(null, signal)` | `verified, value:YYYY-MM-DD, writable`. 초기값을 추정하지 않음. 미확인/불가능한 날짜면 첫 제목 입력 전에 차단 |
+| `readBaseline({note}, signal)` | `complete:true, refreshed:true, posts` 또는 전체 `ids` + `filter.title` + 제목 후보 `posts`를 반환. 후보 ID는 전체 ID에 포함되어야 한다. 페이지 범위/로딩이 끝나지 않으면 차단. ID 중복이나 결과 누락 시 차단 |
+| `openComposer(request, signal)` | 관찰된 작성하기 버튼으로 검증한 대상의 작성 화면 열기. 기존 작성폼은 재사용하고 다른 학급/모호한 요소는 차단 |
+| `readDate(null, signal)` | `verified, value:YYYY-MM-DD, writable`. 기본 실제 DOM guard는 추가로 source=observed-service-ui, meaning=publication-calendar-date, 동일 scope, 최신 observedAt을 요구한다. 초기값을 추정하지 않음. 미확인/불가능한 날짜면 첫 제목 입력 전에 차단 |
 | `writeDate/writeTitle/writeBodyText(request, signal)` | `request.value`를 검증한 UI에 입력. 제목/본문 native Electron 편집은 구현. 날짜 UI 미확인, 실제 앱 세션의 Froala 실행은 미완료 |
 | `attachFiles(request, signal)` | `request.value`의 원본 바이트를 지정 순서로 한 번 첨부. 파일명은 성공 판정 근거가 아님 |
 | `readContent(null, signal)` | `title, body, revision`. revision은 모든 관련 편집·날짜·첨부 변경을 포괄하는 검증 가능한 세대 값이어야 함. 격리 world의 DOM/event revision 구현, 실제 앱 세션에서 전체 검증 미완료 |
@@ -51,7 +51,7 @@ target은 `schoolId, schoolName, year, grade, classroom, classKey`다. 승인 �
 
 입력/첨부/탐색 request는 `target,binding,value,stillPermitted`를 포함한다. bridge는 실제 조작과 같은 단계에서 대상·현재 계정·화면 연결을 다시 검사하고 signal 및 승인 철회를 반영해야 한다. 앞선 DOM 조회 결과만 믿고 나중에 다른 학급의 요소를 조작하면 안 된다.
 
-최종 `commitOnce`는 `target,binding,revision,note,photos,beforeIds,stillPermitted`를 받는다. 최종 확인 후 생긴 편집·학급 전환·권한 철회도 감지해야 하며 유일한 보내기 요소, 전체 내용/날짜/첨부 순서, 승인 상태를 검증한 뒤 한 번만 조작해야 한다. 원자적 DOM guard 계약과 native 보내기 조작은 구현했다. 실제 대상/날짜/수신자/원본 guard 공급자는 아직 없으므로 운영 실행을 차단한다. 브라우저 A/B/C에서 보내기 한 번 후 게시됐으며 추가 확인창을 추정해 클릭하지 않았다.
+최종 `commitOnce`는 `target,binding,revision,note,photos,beforeIds,stillPermitted`를 받는다. 최종 확인 후 생긴 편집·학급 전환·권한 철회도 감지해야 하며 유일한 보내기 요소, 전체 내용/날짜/첨부 순서, 승인 상태를 검증한 뒤 한 번만 조작해야 한다. 기본 최종 DOM guard와 native 보내기를 연결했다. 같은 문서/학급/대상 표기·모달 상태·본문·제목·revision·원본 해시/순서 증거를 같은 조작에서 요구한다. 실제 신원/권한/날짜/관리자 알림 공급자의 미확인 값을 true로 만들지 않으므로 운영 실행은 계속 차단된다. 브라우저 A/B/C에서 보내기 한 번 후 게시됐으며 추가 확인창을 추정해 클릭하지 않았다.
 
 ## 결과 판정·실패 보존
 

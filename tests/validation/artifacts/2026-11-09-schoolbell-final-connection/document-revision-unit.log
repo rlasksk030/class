@@ -1,0 +1,10 @@
+✔ reads match only unique observed controls without private account data (5.141792ms)
+✔ title and body text are passed as inert JSON, never HTML or source interpolation (2.706125ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 70.732

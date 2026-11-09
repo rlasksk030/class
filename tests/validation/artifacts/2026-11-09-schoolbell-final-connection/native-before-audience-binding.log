@@ -1,0 +1,5 @@
+sandbox_extension_issue_file_to_process failed for <workspace>/node_modules/electron/dist/Electron.app: 1 (Operation not permitted)
+PASS final native DOM target change blocks send; durable uncertain receipt preserves the attempt
+PASS default guard -> single local send -> refreshed UI original download -> durable publication receipt
+PASS same-URL document replacement changes the revision identity
+3 focused native integration checks; app login/live input/live publish/server/draft NOT RUN
