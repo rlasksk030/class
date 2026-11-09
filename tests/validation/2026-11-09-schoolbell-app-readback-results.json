@@ -67,7 +67,12 @@
     "newRunsRequested": 0,
     "extraCostKRW": 0,
     "draft": true,
-    "afterPushCheck": "Recorded in PR #5 and final report"
+    "verifiedPushCommit": "f0e27ee09eb29f2b6592b3f4a9ea4696dff50efa",
+    "actionsAfter": 19,
+    "latestRunAfter": 41977391612,
+    "newRuns": 0,
+    "push": "PASS",
+    "draftAfterPush": true
   },
   "codeSHA256": {
     "app/schoolbell.cjs": "e9c08a448361f420fccbc7f5b9163becc82f43462d73b8bb199321006762a443",
@@ -88,5 +93,6 @@
     "tests/validation/artifacts/2026-11-09-schoolbell-readback/ui-regression.log": "9c864760c1b3c584509f203aa64043cf62b347c6a016d37678f5fc6462e2c00a",
     "tests/validation/artifacts/2026-11-09-schoolbell-readback/unit.log": "30d341e7058d1402c539b2b8be21e0f7d73075931414890b2b02b21184a83eeb",
     "tests/validation/artifacts/2026-11-09-schoolbell-readback/windows-environment.json": "1f5e8e89546ec6934c946ed2dfa607b72b05a99e0fa71c8e9e8bc409c2958475"
-  }
+  },
+  "codeCommit": "f0e27ee09eb29f2b6592b3f4a9ea4696dff50efa"
 }
