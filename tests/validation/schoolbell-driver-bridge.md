@@ -2,17 +2,19 @@
 
 `app/schoolbell-prepared-driver.cjs`는 기존 `schoolbell-publish.cjs` 계약을 구현하는 **시험 학급용 사전 드라이버**다. 2026-11-09 후속 작업에서 `schoolbell.cjs`에 `createRuntimeDriver`를 연결했다. capability=false와 기본 권한/증거 공급자 부재 때문에 실제 앱의 자동 조작은 차단된다. driver=null은 더 이상 현재 상태가 아니다.
 
-최신 구현·실서비스 시험 결과는 [Electron 및 실제 A/B/C 기록](2026-11-09-schoolbell-electron-live.md)을 기준으로 한다. 아래 기본 증거 계약은 유지한다. 학교종이 브라우저에서 실제 게시·사진 원본 다운로드는 통과했지만 앱의 실제 세션에서 이 계약 전체를 충족한 것은 아니다.
+최신 연결부 진행은 [앱 흐름 후속 기록](2026-11-09-schoolbell-app-flow.md), 기존 실제 A/B/C 결과는 [이전 실서비스 기록](2026-11-09-schoolbell-electron-live.md)을 기준으로 한다. 아래 기본 증거 계약은 유지한다. 앱의 실제 세션에서 이 계약 전체를 충족한 것은 아니다.
 
 ### 구체화된 Electron 연결부
 
 - `schoolbell-observed-composer.cjs`: 격리 world의 native 제목/본문 편집, 사진 원본 File 전달, 변경 revision, 같은 조작 안의 DOM guard, 단일 보내기.
 - `schoolbell-editor-text.cjs`, `probeAttachments`: 관찰한 Froala 문단과 파일명/확장자/용량 분리. 미리보기나 파일명을 독립 원본으로 취급하지 않는다.
 - `schoolbell-observed-post.cjs`: classnews 경로/유일한 제목/전문/파일 순서 검사 및 실제 첨부 목록 클릭 → Electron 다운로드 → 원본 해시 비교. ID·날짜·권한은 추정하지 않는다.
-- `schoolbell-electron-driver.cjs`는 기존 `readPublished` 공급자 또는 `readPublishedMetadata` + 관찰 UI 원본 다운로드를 사용할 수 있다. metadata는 원래 학급으로 재조회한 `complete, refreshed, boardURL, id, date, scope`를 요구하며 실서비스 공급자는 아직 없다.
+- `schoolbell-electron-driver.cjs`는 기존 `readPublished` 공급자 또는 `readPublishedMetadata` + 관찰 UI 원본 다운로드를 사용한다. metadata는 원래 학급으로 재조회한 `complete, refreshed, boardURL, id, date, scope`를 요구한다. 관찰 기반 공급자를 연결했지만 앱 실제 로그인 세션에서의 실행은 아직 검증하지 못했다.
 - 게시 후 schoolnews로 이동해도 재게시하지 않는다. 읽기 공급자가 원래 classnews로 돌아온 뒤 binding과 결과를 검증한다. 실제 서비스 이동을 관찰했고 로컬 Electron 회귀를 추가했다.
 
-`readContext`, 날짜, 게시 전 원본 다운로드, 목록 완결성/ID/date 공급자와 원자적 `guardDOM`의 실제 서비스 구현은 계속 필요하다. 합성 fixture 속성을 운영 근거로 사용하지 않는다.
+`schoolbell-live-context.cjs`는 동일 앱 세션의 임시 읽기 창에서 관찰한 학급정보·계정·명단·초대 화면을 읽는다. 확인 가능한 학급 종류/학년·반/빈 명단 슬롯과 미확인 학교·학년도/계정·권한/가입 인원/필수 알림을 분리한다. 부분 사실만으로 권한을 통과시키지 않는다.
+
+`schoolbell-live-posts.cjs`는 실제 카드 부모의 `data-letter-id`와 날짜 tooltip을 수집하고 원래 학급 재조회에 연결한다. 다운로드 전후에도 같은 게시물 ID를 요구한다. 가상 스크롤의 전체 범위는 확인되지 않아 baseline은 `complete:false`다. 날짜 의미, 게시 전 독립 원본, 목록 완결성과 원자적 `guardDOM`은 계속 필요하다. 합성 fixture 속성을 운영 근거로 사용하지 않는다.
 
 ## 확정한 구현과 선택자
 
@@ -36,7 +38,7 @@ target은 `schoolId, schoolName, year, grade, classroom, classKey`다. 승인 �
 |---|---|
 | `readContext(null, signal)` | 위 신원·권한·대상·인원 증거. 현재 UI를 새로 읽어 반환 |
 | `readStructure(probe, signal)` | 전달된 기존 probe를 해당 작성 화면 DOM에 읽기 전용으로 적용 |
-| `readBaseline(null, signal)` | `complete:true, refreshed:true, posts`를 반환. 페이지 범위/로딩이 끝나지 않으면 complete=false. ID 중복이나 결과 누락 시 차단 |
+| `readBaseline({note}, signal)` | `complete:true, refreshed:true, posts`를 반환. 페이지 범위/로딩이 끝나지 않으면 complete=false. ID 중복이나 결과 누락 시 차단 |
 | `openComposer(request, signal)` | 검증한 대상의 작성 화면 열기. 실제 탐색 경로는 별도 관찰 필요 |
 | `readDate(null, signal)` | `verified, value:YYYY-MM-DD, writable`. 초기값을 추정하지 않음. 미확인/불가능한 날짜면 첫 제목 입력 전에 차단 |
 | `writeDate/writeTitle/writeBodyText(request, signal)` | `request.value`를 검증한 UI에 입력. 제목/본문 native Electron 편집은 구현. 날짜 UI 미확인, 실제 앱 세션의 Froala 실행은 미완료 |
