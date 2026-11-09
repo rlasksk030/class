@@ -2,7 +2,7 @@
   "date": "2026-11-09",
   "baseHead": "f198f2b3bc74f544e233f925e1f8570440c40751",
   "branch": "feature/schoolbell-diary-nationwide",
-  "scope": "read-only live composer observation; not publishing validation",
+  "scope": "read-only live composer observation and user-manual-post UI readback; not automatic publishing validation",
   "live": {
     "composerStructure": "MATCH",
     "composerCount": 1,
@@ -68,5 +68,34 @@
   },
   "actionsTriggered": 0,
   "newBuilds": 0,
-  "deployments": 0
+  "deployments": 0,
+  "manualPostReadback": {
+    "status": "UI_READBACK_CONFIRMED",
+    "source": "user posted in another window",
+    "syntheticTitleMatched": true,
+    "matchingTitleCount": 1,
+    "separateTab": true,
+    "fullReload": true,
+    "bodyPresentAfterReload": true,
+    "proposedExampleBodyMatched": false,
+    "originalUserBodyProvided": false,
+    "originalContentFullyVerified": false,
+    "renderedMediaChildren": 0,
+    "renderedPhotos": 0,
+    "renderedVideos": 0,
+    "draftLabel": false,
+    "scheduledLabel": false,
+    "remotePostIdRecorded": false,
+    "automaticSuccessWritten": false,
+    "draftCleared": false,
+    "agentInputUploadSubmitActions": 0
+  },
+  "codeCommit": "93d16f7619ee714dbfffdb33e448ccff91dfc52a",
+  "githubAfterCodePush": {
+    "head": "93d16f7619ee714dbfffdb33e448ccff91dfc52a",
+    "draft": true,
+    "open": true,
+    "actionsTotal": 19,
+    "lastRunId": 41977391612
+  }
 }
