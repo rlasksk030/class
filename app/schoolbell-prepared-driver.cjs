@@ -1,4 +1,4 @@
-// Preparatory, approved-test-class driver. Production does NOT instantiate this module.
+// Approved-test-class transaction driver. Runtime creates it only behind the disabled capability and official-permission gates.
 // The bridge is trusted main-process code, not settings, renderer input or a remote API.
 // Only observed composer selectors are in the probe; unknown date/identity/upload/result
 // UI requires separately implemented bridge evidence. Missing evidence always blocks.
@@ -155,7 +155,11 @@ function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,ma
   if(committed?.clicked!==true)fail('publication-unverified');
  }
  async function readPublished(expected,externalSignal) {
-  requirePhase('submitted');expectScope(expected);const signal=signalFor(externalSignal);await guard('read',signal);
+  requirePhase('submitted');expectScope(expected);const signal=signalFor(externalSignal);permitted('read');
+  // Actual send may redirect to schoolnews even when the post was saved in
+  // classnews. The read-only provider must revisit the previously bound board;
+  // do not infer success from the redirect or attempt another send. Validate
+  // the full current binding AFTER that read-only navigation and before proof.
   const result=await call('readPublished',null,signal);const current=await guard('read',signal);
   if(result?.complete!==true||result.refreshed!==true||!Array.isArray(result.posts))fail('publication-unverified');
   const rows=result.posts.map(post);

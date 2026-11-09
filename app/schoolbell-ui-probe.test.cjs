@@ -1,6 +1,6 @@
 // New probe contract checks only; these are not live input/upload/publishing tests.
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const {probeComposer}=require('./schoolbell-ui-probe.cjs');
+const {probeComposer,probeAttachments}=require('./schoolbell-ui-probe.cjs');
 function node(attrs={},text='') {
  const n={hasAttribute:k=>Object.hasOwn(attrs,k),getAttribute:k=>attrs[k]??null,textContent:text};
  for(const key of ['value','innerHTML','files'])Object.defineProperty(n,key,{get(){throw Error('private field read');}});
@@ -40,4 +40,16 @@ test('unsupported file formats and aria-disabled send controls cannot imply read
  f.entries['button.btn-with-description']=[node({'aria-disabled':'true'},'보내기')];
  const r=probeComposer(f.document);assert.deepEqual(r.photos.accepts,{jpeg:false,png:false,heic:false});
  assert.equal(r.photos.multiple,false);assert.equal(r.send.enabled,false);assert.equal(r.publishReady,false);
+});
+test('observed filename spans preserve order and spaces, excluding the rounded size label',()=>{
+ const name=base=>({querySelectorAll:s=>({'span.text-truncate':[node({},base)],'span.flex-shrink-0:not(.small)':[node({},'.png')]}[s]||[])});
+ const rows=['사진 1','사진 2'].map(base=>({querySelectorAll:s=>s==='app-file-name-text'?[name(base)]:[]}));
+ const list={querySelectorAll:()=>rows},root={querySelectorAll:()=>[list]};
+ const document={querySelectorAll:()=>[root],querySelector:()=>null};
+ const result=probeAttachments(document);
+ assert.deepEqual(result,{listKnown:true,uploading:false,names:['사진 1.png','사진 2.png'],originalsVerified:false});
+ rows[1]={querySelectorAll:()=>[{querySelectorAll:()=>[]}]};
+ assert.deepEqual(probeAttachments(document).names,['사진 1.png',null]);
+ document.querySelector=()=>({});assert.equal(probeAttachments(document).uploading,true);
+ document.querySelectorAll=()=>[];assert.equal(probeAttachments(document).listKnown,false);
 });

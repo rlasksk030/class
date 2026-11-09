@@ -1,4 +1,4 @@
-// Manual handoff only. No remote DOM injection, API posting, credential extraction or retry loop.
+// Manual handoff remains available. Automatic UI transport is installed behind the code-owned disabled gate.
 const {BrowserWindow,ipcMain,dialog,clipboard,shell} = require('electron');
 const fs = require('node:fs/promises'), path = require('node:path');
 const services = require('./diary-services.cjs');
@@ -6,9 +6,20 @@ const capability = require('./schoolbell-capability.cjs');
 const {bounded} = require('./hiclass-navigation.cjs');
 module.exports = function setup(main) {
  const profile = require('./school-profile.cjs').get(), store = services.createStore(profile);
- // No live driver is installed. Only reviewed code can supply one; IPC cannot change the gate.
- const publisher=require('./schoolbell-publish.cjs').createPublisher({profile,store,readPhoto:ref=>require('./media.cjs').current().read(ref)});
  const windows = new Map(); let busy = false;
+ // No official permission or live evidence provider exists. These code-owned
+ // defaults cannot be enabled by IPC, saved settings or environment variables.
+ const driver=require('./schoolbell-electron-driver.cjs').createRuntimeDriver({profile,openClass:open,
+  closeClass:key=>{const w=windows.get(key);if(w&&!w.isDestroyed())w.destroy();return true;}});
+ const publisher=require('./schoolbell-publish.cjs').createPublisher({profile,store,driver,
+  readPhoto:ref=>require('./media.cjs').current().read(ref),review:async ({phase,scope,note})=>{
+   const final=phase==='submit';
+   const answer=await dialog.showMessageBox(main(),{type:'question',buttons:['취소',final?'이 내용으로 한 번 게시':'입력 준비'],defaultId:0,cancelId:0,
+    message:final?'검증된 학교종이 알림장을 게시할까요?':'학교종이 작성 화면에 초안을 입력할까요?',
+    detail:expectedSchool()+' · '+scope.classKey+'\n'+note.date+' · 사진 '+note.photos.length+'장\n'+note.title+'\n'+
+     (final?'학교·학급·수신대상과 본문·사진이 검증된 경우에만 게시합니다. 결과가 불확실하면 재전송하지 않습니다.':'아직 게시하지 않습니다. 입력·사진 검증 후 별도로 최종 확인합니다.')});
+   return answer.response===1;
+  }});
  const expectedSchool = () => profile.config.active?.school.SCHUL_NM || require('./school.js').legacy.SCHUL_NM;
  const message = '학교종이 작업을 마치지 못했습니다. 초안과 사진은 유지됩니다. 게시 여부는 학교종이에서 확인해 주세요.';
  const allowed = e => e.sender === main()?.webContents && e.senderFrame === e.sender.mainFrame;

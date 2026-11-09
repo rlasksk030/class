@@ -1,5 +1,5 @@
 // Read-only structure observed on the real Schoolbell composer, 2026-11-09.
-// Not a publisher driver. Not wired into Electron, IPC or the production capability gate.
+// Reused by the gated Electron composer; this probe alone never authorizes publication.
 // No values, body text, account/class identifiers, URLs or file objects leave this probe.
 // Keep self-contained so a reviewed DOM-only inspection can use the same function.
 function probeComposer(document) {
@@ -27,4 +27,19 @@ function probeComposer(document) {
   attachmentsVerified:false,publishReady:false
  };
 }
-module.exports={probeComposer};
+// Actual upload rows include a separate rounded size label. Do not append that
+// label to the filename, or use it as proof of the uploaded original's bytes.
+function probeAttachments(document) {
+ const roots=document.querySelectorAll('app-boards-write');
+ const lists=roots.length===1?roots[0].querySelectorAll('app-letter-write-file-list'):[];
+ const rows=lists.length===1?Array.from(lists[0].querySelectorAll('app-file-row')):[];
+ return {listKnown:lists.length===1,
+  uploading:!!document.querySelector('app-file-upload-list,app-progress-bar'),
+  names:rows.map(row=>{
+   const names=row.querySelectorAll('app-file-name-text');if(names.length!==1)return null;
+   const base=names[0].querySelectorAll('span.text-truncate');
+   const extension=names[0].querySelectorAll('span.flex-shrink-0:not(.small)');
+   return base.length===1&&extension.length===1?base[0].textContent+extension[0].textContent:null;
+  }),originalsVerified:false};
+}
+module.exports={probeComposer,probeAttachments};

@@ -109,3 +109,14 @@ test('verified result whose receipt cannot be persisted remains uncertain and pr
  assert.equal(Object.values(f.store.get(f.note.classKey).automaticPosts)[0].status,'auto-uncertain');
  assert.equal((await f.publish({...f.note,title:'바뀐 합성 내용'})).status,'blocked');assert.equal(f.state.clicks,1);
 });
+test('post-send board redirect permits read-only return, then requires the original binding',async t=>{
+ for(const restore of [true,false]){
+  const f=fixture(t),read=f.bridge.readPublished;
+  f.state.afterCommit=()=>{f.state.context.board='schoolnews';};
+  f.bridge.readPublished=async()=>{if(restore)delete f.state.context.board;return read();};
+  const result=await f.publish();
+  assert.equal(result.status,restore?'success':'uncertain');
+  if(!restore)assert.equal(result.reason,'context-unverified');
+  assert.equal(f.state.clicks,1);
+ }
+});

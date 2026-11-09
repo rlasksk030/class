@@ -14,6 +14,8 @@ function fixture() {
  }
  class Box extends Input {
    constructor(attrs){super(attrs);this.innerText='';}
+   get childNodes(){return [{nodeType:3,textContent:this.innerText}];}
+   replaceChildren(){this.innerText='';}
  }
  const title=new Input({placeholder:'제목을 입력해 주세요.'}),
   body=new Box({contenteditable:'true'}),
@@ -29,10 +31,15 @@ function fixture() {
   'button':[send,draft]
  };
  const root={querySelectorAll:key=>table[key]||[]};
- const doc={querySelectorAll:key=>key==='app-boards-write'?[root]:[]};
+ root.addEventListener=()=>{};body.isContentEditable=true;
+ const doc={querySelectorAll:key=>key==='app-boards-write'?[root]:[],
+  getSelection:()=>({removeAllRanges(){},addRange(){}}),createRange:()=>({selectNodeContents(){}}),
+  execCommand:(command,_ui,value)=>{body.innerText=command==='delete'?'':body.innerText+(command==='insertLineBreak'?'\n':value);body.dispatchEvent({type:'input'});return true;}};
  const calls=[];let href=URL;
- const wc={getURL:()=>href,isDestroyed:()=>false,executeJavaScript:src=>{
-  calls.push(src);return Promise.resolve(vm.runInNewContext(src,{document:doc,HTMLInputElement:Input,Event:class Event{constructor(type){this.type=type;}}}));
+ const context=vm.createContext({document:doc,HTMLInputElement:Input,Event:class Event{constructor(type){this.type=type;}},
+  MutationObserver:class {observe(){}takeRecords(){return [];}}});
+ const wc={getURL:()=>href,isDestroyed:()=>false,executeJavaScriptInIsolatedWorld:(_world,scripts)=>{
+  calls.push(scripts[0].code);return Promise.resolve(vm.runInContext(scripts[0].code,context));
  }};
  return {wc,calls,title,body,file,send,draft,table,changeUrl:url=>href=url};
 }
@@ -49,24 +56,24 @@ test('defaults deny before DOM inspection or mutation',async()=>{
  assert.equal(f.calls.length,0);
 });
 test('reads match only unique observed controls without private account data',async()=>{
- const f=fixture(),bridge=createObservedComposerBridge({getWebContents:()=>f.wc,authorize:allow});
+ const f=fixture(),bridge=createObservedComposerBridge({getWebContents:()=>f.wc,authorize:allow,domGuard:()=>true});
  const info=await bridge.readStructure(null);assert.equal(info.structureMatched,true);assert.equal(info.title.count,1);
- assert.equal(info.publishReady,false);assert.deepEqual({...await bridge.readFields()}, {title:'',body:''});
+ assert.equal(info.publishReady,false);assert.deepEqual({...await bridge.readFields()}, {title:'',body:'',revision:'0'});
  f.table['button.btn-with-description'].push(f.send);
  await assert.rejects(()=>bridge.readFields(),/structure-unverified/);
 });
 test('title and body text are passed as inert JSON, never HTML or source interpolation',async()=>{
- const f=fixture(),bridge=createObservedComposerBridge({getWebContents:()=>f.wc,authorize:allow});
+ const f=fixture(),bridge=createObservedComposerBridge({getWebContents:()=>f.wc,authorize:allow,domGuard:()=>true});
  await bridge.writeTitle({...payload,value:'제목 \\" }); evil(); //'});
  await bridge.writeBodyText(payload);
  assert.equal(f.title.value,'제목 \\" }); evil(); //');
  assert.equal(f.body.innerText,payload.value);
  assert.ok(f.title.events.includes('input')&&f.body.events.includes('input'));
- assert.deepEqual({...await bridge.readFields()}, {title:f.title.value,body:payload.value});
+ assert.deepEqual({...await bridge.readFields()}, {title:f.title.value,body:payload.value,revision:'0'});
 });
 test('denies disallowed binding, revoked permission, navigation, aborted signal',async()=>{
  const f=fixture();let permitted=true;
- const bridge=createObservedComposerBridge({getWebContents:()=>f.wc,authorize:({action,target})=>permitted&&action!=='body'&&!!target?.classKey});
+ const bridge=createObservedComposerBridge({getWebContents:()=>f.wc,authorize:({action,target})=>permitted&&action!=='body'&&!!target?.classKey,domGuard:()=>true});
  await assert.rejects(()=>bridge.writeBodyText(payload),/permission-unverified/);
  assert.equal(f.calls.length,0);
  await bridge.writeTitle(payload);
@@ -74,4 +81,18 @@ test('denies disallowed binding, revoked permission, navigation, aborted signal'
  await assert.rejects(()=>bridge.writeTitle(payload,controller.signal),/permission-unverified/);
  permitted=false;await assert.rejects(()=>bridge.writeTitle(payload),/permission-unverified/);
  f.changeUrl('https://example.org');await assert.rejects(()=>bridge.writeTitle(payload),/site-unverified/);
+});
+
+test('a main-process grant alone cannot replace atomic DOM identity evidence',async()=>{
+ const f=fixture(),bridge=createObservedComposerBridge({getWebContents:()=>f.wc,authorize:allow});
+ await assert.rejects(()=>bridge.writeTitle(payload),/context-unverified/);assert.equal(f.title.value,'');
+});
+test('closed or overlapping transports never queue stale input',async()=>{
+ const f=fixture();let release;
+ const bridge=createObservedComposerBridge({getWebContents:()=>f.wc,domGuard:()=>true,authorize:()=>new Promise(r=>{release=r;})});
+ const pending=bridge.writeTitle(payload);
+ await assert.rejects(()=>bridge.writeTitle(payload),/driver-state/);
+ const closing=bridge.close();release(true);await assert.rejects(()=>pending,/permission-unverified/);
+ assert.equal(await closing,true);assert.equal(f.title.value,'');
+ await assert.rejects(()=>bridge.writeTitle(payload),/driver-state/);
 });
