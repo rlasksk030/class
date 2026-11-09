@@ -1,0 +1,25 @@
+✖ filtered full-list baseline keeps unrelated IDs and rejects a mismatched filter or missing candidate ID (8.743042ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 212.309542
+
+✖ failing tests:
+
+test at app/schoolbell-prepared-driver.test.cjs:124:1
+✖ filtered full-list baseline keeps unrelated IDs and rejects a mismatched filter or missing candidate ID (8.743042ms)
+  Error [SchoolbellPreparationError]: 학교·학년도·학년·반과 현재 교사 권한을 확인하지 못했습니다.
+      at fail (<workspace>/app/schoolbell-driver-errors.cjs:14:33)
+      at expectScope (<workspace>/app/schoolbell-prepared-driver.cjs:58:60)
+      at Object.inspect (<workspace>/app/schoolbell-prepared-driver.cjs:94:42)
+      at TestContext.<anonymous> (<workspace>/app/schoolbell-prepared-driver.test.cjs:129:18)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    code: 'context-unverified'
+  }
