@@ -47,7 +47,7 @@ async function inspectRecipients(webContents,signal,{timeoutMs=5000}={}){
   const until=Date.now()+timeoutMs;let result;
   while(Date.now()<until){result=await evaluate(probeRecipients,null);if(result.known)break;await new Promise(r=>setTimeout(r,100));}
   const after=await evaluate(recipientControl,'read');if(after.label!==before.label)throw Error('context-changed');
-  return result?.known?result:{known:false};
+  return result?.known?{...result,targetLabel:before.label}:{known:false};
  }finally{
   if(opened&&!webContents.isDestroyed()&&webContents.getURL()===initial){
    // Close rather than confirm: inspecting must not change a saved audience.

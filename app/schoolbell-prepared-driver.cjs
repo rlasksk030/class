@@ -6,6 +6,7 @@ const crypto=require('node:crypto');
 const {probeComposer}=require('./schoolbell-ui-probe.cjs');
 const {remoteId}=require('./diary-services.cjs');
 const {fail}=require('./schoolbell-driver-errors.cjs');
+const {audienceVerified}=require('./schoolbell-audience.cjs');
 const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const text=v=>typeof v==='string'?v.replace(/\r\n?/g,'\n'):null;
@@ -16,7 +17,7 @@ function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,ma
  if(!target||typeof target.schoolId!=='string'||!target.schoolId||typeof target.schoolName!=='string'||!target.schoolName||
     !/^\d{4}$/.test(target.year)||!/^[1-6]$/.test(target.grade)||typeof target.classroom!=='string'||!target.classroom||
     target.classKey!==[target.year,target.grade,target.classroom].join(':'))fail('context-unverified');
- let phase='idle',controller=new AbortController(),bound=null,note=null,baseline=[],photos=[],submitted=false;
+ let phase='idle',controller=new AbortController(),bound=null,boundAudience=null,note=null,baseline=[],photos=[],submitted=false;
  const requirePhase=(...allowed)=>{if(!allowed.includes(phase))fail('driver-state');};
  const signalFor=signal=>signal?AbortSignal.any([signal,controller.signal]):controller.signal;
  function permitted(action) {
@@ -34,7 +35,8 @@ function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,ma
   return value;
  }
  const scope=c=>({service:'schoolbell',schoolId:target.schoolId,classKey:target.classKey,boardId:c.boardId,
-  scopeType:'class',board:'diary',authenticated:true,teacher:true});
+  scopeType:'class',board:'diary',authenticated:true,teacher:true,
+  selfNotification:c.externalNotifications===true&&c.recipientEvidence?.mandatoryAdministrator===true&&c.notificationEvidence?.kind==='current-teacher-only'});
  async function guard(action,signal) {
   permitted(action);
   const c=await call('readContext',null,signal);permitted(action);
@@ -43,7 +45,11 @@ function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,ma
      !['schoolId','schoolName','year','grade','classroom','classKey'].every(k=>c[k]===target[k])||
      !Number.isFinite(c.observedAt)||c.observedAt>now()||now()-c.observedAt>maxAgeMs||
      typeof c.contextId!=='string'||!c.contextId||typeof c.actorKey!=='string'||!c.actorKey)fail('context-unverified');
-  if(c.testClassApproved!==true||c.recipientsVerified!==true||c.students!==0||c.parents!==0||c.externalNotifications!==false)fail('test-class-unverified');
+  if(!audienceVerified(c,permission(),now()))fail('test-class-unverified');
+  const audience=JSON.stringify([c.students,c.parents,c.externalNotifications,c.recipientEvidence||null,
+   c.notificationEvidence?.kind||null,c.notificationEvidence?.actorKey||null,c.notificationEvidence?.otherTargets??null]);
+  if(boundAudience!==null&&boundAudience!==audience)fail('test-class-unverified');
+  boundAudience=audience;
   const binding={boardId:c.boardId,contextId:c.contextId,actorKey:c.actorKey};
   if(bound&&!same(bound,binding))fail('context-unverified');
   bound=binding;return scope(c);
@@ -90,7 +96,7 @@ function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,ma
  }
  async function inspect(expected,externalSignal) {
   requirePhase('idle','inspected','baselined','opened','filled','attached','reviewed','submitted');
-  if(phase==='idle'){controller=new AbortController();bound=null;note=null;baseline=[];photos=[];submitted=false;}
+  if(phase==='idle'){controller=new AbortController();bound=null;boundAudience=null;note=null;baseline=[];photos=[];submitted=false;}
   const signal=signalFor(externalSignal);expectScope(expected);const c=await guard('read',signal);
   if(phase==='idle')phase='inspected';return c;
  }

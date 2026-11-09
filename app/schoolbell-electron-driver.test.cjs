@@ -32,3 +32,13 @@ test('cancellation during window opening closes the pending class window',async(
  const pending=driver.inspect({schoolId:target.schoolId,classKey:target.classKey},abort.signal);abort.abort();
  assert.equal(await driver.close(),true);release({});await assert.rejects(()=>pending,e=>e.code==='driver-state');assert.ok(closed>=1);
 });
+
+test('same-URL navigation invalidates an in-flight identity read and releases session listeners',async()=>{
+ const wc=new (require('node:events').EventEmitter)();wc.getURL=()=> 'https://schoolbell-e.com/ko/main/group/100/boards/classnews';wc.isDestroyed=()=>false;
+ let release;
+ const driver=createElectronDriver({target,permission:()=>grant,getWebContents:()=>wc,evidence:{readContext:()=>new Promise(r=>release=r)}});
+ const pending=driver.inspect({schoolId:target.schoolId,classKey:target.classKey});
+ wc.emit('did-start-navigation',{},wc.getURL(),false,true);release({});
+ await assert.rejects(()=>pending,e=>e.code==='context-unverified');
+ assert.equal(await driver.close(),true);assert.equal(wc.listenerCount('did-start-navigation'),0);assert.equal(wc.listenerCount('destroyed'),0);
+});

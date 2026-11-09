@@ -10,7 +10,8 @@ const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 function matches(actual,expected) {
  return actual?.service==='schoolbell' && actual.schoolId===expected.schoolId && actual.classKey===expected.classKey &&
   actual.scopeType==='class' && actual.board==='diary' && services.remoteId(actual.boardId) &&
-  actual.authenticated===true && actual.teacher===true && (!expected.boardId || actual.boardId===expected.boardId);
+  actual.authenticated===true && actual.teacher===true && (!expected.boardId || actual.boardId===expected.boardId)&&
+  (expected.selfNotification===undefined||(actual.selfNotification===true)===expected.selfNotification);
 }
 function contentMatches(actual,note,photos) {
  return actual?.date===note.date && actual.title===note.title && text(actual.body)===text(note.body) &&
@@ -52,6 +53,7 @@ function createPublisher({profile,store,readPhoto,driver=null,review,gate=capabi
    const observed=await step(signal=>driver.inspect(expected,signal));
    if(!matches(observed,expected))throw Error('identity');
    expected.boardId=observed.boardId;
+   expected.selfNotification=observed.selfNotification===true;
    const baseline=await step(signal=>driver.snapshot({scope:{...expected},note:structuredClone(note)},signal));
    if(!Array.isArray(baseline?.ids) || baseline.ids.some(id=>typeof id!=='string') || baseline.matching!==0)throw Error('duplicate');
    // The driver must not write or upload anything before the local confirmation and pending record.

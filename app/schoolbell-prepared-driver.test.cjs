@@ -68,6 +68,14 @@ test('final confirmation cancellation preserves pending evidence without submit'
  const r=await createPublisher(f.args).publish(f.note);assert.equal(r.status,'uncertain');assert.equal(f.state.clicks,0);
  assert.equal(Object.values(f.store.get(f.note.classKey).automaticPosts)[0].status,'auto-uncertain');
 });
+test('an individually valid but changed audience after final confirmation cannot send',async t=>{
+ const f=fixture(t);
+ f.state.context.recipientEvidence={known:true,unfiltered:true,empty:true,mandatoryAdministrator:false,targetLabel:'합성 원래 대상'};
+ f.args.review=({phase})=>{if(phase==='submit')f.state.context.recipientEvidence.targetLabel='합성 다른 대상';return true;};
+ const r=await createPublisher(f.args).publish(f.note);
+ assert.equal(r.reason,'test-class-unverified');assert.equal(f.state.clicks,0);
+ assert.equal(Object.values(f.store.get(f.note.classKey).automaticPosts)[0].status,'auto-uncertain');
+});
 for(const change of ['revision','class','permission','recipient'])test('atomic commit guard rejects last-moment '+change,async t=>{
  const f=fixture(t);f.state.beforeCommit=()=>{
   if(change==='revision'){f.state.body='새 편집';f.state.revision++;}if(change==='class')f.state.context.classroom='2';

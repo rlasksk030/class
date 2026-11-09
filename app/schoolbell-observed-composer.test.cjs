@@ -36,7 +36,7 @@ function fixture() {
   getSelection:()=>({removeAllRanges(){},addRange(){}}),createRange:()=>({selectNodeContents(){}}),
   execCommand:(command,_ui,value)=>{body.innerText=command==='delete'?'':body.innerText+(command==='insertLineBreak'?'\n':value);body.dispatchEvent({type:'input'});return true;}};
  const calls=[];let href=URL;
- const context=vm.createContext({document:doc,HTMLInputElement:Input,Event:class Event{constructor(type){this.type=type;}},
+ const context=vm.createContext({document:doc,crypto:require('node:crypto').webcrypto,HTMLInputElement:Input,Event:class Event{constructor(type){this.type=type;}},
   MutationObserver:class {observe(){}takeRecords(){return [];}}});
  const wc={getURL:()=>href,isDestroyed:()=>false,executeJavaScriptInIsolatedWorld:(_world,scripts)=>{
   calls.push(scripts[0].code);return Promise.resolve(vm.runInContext(scripts[0].code,context));
@@ -58,7 +58,7 @@ test('defaults deny before DOM inspection or mutation',async()=>{
 test('reads match only unique observed controls without private account data',async()=>{
  const f=fixture(),bridge=createObservedComposerBridge({getWebContents:()=>f.wc,authorize:allow,domGuard:()=>true});
  const info=await bridge.readStructure(null);assert.equal(info.structureMatched,true);assert.equal(info.title.count,1);
- assert.equal(info.publishReady,false);assert.deepEqual({...await bridge.readFields()}, {title:'',body:'',revision:'0'});
+ assert.equal(info.publishReady,false);const fields=await bridge.readFields();assert.equal(fields.title,'');assert.equal(fields.body,'');assert.match(fields.revision,/^[a-f0-9-]{36}:0$/);
  f.table['button.btn-with-description'].push(f.send);
  await assert.rejects(()=>bridge.readFields(),/structure-unverified/);
 });
@@ -69,7 +69,7 @@ test('title and body text are passed as inert JSON, never HTML or source interpo
  assert.equal(f.title.value,'제목 \\" }); evil(); //');
  assert.equal(f.body.innerText,payload.value);
  assert.ok(f.title.events.includes('input')&&f.body.events.includes('input'));
- assert.deepEqual({...await bridge.readFields()}, {title:f.title.value,body:payload.value,revision:'0'});
+ const fields=await bridge.readFields();assert.equal(fields.title,f.title.value);assert.equal(fields.body,payload.value);assert.match(fields.revision,/^[a-f0-9-]{36}:0$/);
 });
 test('denies disallowed binding, revoked permission, navigation, aborted signal',async()=>{
  const f=fixture();let permitted=true;

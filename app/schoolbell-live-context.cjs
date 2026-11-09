@@ -72,6 +72,9 @@ function summarizeContext({group,account,roster,invite,recipients},target){
   identityVerified:false,authorityVerified:false,recipientsVerified:false,
   students:checks.recipientTableEmpty?0:null,parents:checks.recipientTableEmpty?0:null,
   mandatoryAdministrator:recipients?.mandatoryAdministrator===true,
+  // Transient main-process proof only; inspect IPC returns checks/messages,
+  // never this label/role data or account identifiers.
+  recipientEvidence:recipients?.known===true?recipients:null,
   actorKey:account?.name&&account.avatar?crypto.createHash('sha256').update(JSON.stringify([account.name,account.avatar])).digest('hex'):null};
 }
 function createLiveContextProvider({getWebContents,createReader,target,timeoutMs=12000}={}){

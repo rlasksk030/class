@@ -27,21 +27,23 @@ function browserOperation(action,payload,inspect,guard,readText,readAttachments)
  const states=globalThis.__classroomSchoolbellStates||(globalThis.__classroomSchoolbellStates=new WeakMap());
  let state=states.get(root);
  if(!state){
-  state={revision:0,composing:false,submitted:false};states.set(root,state);
+  state={documentToken:crypto.randomUUID(),revision:0,composing:false,submitted:false};states.set(root,state);
   root.addEventListener('compositionstart',()=>{state.composing=true;},true);
   root.addEventListener('compositionend',()=>{state.composing=false;state.revision++;},true);
   for(const name of ['input','change'])root.addEventListener(name,()=>state.revision++,true);
   state.observer=new MutationObserver(()=>state.revision++);
   state.observer.observe(root,{subtree:true,childList:true,characterData:true,attributes:true});
  }
- const revision=()=>{if(state.observer.takeRecords().length)state.revision++;return String(state.revision);};
+ const revision=()=>{if(state.observer.takeRecords().length)state.revision++;return state.documentToken+':'+state.revision;};
  const fields=()=>({title:title.value,body:bodyText(),revision:revision()});
+ const guarded=()=>typeof guard==='function'&&guard(document,{...payload,action,
+  ...(action==='commit'?{attachmentState:readAttachments(document)}:{})})===true;
  if(action==='inspect')return info;
  if(action==='read')return fields();
  if(action==='attachments-read')return readAttachments(document);
  if(!['title','body','files','commit'].includes(action))throw Error('unimplemented-action');
  if(state.composing)throw Error('composition-active');
- if(typeof guard!=='function'||guard(document,{...payload,action})!==true)throw Error('context-unverified');
+ if(!guarded())throw Error('context-unverified');
  if(action==='title'||action==='body'){
   if(typeof payload?.value!=='string'||payload.value.length>100000)throw Error('invalid-payload');
  }
@@ -49,14 +51,14 @@ function browserOperation(action,payload,inspect,guard,readText,readAttachments)
   if(info.title.enabled!==true||title.readOnly||payload.value.length>500)throw Error('title-unavailable');
   const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')?.set;
   if(!setter)throw Error('title-unavailable');
-  title.focus();if(guard(document,{...payload,action})!==true)throw Error('context-unverified');setter.call(title,payload.value);
+  title.focus();if(!guarded())throw Error('context-unverified');setter.call(title,payload.value);
   title.dispatchEvent(new Event('input',{bubbles:true}));title.dispatchEvent(new Event('change',{bubbles:true}));
   if(title.value!==payload.value)throw Error('content-unverified');
  }else if(action==='body'){
   if(info.body.enabled!==true||!body.isContentEditable)throw Error('body-unavailable');
   // Native Chromium editing in one DOM task: framework input listeners receive
   // the edit. No innerHTML, innerText assignment, paste HTML, or private Froala API.
-  body.focus();if(guard(document,{...payload,action})!==true)throw Error('context-unverified');const selection=document.getSelection(),range=document.createRange();
+  body.focus();if(!guarded())throw Error('context-unverified');const selection=document.getSelection(),range=document.createRange();
   range.selectNodeContents(body);selection.removeAllRanges();selection.addRange(range);
   const value=normalize(payload.value);
   if(bodyText()){
@@ -72,7 +74,7 @@ function browserOperation(action,payload,inspect,guard,readText,readAttachments)
   // an extra blank line. Native line-break commands retain the exact plain text.
   const lines=value.split('\n');
   for(let i=0;i<lines.length;i++){
-   if(state.composing||document.querySelectorAll('app-boards-write')[0]!==root||guard(document,{...payload,action})!==true)throw Error('context-unverified');
+   if(state.composing||document.querySelectorAll('app-boards-write')[0]!==root||!guarded())throw Error('context-unverified');
    if(i&&!document.execCommand('insertLineBreak',false))throw Error('body-unavailable');
    if(lines[i]&&!document.execCommand('insertText',false,lines[i]))throw Error('body-unavailable');
   }
@@ -119,7 +121,7 @@ function encodeFiles(files){
   return {id,size:bytes.length,type:id.endsWith('.png')?'image/png':'image/jpeg',base64:bytes.toString('base64')};
  });
 }
-function createObservedComposerBridge({getWebContents,authorize,domGuard,stop}={}) {
+function createObservedComposerBridge({getWebContents,authorize,domGuard,prepareProof,stop}={}) {
  let closed=false,active=false;const jobs=new Set();
  const get=()=>{
   const wc=getWebContents?.();
@@ -135,6 +137,10 @@ function createObservedComposerBridge({getWebContents,authorize,domGuard,stop}={
  async function perform(action,value,request,signal){
   const wc=get(),url=wc.getURL();await verify(action,request,signal,wc,url);
   const payload={...value,target:request?.target,binding:request?.binding};
+  if(mutating(action)&&typeof prepareProof==='function'){
+   payload.proof=await prepareProof({action,request,href:url},signal);
+   await verify(action,request,signal,wc,url);
+  }
   const operation='('+browserOperation.toString()+')('+JSON.stringify(action)+','+JSON.stringify(payload)+',('+probeComposer.toString()+'),'+(typeof domGuard==='function'?'('+domGuard.toString()+')':'null')+',('+readEditorText.toString()+'),('+probeAttachments.toString()+'))';
   // Electron otherwise replaces renderer exceptions with an opaque error. Return
   // a fixed code only: never a site exception, account text, or photo payload.

@@ -8,7 +8,8 @@
     "test": "node --test app/*.test.cjs tests/update-channel.test.cjs",
     "test:e2e": "node tests/e2e/board-titles.e2e.cjs && node tests/e2e/v182-features.e2e.cjs && node tests/e2e/regression.e2e.cjs && node tests/e2e/hiclass-link.e2e.cjs && node tests/e2e/recovery.e2e.cjs && node tests/e2e/timetable-layout.e2e.cjs && node tests/e2e/diary-drafts.e2e.cjs && node tests/e2e/hiclass-recipients.e2e.cjs && node tests/e2e/hiclass-submit.e2e.cjs && node tests/e2e/timer-startup.e2e.cjs && node tests/e2e/diary-layout.e2e.cjs && node tests/e2e/hiclass-window.e2e.cjs && npm run test:photos && node tests/e2e/multischool.e2e.cjs && node tests/e2e/schoolbell.e2e.cjs && npm run test:schoolbell-auto",
     "test:migration": "node tests/e2e/migration-v178.e2e.cjs",
-    "test:schoolbell-auto": "node tests/e2e/schoolbell-automatic.e2e.cjs && node tests/e2e/schoolbell-completion.e2e.cjs && node tests/e2e/schoolbell-prepared.e2e.cjs && node tests/e2e/schoolbell-electron.e2e.cjs",
+    "test:schoolbell-auto": "node tests/e2e/schoolbell-automatic.e2e.cjs && node tests/e2e/schoolbell-completion.e2e.cjs && node tests/e2e/schoolbell-prepared.e2e.cjs && node tests/e2e/schoolbell-electron.e2e.cjs && npm run test:schoolbell-final",
+    "test:schoolbell-final": "electron tests/schoolbell-final-integration-fixture.cjs",
     "dist:win": "node build/prepare-nsis.cjs && electron-builder --win --x64 --publish never",
     "test:photos": "node tests/e2e/photos.e2e.cjs && node tests/e2e/hiclass-photos.e2e.cjs && node tests/e2e/photo-boundaries.e2e.cjs && node tests/e2e/photo-transfer.e2e.cjs",
     "preview:photos": "node tools/preview-photos.cjs"

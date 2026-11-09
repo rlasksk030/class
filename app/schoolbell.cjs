@@ -24,6 +24,9 @@ module.exports = function setup(main) {
    const uploads=require('./schoolbell-preview-originals.cjs').createPreviewOriginals({getWebContents:()=>win.isDestroyed()?null:win.webContents,tempRoot:profile.dir});
    const posts=require('./schoolbell-live-posts.cjs').createLivePostProvider({target:to,tempRoot:profile.dir,createReader,getWebContents:()=>win.isDestroyed()?null:win.webContents});return {
    readBaseline:posts.readBaseline,readPublishedMetadata:posts.readPublishedMetadata,readUploads:uploads.readUploads,
+   // A/B/C observed one send action, with no second service confirmation click.
+   // The independent app final confirmation and disabled production gate remain.
+   finalAction:'single-send',
    openComposer:(request,signal)=>require('./schoolbell-composer-entry.cjs').openObservedComposer(win.webContents,{
     groupId:request.binding?.boardId,signal,allowed:request.stillPermitted}),
    async readContext(_r,signal){const facts=await context.inspect(signal);return {...to,...facts,service:'schoolbell',scopeType:'class',board:'diary',
@@ -41,6 +44,7 @@ module.exports = function setup(main) {
    const answer=await dialog.showMessageBox(main(),{type:'question',buttons:['취소',final?'이 내용으로 한 번 게시':'입력 준비'],defaultId:0,cancelId:0,
     message:final?'검증된 학교종이 알림장을 게시할까요?':'학교종이 작성 화면에 초안을 입력할까요?',
     detail:expectedSchool()+' · '+scope.classKey+'\n'+note.date+' · 사진 '+note.photos.length+'장\n'+note.title+'\n'+
+     (scope.selfNotification?'필수 관리자(현재 교사 본인)에게 알림이 전달될 수 있습니다.\n':'')+
      (final?'학교·학급·수신대상과 본문·사진이 검증된 경우에만 게시합니다. 결과가 불확실하면 재전송하지 않습니다.':'아직 게시하지 않습니다. 입력·사진 검증 후 별도로 최종 확인합니다.')});
    return answer.response===1;
   }});

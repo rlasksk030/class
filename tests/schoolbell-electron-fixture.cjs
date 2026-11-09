@@ -206,3 +206,6 @@ global.runSchoolbellElectronTests=async()=>{
  }finally{if(win&&!win.isDestroyed())win.destroy();ses.protocol.unhandle('https');}
 };
 app.whenReady().then(()=>{global.schoolbellFixtureReady=true;});
+// Reuse only this local HTML in focused integration checks; do not replay the
+// old suite or expose any fixture to packaged application code.
+module.exports={html};

@@ -8,6 +8,8 @@ const {createObservedPostBridge}=require('./schoolbell-observed-post.cjs');
 const {hash}=require('./media-store.cjs');
 const {createPreparedDriver}=require('./schoolbell-prepared-driver.cjs');
 const {fail}=require('./schoolbell-driver-errors.cjs');
+const {makeGuardProof,finalDOMGuard}=require('./schoolbell-final-guard.cjs');
+const {audienceVerified}=require('./schoolbell-audience.cjs');
 function requirePermission(permission,target,action){
  const p=permission?.();
  if(p?.official!==true||p.method!=='electron-ui'||!p.evidenceRef?.trim()||p.schoolId!==target.schoolId||
@@ -16,6 +18,14 @@ function requirePermission(permission,target,action){
 function createElectronDriver({target,getWebContents,permission=()=>null,evidence={},stop,tempRoot}={}){
  const actionOf=a=>({title:'input',body:'input',files:'attachments',commit:'submit'})[a]||'read';
  let binding=null,expectedNames=[],expectedPhotos=[],preparedText={title:null,body:null};
+ let transactionNote=null,lastContext=null,lastDate=null,lastUploads=null;
+ let watched=null,documentEpoch=0;
+ const invalidate=()=>{documentEpoch++;lastContext=null;lastDate=null;lastUploads=null;};
+ const navigation=(_event,_url,_inPlace,mainFrame)=>{if(mainFrame)invalidate();};
+ function unwatch(){if(watched?.removeListener){watched.removeListener('did-start-navigation',navigation);watched.removeListener('render-process-gone',invalidate);watched.removeListener('destroyed',invalidate);}watched=null;}
+ function watch(wc){if(watched!==wc){unwatch();invalidate();watched=wc;
+  wc?.on?.('did-start-navigation',navigation);wc?.on?.('render-process-gone',invalidate);wc?.on?.('destroyed',invalidate);
+ }return documentEpoch;}
  const posts=createObservedPostBridge({getWebContents,tempRoot,authorize:()=>{
   requirePermission(permission,target,'read');return !!binding;
  }});
@@ -23,18 +33,25 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
   requirePermission(permission,target,'read');
   if(signal?.aborted)fail('driver-state');
   if(typeof evidence[method]!=='function')fail(code);
+  const wc=getWebContents(),epoch=watch(wc);
   let value;
-  try{value=await evidence[method]({...request,webContents:getWebContents(),target,binding,note:request.note||preparedText,stillPermitted:()=>{try{requirePermission(permission,target,'read');return !signal?.aborted;}catch{return false;}}},signal);}
+  try{value=await evidence[method]({...request,webContents:wc,target,binding,note:request.note||preparedText,stillPermitted:()=>{try{requirePermission(permission,target,'read');return !signal?.aborted;}catch{return false;}}},signal);}
   catch(error){if(error?.name==='SchoolbellPreparationError')throw error;
    const known=['permission-unverified','context-unverified','baseline-unverified','date-unverified','upload-unverified','publication-unverified'];
    fail(known.includes(error?.message)?error.message:code);
   }
+  if(getWebContents()!==wc||(['readContext','readDate','readUploads','readBaseline'].includes(method)&&epoch!==documentEpoch))fail('context-unverified');
   if(signal?.aborted)fail('driver-state');
   requirePermission(permission,target,'read');return value;
  }
- const composer=createObservedComposerBridge({getWebContents,stop,domGuard:evidence.guardDOM,
+ const composer=createObservedComposerBridge({getWebContents,stop,domGuard:evidence.guardDOM||finalDOMGuard,
+  prepareProof:typeof evidence.guardDOM==='function'?undefined:({action,request,href})=>makeGuardProof({
+   action,target,binding,note:transactionNote,context:lastContext,date:lastDate,uploads:lastUploads,
+   expectedNames,expectedPhotos,href,revision:request?.revision,permission:permission()}),
   authorize:({action,target:requested,binding:expected})=>{
    requirePermission(permission,target,actionOf(action));
+   if(['title','body','files','commit'].includes(action)&&typeof evidence.guardDOM!=='function'&&
+      (!lastContext||!audienceVerified(lastContext,permission())))return false;
    if(requested&&JSON.stringify(requested)!==JSON.stringify(target))return false;
    return !expected||!!binding&&['boardId','contextId','actorKey'].every(k=>expected[k]===binding[k]);
   }});
@@ -44,16 +61,16 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
   catch(error){
    if(error?.name==='SchoolbellPreparationError')throw error;
    const code=({ 'structure-unverified':'structure-unverified','context-unverified':'context-unverified',
-    'permission-unverified':'permission-unverified','site-unverified':'context-unverified','driver-state':'driver-state',
+    'permission-unverified':'permission-unverified','site-unverified':'context-unverified','driver-state':'driver-state','date-unverified':'date-unverified',
     'upload-unverified':'upload-unverified','publication-unverified':'publication-unverified'})[error?.message]||'content-unverified';
    fail(code);
   }
  }
  const bridge={
-  async readContext(_r,s){const c=await read('readContext',s,'context-unverified');binding=c&&{boardId:c.boardId,contextId:c.contextId,actorKey:c.actorKey};return c;},
+  async readContext(_r,s){lastContext=null;const c=await read('readContext',s,'context-unverified');lastContext=structuredClone(c);binding=c&&{boardId:c.boardId,contextId:c.contextId,actorKey:c.actorKey};return c;},
   readStructure:(_probe,s)=>composer.readStructure(null,s,request()),
-  readDate:(_r,s)=>read('readDate',s,'date-unverified'),
-  readBaseline:(r,s)=>read('readBaseline',s,'baseline-unverified',r),
+  async readDate(_r,s){lastDate=null;const value=await read('readDate',s,'date-unverified');lastDate=structuredClone(value);return value;},
+  async readBaseline(r,s){transactionNote=structuredClone(r.note);return read('readBaseline',s,'baseline-unverified',r);},
   async readPublished(_r,s){
    if(typeof evidence.readPublished==='function')return read('readPublished',s,'publication-unverified');
    // Reuse the observed card and ordinary UI download controls once an approved
@@ -67,9 +84,12 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
     title:proof.fields.title,body:proof.fields.body,attachments:proof.attachments}]};
   },
   async readUploads(_r,s){
+   lastUploads=null;
    const proof=await read('readUploads',s,'upload-unverified',{expectedNames,expectedPhotos});
    const ui=await editor('readAttachmentState',request(),s);
    if(ui.listKnown!==true||ui.uploading||JSON.stringify(ui.names)!==JSON.stringify(expectedNames))fail('upload-unverified');
+   const fields=await editor('readFields',request(),s);
+   lastUploads={...proof,binding:structuredClone(binding),revision:fields.revision,observedAt:Date.now()};
    // UI/file names alone are insufficient. The connected original-file provider
    // must succeed independently; its live app execution is still unverified.
    return proof;
@@ -93,10 +113,10 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
   },
   commitOnce:(r,s)=>{
    // Observing a send button does not establish its confirmation/scheduling semantics.
-   if(evidence.finalAction!=='single-send'||typeof evidence.guardDOM!=='function')fail('publication-unverified');
+   if(evidence.finalAction!=='single-send')fail('publication-unverified');
    return editor('commitOnce',{...r,finalAction:evidence.finalAction},s);
   },
-  async close(){const readStopped=posts.close(),stopped=await composer.close();return readStopped&&stopped&&(typeof evidence.close!=='function'||await evidence.close()===true);}
+  async close(){try{const readStopped=posts.close(),stopped=await composer.close();return readStopped&&stopped&&(typeof evidence.close!=='function'||await evidence.close()===true);}finally{unwatch();invalidate();}}
  };
  return createPreparedDriver({target,permission,bridge});
 }
