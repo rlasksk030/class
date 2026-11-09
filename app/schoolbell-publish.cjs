@@ -3,6 +3,7 @@
 const crypto=require('node:crypto');
 const services=require('./diary-services.cjs');
 const capability=require('./schoolbell-capability.cjs');
+const {publicFailure}=require('./schoolbell-driver-errors.cjs');
 const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
 const text=s=>typeof s==='string'?s.replace(/\r\n?/g,'\n'):null;
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
@@ -81,10 +82,10 @@ function createPublisher({profile,store,readPhoto,driver=null,review,gate=capabi
    store.automaticState(note.classKey,attempt.id,{status:'auto-success',stage,publication});
    // No draft writes here. Caller may clear only an unchanged snapshot after saving history.
    return {status:'success',hash:attempt.hash,attemptId:attempt.id,attachmentsVerified:true,publication};
-  } catch {
+  } catch (error) {
    controller.abort();
    if(attempt?.id){try{store.automaticState(note.classKey,attempt.id,{status:'auto-uncertain',stage});}catch{/* pending remains fail-closed */}}
-   return {status:attempt?.id?'uncertain':'blocked',message};
+   return {status:attempt?.id?'uncertain':'blocked',message,...publicFailure(error)};
   } finally {
    controller.abort();
    // Closing the driver must stop all outstanding work; never run a retry or background timer.
