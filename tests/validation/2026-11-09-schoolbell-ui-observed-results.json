@@ -1,0 +1,72 @@
+{
+  "date": "2026-11-09",
+  "baseHead": "f198f2b3bc74f544e233f925e1f8570440c40751",
+  "branch": "feature/schoolbell-diary-nationwide",
+  "scope": "read-only live composer observation; not publishing validation",
+  "live": {
+    "composerStructure": "MATCH",
+    "composerCount": 1,
+    "titleCount": 1,
+    "bodyCount": 1,
+    "fileInputCount": 1,
+    "multipleFiles": true,
+    "accepts": {
+      "jpeg": true,
+      "png": true,
+      "heic": true
+    },
+    "sendCount": 1,
+    "sendEnabled": false,
+    "saveDraftCount": 1,
+    "identity": "UNVERIFIED",
+    "teacherPermission": "UNVERIFIED",
+    "classApproval": "UNVERIFIED",
+    "recipients": "USER_CONFIRMED_NONE; DOM_UNVERIFIED",
+    "dateControl": "UNVERIFIED",
+    "finalConfirmation": "NOT_OBSERVED",
+    "automaticInput": "NOT_RUN",
+    "attachmentUpload": "NOT_RUN",
+    "publication": "NOT_RUN",
+    "attachmentsVerified": false,
+    "publishReady": false
+  },
+  "implementation": {
+    "productionImported": false,
+    "capabilityEnabled": false,
+    "driverInstalled": false,
+    "sourceSHA256": {
+      "app/schoolbell-ui-probe.cjs": "11856c9119e4ba15db274b395aa8bd8c4523ecf8806e3a70ecc23135aede2da6",
+      "app/schoolbell-ui-probe.test.cjs": "2632c8a9027d7cf82f0e844bfcecb5f003b4f21c6ab7a7274e45ef959d11e1f0"
+    }
+  },
+  "checks": {
+    "unit": {
+      "command": "node --test app/schoolbell-ui-probe.test.cjs",
+      "pass": 3,
+      "fail": 0,
+      "exitCode": 0
+    },
+    "syntax": {
+      "files": [
+        "app/schoolbell-ui-probe.cjs",
+        "app/schoolbell-ui-probe.test.cjs"
+      ],
+      "pass": 2,
+      "fail": 0
+    },
+    "existingSyntheticE2E": "NOT_RERUN",
+    "fullRegression": "NOT_RERUN",
+    "windows": "NOT_RUN; previous Parallels Service limitation preserved"
+  },
+  "githubBefore": {
+    "head": "f198f2b3bc74f544e233f925e1f8570440c40751",
+    "draft": true,
+    "open": true,
+    "actionsTotal": 19,
+    "lastRunId": 41977391612,
+    "workflowBlob": "58613481272e59545c0c910d5d6e033a65f0247a"
+  },
+  "actionsTriggered": 0,
+  "newBuilds": 0,
+  "deployments": 0
+}
