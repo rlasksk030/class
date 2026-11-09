@@ -16,7 +16,9 @@ function postOperation(document,request,readText){
   const t=e.querySelectorAll('app-translation-viewer');return t.length===1&&t[0].textContent.trim()===request.note.title;
  });
  if(cards.length!==1)throw Error('publication-unverified');
- const card=cards[0],bodies=card.querySelectorAll('app-text-viewer .fr-view');
+ const card=cards[0];
+ if(request.postId&&card.closest('div.notification-post[data-letter-id]')?.getAttribute('data-letter-id')!==request.postId)throw Error('publication-unverified');
+ const bodies=card.querySelectorAll('app-text-viewer .fr-view');
  const lists=card.querySelectorAll('app-letter-filelist'),media=card.querySelectorAll('app-media-browser');
  if(bodies.length!==1||lists.length!==1||media.length!==1||media[0].querySelectorAll('img,video,a').length)throw Error('publication-unverified');
  const body=readText(bodies[0]);if(body!==request.note.body.replace(/\r\n?/g,'\n'))throw Error('publication-unverified');

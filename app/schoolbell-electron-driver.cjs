@@ -1,7 +1,8 @@
 'use strict';
 // Concrete Electron composer + existing prepared transaction driver. Evidence
 // providers are trusted main-process source code, NEVER renderer/settings data.
-// No live identity/date/upload/publication evidence provider is installed yet.
+// Partial observed UI evidence is installed; unverified identity/date/upload/list
+// coverage continues to fail closed behind the production permission gate.
 const {createObservedComposerBridge}=require('./schoolbell-observed-composer.cjs');
 const {createObservedPostBridge}=require('./schoolbell-observed-post.cjs');
 const {hash}=require('./media-store.cjs');
@@ -18,11 +19,11 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
  const posts=createObservedPostBridge({getWebContents,tempRoot,authorize:()=>{
   requirePermission(permission,target,'read');return !!binding;
  }});
- async function read(method,signal,code){
+ async function read(method,signal,code,request={}){
   requirePermission(permission,target,'read');
   if(signal?.aborted)fail('driver-state');
   if(typeof evidence[method]!=='function')fail(code);
-  const value=await evidence[method]({webContents:getWebContents(),target},signal);
+  const value=await evidence[method]({...request,webContents:getWebContents(),target,binding,note:request.note||preparedText},signal);
   if(signal?.aborted)fail('driver-state');
   requirePermission(permission,target,'read');return value;
  }
@@ -47,15 +48,15 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
   async readContext(_r,s){const c=await read('readContext',s,'context-unverified');binding=c&&{boardId:c.boardId,contextId:c.contextId,actorKey:c.actorKey};return c;},
   readStructure:(_probe,s)=>composer.readStructure(null,s,request()),
   readDate:(_r,s)=>read('readDate',s,'date-unverified'),
-  readBaseline:(_r,s)=>read('readBaseline',s,'baseline-unverified'),
+  readBaseline:(r,s)=>read('readBaseline',s,'baseline-unverified',r),
   async readPublished(_r,s){
    if(typeof evidence.readPublished==='function')return read('readPublished',s,'publication-unverified');
    // Reuse the observed card and ordinary UI download controls once an approved
    // metadata provider has revisited the bound board and verified ID/date/scope.
-   // It is deliberately absent in production; neither URL nor title proves it.
+   // Metadata alone is insufficient: independently verify the full body and files.
    const m=await read('readPublishedMetadata',s,'publication-unverified');
    if(m?.complete!==true||m.refreshed!==true||!preparedText.title||typeof preparedText.body!=='string')fail('publication-unverified');
-   let proof;try{proof=await posts.readOriginals({boardURL:m.boardURL,note:preparedText,photos:expectedPhotos},s);}
+   let proof;try{proof=await posts.readOriginals({boardURL:m.boardURL,postId:m.id,note:preparedText,photos:expectedPhotos},s);}
    catch{fail('publication-unverified');}
    return {complete:true,refreshed:true,posts:[{id:m.id,date:m.date,scope:m.scope,kind:'published',
     title:proof.fields.title,body:proof.fields.body,attachments:proof.attachments}]};

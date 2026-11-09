@@ -7,9 +7,30 @@ const {bounded} = require('./hiclass-navigation.cjs');
 module.exports = function setup(main) {
  const profile = require('./school-profile.cjs').get(), store = services.createStore(profile);
  const windows = new Map(); let busy = false;
- // No official permission or live evidence provider exists. These code-owned
+ const liveContext=require('./schoolbell-live-context.cjs');
+ const createReader=ses=>{
+  // Reuse only this app's session; never copy cookies from another browser.
+  const reader=new BrowserWindow({show:false,webPreferences:{session:ses,contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  reader.webContents.setWindowOpenHandler(()=>({action:'deny'}));
+  const guard=(event,url)=>{try{services.safeURL(url);}catch{event.preventDefault();}};
+  reader.webContents.on('will-navigate',guard);reader.webContents.on('will-redirect',guard);
+  return reader;
+ };
+ const contextProvider=(win,to)=>liveContext.createLiveContextProvider({target:to,getWebContents:()=>win.isDestroyed()?null:win.webContents,createReader});
+ // No official grant or complete verified live provider exists. These code-owned
  // defaults cannot be enabled by IPC, saved settings or environment variables.
  const driver=require('./schoolbell-electron-driver.cjs').createRuntimeDriver({profile,openClass:open,
+  evidenceFactory:(to,win)=>{const context=contextProvider(win,to);
+   const posts=require('./schoolbell-live-posts.cjs').createLivePostProvider({target:to,createReader,getWebContents:()=>win.isDestroyed()?null:win.webContents});return {
+   readBaseline:posts.readBaseline,readPublishedMetadata:posts.readPublishedMetadata,
+   async readContext(_r,signal){const facts=await context.inspect(signal);return {...to,...facts,service:'schoolbell',scopeType:'class',board:'diary',
+    authenticated:facts.checks.classPage,teacher:facts.authorityVerified,classApproved:false,testClassApproved:false,
+    contextId:facts.boardId,students:null,parents:null,externalNotifications:null};},
+   // The observed composer has no draft-date control. Do not substitute the
+   // app date or the computer clock for a verified service publication date.
+   readDate:async()=>({verified:false,writable:false,value:null}),
+   close(){const contextStopped=context.close(),postsStopped=posts.close();return contextStopped&&postsStopped;}
+  };},
   closeClass:key=>{const w=windows.get(key);if(w&&!w.isDestroyed())w.destroy();return true;}});
  const publisher=require('./schoolbell-publish.cjs').createPublisher({profile,store,driver,
   readPhoto:ref=>require('./media.cjs').current().read(ref),review:async ({phase,scope,note})=>{
@@ -84,6 +105,21 @@ module.exports = function setup(main) {
  handle('schoolbell:open',async value=>{
   const to=target(value); await open(to.classKey);
   return {status:'manual',message:'학교종이에서 직접 로그인 → 담당 학급 → 알림장을 여세요. 돌아와 학교·학급을 확인해 주세요. 로그인 및 교사 권한은 자동 확인하지 않습니다.'};
+ });
+ handle('schoolbell:inspect',async value=>{
+  const to=target(value),win=windows.get(to.classKey);
+  if(!win||win.isDestroyed())return {status:'blocked',message:'학교종이 창에서 직접 로그인한 뒤 담당 학급의 알림장을 열어 주세요.'};
+  const provider=contextProvider(win,to),abort=new AbortController();
+  try{
+   const result=await bounded(()=>provider.inspect(abort.signal),25000,()=>{abort.abort();provider.close();});
+   // Never expose display names, avatar URLs, group IDs or actor hashes to the
+   // renderer/log. This report is not a stored verified link or publication grant.
+   return {status:'blocked',checks:result.checks,blockers:result.blockers,
+    message:'실제 화면 확인: '+(result.checks.gradeClass?'학년·반 일치. ':'학년·반 확인 필요. ')+
+     (result.checks.rosterEmpty?'명단 입력 값 0건. ':'명단 확인 필요. ')+
+     result.blockers.map(code=>liveContext.blockerMessages[code]).filter(Boolean).join(' ')};
+  }catch(error){return {status:'blocked',message:liveContext.blockerMessages[error.message]||'앱의 로그인 상태와 실제 학급 화면을 확인하지 못했습니다. 자동 등록 잠금과 초안은 유지됩니다.'};}
+  finally{abort.abort();provider.close();}
  });
  handle('schoolbell:link',async value=>{
   const to=target(value), w=windows.get(to.classKey);

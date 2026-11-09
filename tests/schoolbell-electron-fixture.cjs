@@ -48,7 +48,7 @@ fetch('/posts').then(r=>r.json()).then(rows=>{for(const row of rows){const el=do
   item.className='file-item text-sm btn-link mb-1';item.style.display='none';item.dataset.syntheticLink=link(id).href;
   base.className='text-truncate';base.textContent='synthetic-'+(i+1);ext.className='text-nowrap';ext.textContent='.png';size.className='file-item-size mx-1 text-nowrap';size.textContent='(1.92 KB)';
   item.append(base,ext,size);item.addEventListener('click',()=>{const a=document.createElement('a');a.href='/download/'+id;a.click();});return item;});
- toggle.addEventListener('click',()=>items.forEach(e=>e.style.display='block'));files.append(...items);el.append(title,body,media,files);q('#posts').append(el);}meta.dataset.ready='yes';});
+ toggle.addEventListener('click',()=>items.forEach(e=>e.style.display='block'));files.append(...items);el.append(title,body,media,files);const wrapper=document.createElement('div');wrapper.className='notification-post';wrapper.dataset.letterId=row.id;wrapper.append(el);q('#posts').append(wrapper);}meta.dataset.ready='yes';});
 </script>`;
 const permission=()=>grant?{official:true,method:'electron-ui',evidenceRef:'LOCAL-FIXTURE-NOT-A-SERVICE-GRANT',schoolId:target.schoolId,classKey:target.classKey,
  approvedTestClass:true,actions:['read','input','attachments','submit']}:null;

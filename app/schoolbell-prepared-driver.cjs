@@ -96,7 +96,7 @@ function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,ma
  }
  async function snapshot({scope:expected,note:input},externalSignal) {
   requirePhase('inspected');expectScope(expected);const signal=signalFor(externalSignal);await guard('read',signal);
-  const result=await call('readBaseline',null,signal);await guard('read',signal);
+  const result=await call('readBaseline',{note:structuredClone(input)},signal);await guard('read',signal);
   if(result?.complete!==true||result.refreshed!==true||!Array.isArray(result.posts))fail('baseline-unverified');
   const rows=result.posts.map(post),ids=rows.map(r=>r.id);
   if(new Set(ids).size!==ids.length)fail('baseline-unverified');

@@ -49,6 +49,10 @@ const state=async()=>page.evaluate(()=>desktop.diaryServiceStatus([academicYear(
  await page.click('#schoolbellOpen');await ready();
  const to=await page.evaluate(()=>({classKey:[academicYear(),settings.grade,settings.classroom].join(':'),year:String(academicYear()),grade:settings.grade,classroom:settings.classroom}));
  const browser=await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().startsWith('https://schoolbell-e.com')).id);
+ await page.click('#schoolbellInspect');await ready();
+ assert.match(await page.textContent('#diaryStatus'),/담당 학급/);assert.equal((await state()).link,null);
+ assert.equal(await page.inputValue('#diaryBody'),'가상 본문');assert.equal(await page.locator('#diaryPhotos figure').count(),2);
+ pass('actual-screen inspection without a class page cannot grant authority or clear the draft');
  const isolated=await app.evaluate(async({BrowserWindow},id)=>{
   const w=BrowserWindow.fromId(id),prefs=w.webContents.getLastWebPreferences();
   let rejected=false;try{await process.mainModule.require('electron').ipcMain._invokeHandlers.get('schoolbell:copy')({sender:w.webContents,senderFrame:w.webContents.mainFrame},{});}catch{rejected=true;}
