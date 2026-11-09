@@ -4,6 +4,7 @@
 const {probeComposer,probeAttachments}=require('./schoolbell-ui-probe.cjs');
 const {readEditorText}=require('./schoolbell-editor-text.cjs');
 const {readPublicationMode}=require('./schoolbell-publication-mode.cjs');
+const {armSend,focusForSend,deliverSend}=require('./schoolbell-send-input.cjs');
 const {validateRef,MAX_FILE,MAX_LIBRARY,hash,dimensions}=require('./media-store.cjs');
 const HOSTS=new Set(['schoolbell-e.com','www.schoolbell-e.com','v4.schoolbell-e.com']);
 const WORLD=17481; // Isolated from site JS; shared DOM, no credentials or framework internals.
@@ -13,7 +14,7 @@ function officialPage(url) {
 }
 // Self-contained DOM operation. The trusted, separately reviewed guard must read
 // current DOM evidence synchronously, including binding/date/uploads for commit.
-function browserOperation(action,payload,inspect,guard,readText,readAttachments,readMode) {
+function browserOperation(action,payload,inspect,guard,readText,readAttachments,readMode,armNative) {
  const info=inspect(document);
  if(info.structureMatched!==true||info.composerCount!==1||
     ['title','body','photos','send','saveDraft'].some(k=>info[k]?.count!==1))throw Error('structure-unverified');
@@ -122,10 +123,15 @@ function browserOperation(action,payload,inspect,guard,readText,readAttachments,
   if(state.submitted||info.send.enabled!==true||payload.finalAction!=='single-send'||
      current.revision!==payload.revision||current.title!==payload.note.title||current.body!==normalize(payload.note.body))throw Error('content-unverified');
   const send=one('button.btn-with-description');
-  if(!send.getClientRects().length||send.disabled||send.getAttribute('aria-disabled')==='true')throw Error('publication-unverified');
-  // No modal guessing, retries, temporary-save, or scheduled publish fallback.
-  // guard must establish that this observed action is the approved final action.
-  state.submitted=true;send.click();return {clicked:true};
+  if(!send.getClientRects().length||send.disabled||send.matches(':disabled')||send.getAttribute('aria-disabled')==='true')throw Error('publication-unverified');
+  // Consume before arming. The native event must still hit this exact element
+  // and pass the same whole-content guard; a DOM click is never a fallback.
+  state.submitted=true;
+  return armNative(document,send,state,()=>{
+   const latest=fields();
+   return !state.composing&&document.querySelectorAll('app-boards-write')[0]===root&&
+    latest.revision===payload.revision&&latest.title===payload.note.title&&latest.body===normalize(payload.note.body)&&guarded();
+  });
  }
  return {matched:true};
 }
@@ -138,7 +144,7 @@ function encodeFiles(files){
   return {id,size:bytes.length,type:id.endsWith('.png')?'image/png':'image/jpeg',base64:bytes.toString('base64')};
  });
 }
-function createObservedComposerBridge({getWebContents,authorize,domGuard,prepareProof,stop}={}) {
+function createObservedComposerBridge({getWebContents,authorize,domGuard,prepareProof,stop,diagnostic}={}) {
  let closed=false,active=false;const jobs=new Set();
  const get=()=>{
   const wc=getWebContents?.();
@@ -153,18 +159,24 @@ function createObservedComposerBridge({getWebContents,authorize,domGuard,prepare
  }
  async function perform(action,value,request,signal){
   const wc=get(),url=wc.getURL();await verify(action,request,signal,wc,url);
+  const focused=action==='commit'?await focusForSend(wc):null;
   const payload={...value,target:request?.target,binding:request?.binding};
   if(['title','body','files','commit'].includes(action)&&typeof prepareProof==='function'){
    payload.proof=await prepareProof({action,request,href:url},signal);
    await verify(action,request,signal,wc,url);
   }
-  const operation='('+browserOperation.toString()+')('+JSON.stringify(action)+','+JSON.stringify(payload)+',('+probeComposer.toString()+'),'+(typeof domGuard==='function'?'('+domGuard.toString()+')':'null')+',('+readEditorText.toString()+'),('+probeAttachments.toString()+'),('+readPublicationMode.toString()+'))';
+  const operation='('+browserOperation.toString()+')('+JSON.stringify(action)+','+JSON.stringify(payload)+',('+probeComposer.toString()+'),'+(typeof domGuard==='function'?'('+domGuard.toString()+')':'null')+',('+readEditorText.toString()+'),('+probeAttachments.toString()+'),('+readPublicationMode.toString()+'),('+armSend.toString()+'))';
   // Electron otherwise replaces renderer exceptions with an opaque error. Return
   // a fixed code only: never a site exception, account text, or photo payload.
   const script='(()=>{try{return {ok:true,value:'+operation+'};}catch(e){return {ok:false,code:'+JSON.stringify([
    'structure-unverified','unimplemented-action','composition-active','context-unverified','invalid-payload',
    'title-unavailable','body-unavailable','content-unverified','upload-unverified','publication-unverified'])+'.includes(e.message)?e.message:"content-unverified",guardFailure:'+JSON.stringify(['proof','route','composer','recipient-label','overlay','preview-overlay','audience-overlay','mode-reader','mode','attachments'])+'.includes(e.guardFailure)?e.guardFailure:null};}})()';
   const result=await wc.executeJavaScriptInIsolatedWorld(WORLD,[{code:script}],false);
+  if(action==='commit'&&result?.ok===true){
+   result.value=await deliverSend(wc,result.value,{focused,diagnostic,
+    permitted:async()=>{await verify(action,request,signal,wc,url);return true;},
+    readResult:token=>wc.executeJavaScriptInIsolatedWorld(WORLD,[{code:'(()=>{const a=globalThis.__classroomSchoolbellLastSend;return a?.token==='+JSON.stringify(token)+'?{clicked:a.clicked,blocked:a.blocked,reason:a.reason,events:a.events}:null;})()'}])});
+  }
   // A successful single-click acknowledgement may already have navigated to a
   // different official board. Preserve the same window/grant checks and let the
   // separate readback verify the original binding; never send again.

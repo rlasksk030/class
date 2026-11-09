@@ -126,7 +126,7 @@ function createLivePostProvider({getWebContents,createReader,target,tempRoot,tim
    // the composer while its ordinary upload/publish request is still running.
    // The observed service returns to classnews or schoolnews after sending.
    // Wait for that result screen, then perform the independent refreshed read.
-   const until=Date.now()+timeoutMs;let completed=false,previous=null,lastResultRoute=false;
+   const until=Date.now()+timeoutMs;let completed=false,previous=null,lastResultRoute=false,lastOutcome=null;
    diagnostic({step:'published-result-screen',state:'waiting'});
    while(Date.now()<until){
     if(!permitted()||wc.isDestroyed())throw Error('publication-unverified');
@@ -136,6 +136,8 @@ function createLivePostProvider({getWebContents,createReader,target,tempRoot,tim
     const resultRoute=path===base+'classnews'||path===base+'schoolnews'||
      new RegExp('^'+base+'(?:classnews|schoolnews)/posts/\\d+$').test(path);
     lastResultRoute=resultRoute;
+    const outcome=await wc.executeJavaScriptInIsolatedWorld(17484,[{code:'('+require('./schoolbell-send-input.cjs').readSendOutcome.toString()+')(document)'}]);
+    if(JSON.stringify(outcome)!==lastOutcome){diagnostic({step:'post-click-ui',...outcome});lastOutcome=JSON.stringify(outcome);}
     if(resultRoute){
      const ready=await wc.executeJavaScriptInIsolatedWorld(17484,[{code:'document.querySelectorAll("app-group-board").length===1&&document.querySelectorAll("app-boards-write").length===0'}]);
      if(ready&&previous===wc.getURL()){completed=true;break;}previous=ready?wc.getURL():null;

@@ -46,7 +46,7 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
   if(signal?.aborted)fail('driver-state');
   requirePermission(permission,target,'read');return value;
  }
- const composer=createObservedComposerBridge({getWebContents,stop,domGuard:evidence.guardDOM||finalDOMGuard,
+ const composer=createObservedComposerBridge({getWebContents,stop,diagnostic:evidence.diagnostic,domGuard:evidence.guardDOM||finalDOMGuard,
   prepareProof:typeof evidence.guardDOM==='function'?undefined:({action,request,href})=>makeGuardProof({
    action,target,binding,note:transactionNote,context:lastContext,date:lastDate,uploads:lastUploads,
    expectedNames,expectedPhotos,href,revision:request?.revision,permission:permission()}),
