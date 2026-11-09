@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-09",
+  "base": "f1c5bd155c5fbdeb9ac161eb3a7c4f828b3ffdf4",
+  "codeCommit": "a8d1edb3e5e1a0b5a94596a60f37ec0e4ec2fe34",
+  "branch": "feature/schoolbell-diary-nationwide",
+  "live": {
+    "diaryUI": "PASS",
+    "appLoginForm": "PASS",
+    "whaleLoginForm": "PASS",
+    "userDirectLoginAndAppClassPage": "PASS",
+    "appInspectionGradeClass": "PASS",
+    "appInspectionNoRecipients": "PASS",
+    "identityAuthorityDateOriginals": "BLOCKED",
+    "automaticInputAttachmentPublication": "NOT RUN",
+    "newLivePosts": 0,
+    "serverRereadAndDraftCompletion": "NOT RUN",
+    "spaStatusFixNativeRestart": "NOT RUN"
+  },
+  "validation": {
+    "syntax": "125/125 before final small status/copy edit; changed CJS checked afterwards",
+    "connectionAndServiceUnits": "15/15",
+    "spaWindowUnits": "3/3 after final window-state fix",
+    "existingE2E": "NOT RUN",
+    "hiclassFullRegression": "NOT RUN",
+    "windows": "NOT RUN; prior guest environment blocker remains separate"
+  },
+  "operations": {
+    "newActionsRequested": 0,
+    "actionsBefore": {
+      "total": 19,
+      "last": 41977391612
+    },
+    "additionalCostIncurred": 0,
+    "productionGateEnabled": false,
+    "release": "NO GO",
+    "mergeReleaseBuildInstall": false
+  },
+  "sha256": {
+    ".gitignore": "e36d86d0ae3bd2612511f396fb4fde4782e3e7e01e78abab9fbc96f80be54abe",
+    "app/diary-schoolbell.js": "d5e157364a50865c31c8a45e6b56387302ba842c9d18db81742631aea0c97cf6",
+    "app/diary-services.cjs": "0c8033fcfdadb892107ad2ff325942bad18c0bd9f4f452b7347b5d7a497a9af1",
+    "app/diary.css": "f4c50e032f89cc42f33c4a03c95847a60663ef5952fe037045d9a6d450e3d4c6",
+    "app/schoolbell.cjs": "d3b170d7480c4600e8a9320d89449538d0b27728d0cacf87b244185e47053d99",
+    "app/schoolbell-live-context.cjs": "dd4e6327782dc79a18afeef629906b06caf3953057211e6cfbd18005e7defd4e",
+    "app/schoolbell-login-navigation.cjs": "340257c9dbc1eea1496e29e3cdfc771c9b8a6bfec1ac703439a465e5cabfb437",
+    "app/schoolbell-window.cjs": "456a4a2830b2572e322c3e3e3ee969cab4086b7805245f0a4e598b73de1d75af",
+    "app/schoolbell-login-navigation.test.cjs": "fd5eb76af390e6bce58e4df280ded429490f4279666021b9f3fa816457e37b92",
+    "app/schoolbell-window.test.cjs": "ae82e1fa6bc5f1bf02064c20ed4eb90c3e29f60be64224cc86e5f2442d176cac",
+    "tests/e2e/schoolbell.e2e.cjs": "3c047a50fb947ac3054cea67429dae2c60275182a64e1242b24cc574da5bbb78",
+    "tests/validation/artifacts/2026-11-09-schoolbell-app-login/connection-tests.log": "5fca3f413df1f0a94b0df59ca2d5702d4e6d9cc284dc60fe94152ae802821773",
+    "tests/validation/artifacts/2026-11-09-schoolbell-app-login/syntax.log": "c334306369e2cd009de388e754057da37bf5210c612709855b8bccf0ce6adafc",
+    "tests/validation/artifacts/2026-11-09-schoolbell-app-login/window-spa-tests.log": "67e455e76f64e75e3dc6a745b88686dfdd1e9cdf186b3b7aa023d820f4b7c926"
+  }
+}
