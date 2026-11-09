@@ -21,15 +21,18 @@ module.exports = function setup(main) {
  // defaults cannot be enabled by IPC, saved settings or environment variables.
  const driver=require('./schoolbell-electron-driver.cjs').createRuntimeDriver({profile,openClass:open,
   evidenceFactory:(to,win)=>{const context=contextProvider(win,to);
-   const posts=require('./schoolbell-live-posts.cjs').createLivePostProvider({target:to,createReader,getWebContents:()=>win.isDestroyed()?null:win.webContents});return {
-   readBaseline:posts.readBaseline,readPublishedMetadata:posts.readPublishedMetadata,
+   const uploads=require('./schoolbell-preview-originals.cjs').createPreviewOriginals({getWebContents:()=>win.isDestroyed()?null:win.webContents,tempRoot:profile.dir});
+   const posts=require('./schoolbell-live-posts.cjs').createLivePostProvider({target:to,tempRoot:profile.dir,createReader,getWebContents:()=>win.isDestroyed()?null:win.webContents});return {
+   readBaseline:posts.readBaseline,readPublishedMetadata:posts.readPublishedMetadata,readUploads:uploads.readUploads,
+   openComposer:(request,signal)=>require('./schoolbell-composer-entry.cjs').openObservedComposer(win.webContents,{
+    groupId:request.binding?.boardId,signal,allowed:request.stillPermitted}),
    async readContext(_r,signal){const facts=await context.inspect(signal);return {...to,...facts,service:'schoolbell',scopeType:'class',board:'diary',
     authenticated:facts.checks.classPage,teacher:facts.authorityVerified,classApproved:false,testClassApproved:false,
-    contextId:facts.boardId,students:null,parents:null,externalNotifications:null};},
+    contextId:facts.boardId,students:facts.students,parents:facts.parents,externalNotifications:null};},
    // The observed composer has no draft-date control. Do not substitute the
    // app date or the computer clock for a verified service publication date.
    readDate:async()=>({verified:false,writable:false,value:null}),
-   close(){const contextStopped=context.close(),postsStopped=posts.close();return contextStopped&&postsStopped;}
+   close(){const contextStopped=context.close(),postsStopped=posts.close(),uploadsStopped=uploads.close();return contextStopped&&postsStopped&&uploadsStopped;}
   };},
   closeClass:key=>{const w=windows.get(key);if(w&&!w.isDestroyed())w.destroy();return true;}});
  const publisher=require('./schoolbell-publish.cjs').createPublisher({profile,store,driver,
@@ -116,7 +119,7 @@ module.exports = function setup(main) {
    // renderer/log. This report is not a stored verified link or publication grant.
    return {status:'blocked',checks:result.checks,blockers:result.blockers,
     message:'실제 화면 확인: '+(result.checks.gradeClass?'학년·반 일치. ':'학년·반 확인 필요. ')+
-     (result.checks.rosterEmpty?'명단 입력 값 0건. ':'명단 확인 필요. ')+
+     (result.checks.recipientTableEmpty?'발행 대상 구성원 없음 확인. ':result.checks.rosterEmpty?'명단 입력 값 0건(발행 대상은 별도 확인 필요). ':'명단 확인 필요. ')+
      result.blockers.map(code=>liveContext.blockerMessages[code]).filter(Boolean).join(' ')};
   }catch(error){return {status:'blocked',message:liveContext.blockerMessages[error.message]||'앱의 로그인 상태와 실제 학급 화면을 확인하지 못했습니다. 자동 등록 잠금과 초안은 유지됩니다.'};}
   finally{abort.abort();provider.close();}

@@ -21,28 +21,34 @@ test('cancellation while the context reader is opening destroys only that reader
  release({isDestroyed:()=>destroyed>0,destroy:()=>destroyed++,loadURL:()=>loads++});
  await assert.rejects(result,/cancelled/);assert.equal(destroyed,1);assert.equal(loads,0);assert.equal(provider.close(),true);
 });
-function postDOM({id='200',tooltip='2026. 11. 9. PM 2:49:20',duplicates=false}={}){
+function postDOM({id='200',tooltip='2026. 11. 9. PM 2:49:20',duplicates=false,search=''}={}){
  let card;const wrapper={getAttribute:()=>id,querySelectorAll:()=>[card]};
  card={closest:()=>wrapper,querySelectorAll:s=>s==='app-translation-viewer'?[{textContent:'synthetic target'}]:[{getAttribute:()=> 'date-proof'}]};
- const cards=duplicates?[card,card]:[card],root={querySelectorAll:()=>cards};
- return {querySelectorAll:()=>[root],getElementById:()=>({textContent:tooltip})};
+ const cards=duplicates?[card,card]:[card],root={querySelectorAll:s=>s==='app-letter-item-long'?cards:[]};
+ return {querySelectorAll:s=>s==='input[placeholder="검색"]'?[{value:search}]:[root],getElementById:()=>({textContent:tooltip})};
 }
 test('observed post ID and tooltip date do not claim virtual list coverage',()=>{
  const result=readPostIndex(postDOM(),'synthetic target');
  assert.deepEqual(result.matches,[{id:'200',date:'2026-11-09'}]);assert.equal(result.complete,false);
+ assert.equal(result.unfiltered,true);assert.equal(readPostIndex(postDOM({search:'filtered'}),'synthetic target').unfiltered,false);
  assert.equal(readPostIndex(postDOM({duplicates:true}),'synthetic target').known,false);
  assert.equal(readPostIndex(postDOM({id:'unknown'}),'synthetic target').known,false);
  for(const tooltip of ['2026. 2. 30. AM 3:00:00','2026. 11. 9. PM 13:00:00','오늘','2026-11-09'])assert.equal(readPostIndex(postDOM({tooltip}),'synthetic target').matches[0].date,null);
 });
-test('post provider keeps incomplete baseline blocked and revisits only its pinned class after send',async()=>{
+test('missing list-end coverage cannot establish a baseline or enable result readback',async()=>{
  let url=board,readerDestroyed=false,readCount=0;
- const session={},wc={isDestroyed:()=>false,getURL:()=>url,session,loadURL:async u=>{url=u;},executeJavaScriptInIsolatedWorld:async()=>{readCount++;return {known:true,ids:['200'],matches:[{id:'200',date:'2026-11-09'}],reason:'virtual-list-coverage-unverified'};}};
- let readerURL;const reader={isDestroyed:()=>readerDestroyed,destroy:()=>{readerDestroyed=true;},webContents:{...wc,getURL:()=>readerURL,loadURL:async u=>{readerURL=u;}}};
- const provider=createLivePostProvider({target:{schoolId:'fixture',classKey:'2026:6:1'},getWebContents:()=>wc,createReader:async s=>{assert.equal(s,session);return reader;}});
- const baseline=await provider.readBaseline({note:{title:'synthetic target'}});
- assert.equal(baseline.complete,false);assert.equal(baseline.refreshed,true);assert.equal(readerDestroyed,true);assert.equal(url,board);
- url=board.replace('classnews','schoolnews');
- const result=await provider.readPublishedMetadata({binding:{boardId:'100'},note:{title:'synthetic target'}});
- assert.equal(url,board);assert.equal(result.id,'200');assert.equal(result.date,'2026-11-09');
- const before=readCount;await assert.rejects(()=>provider.readPublishedMetadata({binding:{boardId:'101'},note:{title:'synthetic target'}}),/publication-unverified/);assert.equal(readCount,before);assert.equal(provider.close(),true);
+ const session={},wc={isDestroyed:()=>false,getURL:()=>url,session,loadURL:async u=>{url=u;},executeJavaScriptInIsolatedWorld:async()=>{readCount++;return {known:true,unfiltered:true,ids:['200'],matches:[],viewport:{top:0,height:200,total:400,end:false}};}};
+ let readerURL;const reader={isDestroyed:()=>readerDestroyed,destroy:()=>{readerDestroyed=true;},loadURL:async u=>{readerURL=u;},webContents:{...wc,getURL:()=>readerURL,loadURL:async u=>{readerURL=u;}}};
+ const provider=createLivePostProvider({target:{schoolId:'fixture',classKey:'2026:6:1'},timeoutMs:10,getWebContents:()=>wc,createReader:async s=>{assert.equal(s,session);return reader;}});
+ await assert.rejects(()=>provider.readBaseline({note:{title:'synthetic target'},stillPermitted:()=>true}),/baseline-unverified/);
+ assert.equal(readerDestroyed,true);assert.equal(url,board);
+ const before=readCount;
+ await assert.rejects(()=>provider.readPublishedMetadata({binding:{boardId:'100'},note:{title:'synthetic target'},stillPermitted:()=>true}),/publication-unverified/);
+ assert.equal(readCount,before);assert.equal(provider.close(),true);
+});
+test('empty unfiltered send-target table verifies no student/parent targets but cannot authorize administrator notifications',()=>{
+ const result=summarizeContext({recipients:{known:true,unfiltered:true,empty:true,mandatoryAdministrator:true}},{grade:'6',classroom:'1'});
+ assert.equal(result.students,0);assert.equal(result.parents,0);assert.equal(result.mandatoryAdministrator,true);
+ assert.equal(result.blockers.includes('membership-unverified'),false);assert.equal(result.blockers.includes('notification-policy-unverified'),true);
+ assert.equal(result.recipientsVerified,false);assert.equal(result.authorityVerified,false);
 });

@@ -120,3 +120,15 @@ test('post-send board redirect permits read-only return, then requires the origi
   assert.equal(f.state.clicks,1);
  }
 });
+
+test('filtered full-list baseline keeps unrelated IDs and rejects a mismatched filter or missing candidate ID',async t=>{
+ for(const bad of [null,'filter','id']){
+  const f=fixture(t,{photoCount:0});
+  const candidate={id:'candidate',title:f.note.title,body:f.note.body,date:f.note.date,kind:'published',scope:f.scope,attachments:{complete:true,items:[]}};
+  f.bridge.readBaseline=async()=>({complete:true,refreshed:true,ids:bad==='id'?['unrelated']:['unrelated','candidate'],filter:{title:bad==='filter'?'different':f.note.title},posts:[candidate]});
+  await f.driver.inspect({schoolId:f.scope.schoolId,classKey:f.scope.classKey});
+  if(bad)await assert.rejects(()=>f.driver.snapshot({scope:f.scope,note:f.note}),e=>e.code==='baseline-unverified');
+  else assert.deepEqual(await f.driver.snapshot({scope:f.scope,note:f.note}),{ids:['unrelated','candidate'],matching:1});
+  assert.deepEqual(mutations(f),[]);await f.driver.close();
+ }
+});

@@ -23,7 +23,12 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
   requirePermission(permission,target,'read');
   if(signal?.aborted)fail('driver-state');
   if(typeof evidence[method]!=='function')fail(code);
-  const value=await evidence[method]({...request,webContents:getWebContents(),target,binding,note:request.note||preparedText},signal);
+  let value;
+  try{value=await evidence[method]({...request,webContents:getWebContents(),target,binding,note:request.note||preparedText,stillPermitted:()=>{try{requirePermission(permission,target,'read');return !signal?.aborted;}catch{return false;}}},signal);}
+  catch(error){if(error?.name==='SchoolbellPreparationError')throw error;
+   const known=['permission-unverified','context-unverified','baseline-unverified','date-unverified','upload-unverified','publication-unverified'];
+   fail(known.includes(error?.message)?error.message:code);
+  }
   if(signal?.aborted)fail('driver-state');
   requirePermission(permission,target,'read');return value;
  }
@@ -62,16 +67,16 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
     title:proof.fields.title,body:proof.fields.body,attachments:proof.attachments}]};
   },
   async readUploads(_r,s){
-   const proof=await read('readUploads',s,'upload-unverified');
+   const proof=await read('readUploads',s,'upload-unverified',{expectedNames,expectedPhotos});
    const ui=await editor('readAttachmentState',request(),s);
    if(ui.listKnown!==true||ui.uploading||JSON.stringify(ui.names)!==JSON.stringify(expectedNames))fail('upload-unverified');
-   // UI/file names alone are insufficient. Require the independent originals
-   // provider; no provider is installed for the live service yet.
+   // UI/file names alone are insufficient. The connected original-file provider
+   // must succeed independently; its live app execution is still unverified.
    return proof;
   },
   readContent:(_r,s)=>editor('readFields',request(),s),
   async openComposer(r,s){
-   // The teacher can already have the observed composer open. No guessed entry selector.
+   // Reuse an open composer or enter through the observed class-list button.
    if(typeof evidence.openComposer==='function')await evidence.openComposer({...r,webContents:getWebContents()},s);
    return composer.readStructure(null,s,request());
   },

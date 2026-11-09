@@ -4,6 +4,8 @@
 // the provider. Available controls are never promoted to verified authority.
 const crypto=require('node:crypto');
 const {officialPage}=require('./schoolbell-observed-composer.cjs');
+const {inspectRecipients}=require('./schoolbell-recipients.cjs');
+const {openObservedComposer}=require('./schoolbell-composer-entry.cjs');
 function classRoute(value){
  if(!officialPage(value))return null;
  const u=new URL(value);if(u.search||u.hash)return null;
@@ -48,7 +50,7 @@ function readContextScreen(document,kind){
  }
  return {known:false};
 }
-function summarizeContext({group,account,roster,invite},target){
+function summarizeContext({group,account,roster,invite,recipients},target){
  const match=group?.groupName?.match(/(?:^|\s)([1-6])\s*학년\s*([가-힣A-Za-z0-9 -]+?)\s*반\s*$/);
  const sole=group?.admins?.length===1?group.admins[0]:null;
  const displayMatch=!!sole&&!!account?.name&&sole.name===account.name&&!!account.avatar&&sole.avatar===account.avatar;
@@ -57,15 +59,19 @@ function summarizeContext({group,account,roster,invite},target){
   school:group?.schoolVerified===true,year:group?.yearVerified===true,
   actor:account?.actorVerified===true,adminDisplayMatch:displayMatch,
   rosterEmpty:roster?.known===true&&roster.empty===true,
-  inviteEmpty:invite?.known===true&&invite.noInviteTargets===true};
+  inviteEmpty:invite?.known===true&&invite.noInviteTargets===true,
+  recipientTableEmpty:recipients?.known===true&&recipients.unfiltered===true&&recipients.empty===true};
  const blockers=[];
  for(const [key,code] of Object.entries({classPage:'class-page-unverified',gradeClass:'class-mismatch',school:'school-unverified',year:'year-unverified',actor:'actor-unverified',rosterEmpty:'roster-unverified',inviteEmpty:'recipients-unverified'}))if(!checks[key])blockers.push(code);
  if(!displayMatch||group?.adminFlags!==1)blockers.push('teacher-unverified');
  // Empty registration slots are not a verified server membership count, and
  // the sole mandatory administrator may still receive a notification.
- blockers.push('membership-unverified','notification-policy-unverified');
+ if(!checks.recipientTableEmpty)blockers.push('membership-unverified');
+ blockers.push('notification-policy-unverified');
  return {checks,blockers,adminCount:group?.admins?.length??null,filledFields:roster?.known?roster.filled:null,
   identityVerified:false,authorityVerified:false,recipientsVerified:false,
+  students:checks.recipientTableEmpty?0:null,parents:checks.recipientTableEmpty?0:null,
+  mandatoryAdministrator:recipients?.mandatoryAdministrator===true,
   actorKey:account?.name&&account.avatar?crypto.createHash('sha256').update(JSON.stringify([account.name,account.avatar])).digest('hex'):null};
 }
 function createLiveContextProvider({getWebContents,createReader,target,timeoutMs=12000}={}){
@@ -100,7 +106,18 @@ function createLiveContextProvider({getWebContents,createReader,target,timeoutMs
    const roster=await screen('roster',route.base+'/settings/studentlist',signal);
    const invite=await screen('invite',route.base+'/settings/invite',signal);
    if(owner.isDestroyed()||owner.getURL()!==initialURL)throw Error('context-changed');
-   return {...summarizeContext({group,account,roster,invite},target),boardId:route.groupId,observedAt:Date.now()};
+   let recipients=await inspectRecipients(owner,signal);
+   if(!recipients.known&&!/\/boards\/write\/classnews$/.test(initialURL)){
+    // The owner may be on the list or a posted result. Inspect the send-target
+    // dialog in our disposable same-session reader, never move/overwrite the
+    // teacher's existing page. Opening a blank composer does not enter or send.
+    await reader.loadURL(route.base+'/boards/classnews');
+    await openObservedComposer(reader.webContents,{groupId:route.groupId,signal,
+     allowed:()=>!owner.isDestroyed()&&owner.getURL()===initialURL&&!closed});
+    recipients=await inspectRecipients(reader.webContents,signal);
+   }
+   if(owner.isDestroyed()||owner.getURL()!==initialURL)throw Error('context-changed');
+   return {...summarizeContext({group,account,roster,invite,recipients},target),boardId:route.groupId,observedAt:Date.now()};
   }finally{signal?.removeEventListener('abort',abort);abort();reader=null;active=false;}
  }
  return {inspect,close(){closed=true;controller.abort();if(reader&&!reader.isDestroyed())reader.destroy();return !active;}};
@@ -114,7 +131,7 @@ const blockerMessages=Object.freeze({
  'teacher-unverified':'현재 계정과 실제 교사·관리자 권한의 일치를 확인하지 못했습니다.',
  'roster-unverified':'학생명단의 빈 입력란 여부를 확인하지 못했습니다.',
  'recipients-unverified':'초대·발행 수신대상 없음을 확인하지 못했습니다.',
- 'membership-unverified':'빈 명단 입력란과 실제 가입 인원은 별도로 확인해야 합니다.',
+ 'membership-unverified':'작성 화면의 발행 대상에서 검색하지 않은 전체 구성원 상태를 확인해야 합니다.',
  'notification-policy-unverified':'필수 관리자 알림의 수신자와 허용 범위를 확인해야 합니다.'
 });
 module.exports={classRoute,readContextScreen,summarizeContext,createLiveContextProvider,blockerMessages};

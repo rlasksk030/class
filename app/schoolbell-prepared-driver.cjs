@@ -98,7 +98,9 @@ function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,ma
   requirePhase('inspected');expectScope(expected);const signal=signalFor(externalSignal);await guard('read',signal);
   const result=await call('readBaseline',{note:structuredClone(input)},signal);await guard('read',signal);
   if(result?.complete!==true||result.refreshed!==true||!Array.isArray(result.posts))fail('baseline-unverified');
-  const rows=result.posts.map(post),ids=rows.map(r=>r.id);
+  const rows=result.posts.map(post),filtered=Array.isArray(result.ids),ids=filtered?result.ids:rows.map(r=>r.id);
+  if(filtered&&(result.filter?.title!==input.title||ids.some(id=>!remoteId(id))||rows.some(r=>r.title!==input.title||!ids.includes(r.id))))fail('baseline-unverified');
+  if(new Set(rows.map(r=>r.id)).size!==rows.length)fail('baseline-unverified');
   if(new Set(ids).size!==ids.length)fail('baseline-unverified');
   note=structuredClone(input);if(!date(note.date)||note.classKey!==target.classKey)fail('date-unverified');
   const matching=rows.filter(r=>r.title===note.title&&text(r.body)===text(note.body)&&r.date===note.date&&

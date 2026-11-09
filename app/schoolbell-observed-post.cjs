@@ -4,7 +4,8 @@
 const fs=require('node:fs/promises'),path=require('node:path');
 const {officialPage}=require('./schoolbell-observed-composer.cjs');
 const {readEditorText}=require('./schoolbell-editor-text.cjs');
-const {MAX_FILE,MAX_LIBRARY,hash,dimensions}=require('./media-store.cjs');
+const {MAX_LIBRARY,hash}=require('./media-store.cjs');
+const {downloadOriginal}=require('./schoolbell-download.cjs');
 function diaryRoute(url){
  if(!officialPage(url))return null;
  const u=new URL(url),m=u.pathname.match(/^\/ko\/main\/group\/(\d+)\/boards\/classnews(?:\/posts\/(\d+))?$/);
@@ -13,6 +14,7 @@ function diaryRoute(url){
 // Select ONLY the requested title; never return unrelated post bodies or authors.
 function postOperation(document,request,readText){
  const cards=Array.from(document.querySelectorAll('app-letter-item-long')).filter(e=>{
+  if(request.postId&&e.closest('div.notification-post[data-letter-id]')?.getAttribute('data-letter-id')!==request.postId)return false;
   const t=e.querySelectorAll('app-translation-viewer');return t.length===1&&t[0].textContent.trim()===request.note.title;
  });
  if(cards.length!==1)throw Error('publication-unverified');
@@ -21,7 +23,7 @@ function postOperation(document,request,readText){
  const bodies=card.querySelectorAll('app-text-viewer .fr-view');
  const lists=card.querySelectorAll('app-letter-filelist'),media=card.querySelectorAll('app-media-browser');
  if(bodies.length!==1||lists.length!==1||media.length!==1||media[0].querySelectorAll('img,video,a').length)throw Error('publication-unverified');
- const body=readText(bodies[0]);if(body!==request.note.body.replace(/\r\n?/g,'\n'))throw Error('publication-unverified');
+ const body=readText(bodies[0]);if(typeof request.note.body==='string'&&body!==request.note.body.replace(/\r\n?/g,'\n'))throw Error('publication-unverified');
  const rows=Array.from(lists[0].querySelectorAll('.file-item'));
  const names=rows.map(row=>{
   const base=row.querySelectorAll('span.text-truncate'),ext=row.querySelectorAll('span.text-nowrap:not(.file-item-size)');
@@ -59,53 +61,31 @@ function createObservedPostBridge({getWebContents,authorize,tempRoot,timeoutMs=1
   if(result?.ok!==true)throw Error('publication-unverified');return result.value;
  }
  async function download(request,signal,dir){
-  const wc=current(request,signal),destination=path.join(dir,String(request.index)+'.original');
-  let item,timer,onDownload,onAbort,settled=false;
-  const result=new Promise((resolve,reject)=>{
-   const finish=(error,value)=>{if(settled)return;settled=true;clearTimeout(timer);wc.session.removeListener('will-download',onDownload);signal.removeEventListener('abort',onAbort);if(error){item?.cancel();reject(error);}else resolve(value);};
-   onAbort=()=>finish(Error('publication-unverified'));
-   onDownload=(_event,download,source)=>{
-    if(source!==wc||item)return;
-    item=download;wc.session.removeListener('will-download',onDownload);
-    if(item.getTotalBytes()>MAX_FILE){finish(Error('publication-unverified'));return;}
-    item.setSavePath(destination);
-    item.on('updated',()=>{if(item.getReceivedBytes()>MAX_FILE)finish(Error('publication-unverified'));});
-    item.once('done',(_event,state)=>state==='completed'?finish(null,destination):finish(Error('publication-unverified')));
-   };
-   wc.session.on('will-download',onDownload);signal.addEventListener('abort',onAbort,{once:true});
-   timer=setTimeout(onAbort,timeoutMs);
-   if(signal.aborted)onAbort();
-  });
-  // Observe rejection immediately; a DOM click error must not leave an unhandled
-  // download waiter, listener, or background operation after cancellation.
-  const settledResult=result.then(file=>({file}),error=>({error}));
-  try{await operation({...request,action:'download'},signal);}catch(error){onAbort();await settledResult;throw error;}
-  const outcome=await settledResult;if(outcome.error)throw outcome.error;
-  const stat=await fs.stat(outcome.file);if(!stat.size||stat.size>MAX_FILE)throw Error('publication-unverified');
-  const bytes=await fs.readFile(outcome.file);dimensions(bytes);return bytes;
+  return downloadOriginal({webContents:current(request,signal),destination:path.join(dir,String(request.index)+'.original'),signal,timeoutMs,
+   activate:()=>operation({...request,action:'download'},signal)});
  }
- async function run(request,externalSignal,originals){
+ async function run(request,externalSignal,originals,comparison=false){
   if(active||closed)throw Error('driver-state');active=true;
   const signal=externalSignal?AbortSignal.any([externalSignal,controller.signal]):controller.signal;
   let dir;
   try{
    const fields=await operation({...request,action:'read'},signal);if(!originals)return fields;
-   if(!Array.isArray(request.photos)||fields.names.length!==request.photos.length||fields.names.length>20||!tempRoot)throw Error('publication-unverified');
+   if((!comparison&&(!Array.isArray(request.photos)||fields.names.length!==request.photos.length))||fields.names.length>20||!tempRoot)throw Error('publication-unverified');
    if(!fields.names.length)return {fields,attachments:{complete:true,items:[]}};
    await operation({...request,action:'expand',names:fields.names},signal);
    dir=await fs.mkdtemp(path.join(tempRoot,'schoolbell-verify-'));
    const items=[];let total=0;
    for(let i=0;i<fields.names.length;i++){
     const bytes=await download({...request,names:fields.names,index:i},signal,dir);total+=bytes.length;
-    if(total>MAX_LIBRARY||hash(bytes)!==request.photos[i].sha256||bytes.length!==request.photos[i].bytes)throw Error('publication-unverified');
+    if(total>MAX_LIBRARY||(!comparison&&(hash(bytes)!==request.photos[i].sha256||bytes.length!==request.photos[i].bytes)))throw Error('publication-unverified');
     items.push({state:'complete',source:'original-download',bytes});
    }
    const after=await operation({...request,action:'read',names:fields.names},signal);
    if(after.body!==fields.body)throw Error('publication-unverified');
    return {fields,attachments:{complete:true,items}};
-  }finally{if(dir)await fs.rm(dir,{recursive:true,force:true});active=false;}
+  }finally{try{if(dir)await fs.rm(dir,{recursive:true,force:true});}finally{active=false;}}
  }
- return {readFields:(r,s)=>run(r,s,false),readOriginals:(r,s)=>run(r,s,true),
+ return {readFields:(r,s)=>run(r,s,false),readOriginals:(r,s)=>run(r,s,true),readOriginalsForComparison:(r,s)=>run(r,s,true,true),
   close(){closed=true;controller.abort();return !active;}};
 }
 module.exports={diaryRoute,postOperation,createObservedPostBridge};
