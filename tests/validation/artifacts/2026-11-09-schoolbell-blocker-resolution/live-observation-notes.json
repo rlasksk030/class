@@ -1,0 +1,20 @@
+{
+  "kind": "operator-observed-summary-not-raw-probe",
+  "newPublications": 0,
+  "syntheticUnpublishedUploads": true,
+  "oldABCPublicationsRepeated": false,
+  "draftPhotoCountAfter": 2,
+  "draftPreservedAfterChecks": true,
+  "verificationTemporaryDirectoriesAfter": 0,
+  "initialFailures": [
+    "upload-unverified:preview-frame",
+    "upload-unverified:preview-files"
+  ],
+  "resolvedCause": "Wait for the v5 class-bound preview route after iframe bootstrap; initial iframe src is not the final preview URL.",
+  "currentOriginalChecks": [
+    1,
+    2
+  ],
+  "fullPublisherLiveRun": "BLOCKED / NOT RUN",
+  "productionGateEnabled": false
+}

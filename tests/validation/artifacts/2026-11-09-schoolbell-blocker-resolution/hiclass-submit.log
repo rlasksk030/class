@@ -1,0 +1,22 @@
+PASS current generic modal: verified snapshot, normalized popup and new article without showing window
+PASS legacy SweetAlert: verified snapshot, normalized popup and new article without showing window
+PASS hidden controls: verified snapshot, normalized popup and new article without showing window
+PASS removed controls: verified snapshot, normalized popup and new article without showing window
+PASS erased aria state: verified snapshot, normalized popup and new article without showing window
+PASS pre-click mismatch: final publication blocked
+PASS post-popup mismatch: final publication blocked
+PASS partially hidden controls with readable mismatch: final publication blocked
+PASS ambiguous targets: final publication blocked
+PASS unknown confirmation: final publication blocked
+PASS no modal snapshot proof: final publication blocked
+PASS duplicate composer register: final publication blocked
+PASS no confirmation: final publication blocked
+PASS native popup requested before final confirmation: final publication blocked
+PASS trusted manual confirmation continues through actual article verification
+PASS trusted manual confirmation is blocked when recipients change
+PASS manual cancellation remains safely retryable
+PASS unverified result stays uncertain, never success
+PASS unverified result stays uncertain, never success
+PASS proven cancellation permits retry without losing earlier history
+PASS uncertain publication retains duplicate guard and prior history
+21/21 passed
