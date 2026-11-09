@@ -34,3 +34,22 @@ test('post reader cannot inspect without permission or move to another board',as
  await assert.rejects(()=>reader.readFields({boardURL:url,note:{title:'합성',body:''}}),/publication-unverified/);
  assert.equal(calls,0);assert.equal(reader.close(),true);
 });
+test('file readiness does not become true until asynchronous expansion exposes every original',()=>{
+ const f=fixture();let visible=false,downloads=0;
+ f.rows.forEach(r=>{r.getClientRects=()=>visible?[{}]:[];r.click=()=>downloads++;
+  r.ownerDocument={defaultView:{getComputedStyle:()=>({display:visible?'block':'none',visibility:'visible'})}};});
+ const request={...f.request,action:'ready',names:['synthetic-1.png','synthetic-2.png']};
+ assert.equal(postOperation(f.document,request,n=>n.textContent).filesVisible,false);
+ assert.throws(()=>postOperation(f.document,{...request,action:'download',index:0},n=>n.textContent),/hidden/);
+ assert.equal(downloads,0);visible=true;
+ assert.equal(postOperation(f.document,request,n=>n.textContent).filesVisible,true);
+ postOperation(f.document,{...request,action:'download',index:0},n=>n.textContent);assert.equal(downloads,1);
+});
+test('expand clicks the observed attachment label rather than its layout parent',()=>{
+ const f=fixture();let labelClicks=0;
+ f.rows.forEach(r=>{r.getClientRects=()=>[];});
+ const label={textContent:'첨부파일 (2)',children:[],click:()=>labelClicks++};
+ const wrapper={textContent:'첨부파일 (2)',children:[label],querySelectorAll:()=>[label],click:()=>assert.fail('layout container must not be clicked')};
+ f.entries['app-letter-filelist']=[{querySelectorAll:s=>s==='.file-item'?f.rows:[wrapper]}];
+ postOperation(f.document,{...f.request,action:'expand'},n=>n.textContent);assert.equal(labelClicks,1);
+});

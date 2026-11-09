@@ -1,0 +1,14 @@
+{
+  "initialState": "suspended",
+  "resume": "PASS",
+  "guestVersion": "10.0.26200.8655",
+  "guestVersionStatus": "PASS",
+  "nodeCommand": "NOT FOUND (exit 1)",
+  "firstNodeResultCapture": "UTF-8 decode failed on Korean stderr; rechecked as CP949",
+  "productTests": "NOT RUN",
+  "installUpdateRebootClipboard": "NOT RUN",
+  "finalState": "suspended",
+  "newVMs": 0,
+  "newBuilds": 0,
+  "installedTools": 0
+}

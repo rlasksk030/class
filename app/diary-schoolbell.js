@@ -10,6 +10,7 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
   '<p id="schoolbellState" role="status"></p><p id="schoolbellExpected"></p>'+
   '<p id="schoolbellAutomaticState" role="status">자동 등록 잠김 · 허용 여부 및 실제 게시 검증 대기</p>'+
   '<p>연결하기 → 앱 전용 창에서 직접 로그인 → 담당 학급의 알림장을 여세요. 외부 브라우저 로그인 정보는 가져오지 않습니다.</p>'+
+  '<details><summary>기존 게시물 조회 확인</summary><p>현재 초안과 같은 제목의 게시물만 열어 본문과 첨부 원본을 비교합니다. 새 게시물은 만들지 않습니다.</p><button id="schoolbellCheckPosts">현재 초안으로 게시물 조회</button></details>'+
   '<details id="schoolbellManual"><summary>수동 발행 도우미 (임시 대체 기능)</summary>'+
   '<p>이 기능은 자동 등록과 별개입니다. 로그인·학급 일치·게시 결과를 학교종이에서 직접 확인합니다.</p>'+
   '<details id="schoolbellConnection"><summary>담당 학급 직접 확인</summary>'+
@@ -100,6 +101,7 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
  const to=()=>({...target(),year:target().classKey.split(':')[0]});
  $('schoolbellOpen').onclick=()=>run(()=>desktop.schoolbellOpen(to()));
  $('schoolbellInspect').onclick=()=>run(()=>desktop.schoolbellInspect(to()));
+ $('schoolbellCheckPosts').onclick=()=>run(()=>desktop.schoolbellCheckPosts({target:to(),note:readNote()}));
  $('schoolbellLink').onclick=()=>run(()=>desktop.schoolbellLink({...to(),observed:{schoolName:$('schoolbellSchool').value,year:$('schoolbellYear').value,grade:$('schoolbellGrade').value,classroom:$('schoolbellClass').value}}));
  $('schoolbellPrepare').onclick=()=>run(async()=>{
   return desktop.schoolbellPrepare(readNote());

@@ -57,6 +57,12 @@ const state=async()=>page.evaluate(()=>desktop.diaryServiceStatus([academicYear(
  assert.match(await page.textContent('#diaryStatus'),/담당 학급/);assert.equal((await state()).link,null);
  assert.equal(await page.inputValue('#diaryBody'),'가상 본문');assert.equal(await page.locator('#diaryPhotos figure').count(),2);
  pass('actual-screen inspection without a class page cannot grant authority or clear the draft');
+ await page.getByText('기존 게시물 조회 확인',{exact:true}).click();
+ await page.click('#schoolbellCheckPosts');await ready();
+ assert.match(await page.textContent('#diaryStatus'),/조회 미완료/);
+ assert.equal(await page.inputValue('#diaryBody'),'가상 본문');assert.equal(await page.locator('#diaryPhotos figure').count(),2);
+ assert.equal((await state()).automaticPosts.length,0);assert.ok(await page.locator('#schoolbellPublish').isDisabled());
+ pass('read-only lookup without a bound class preserves draft/photos and cannot create a success receipt');
  const isolated=await app.evaluate(async({BrowserWindow},id)=>{
   const w=BrowserWindow.fromId(id),prefs=w.webContents.getLastWebPreferences();
   let rejected=false;try{await process.mainModule.require('electron').ipcMain._invokeHandlers.get('schoolbell:copy')({sender:w.webContents,senderFrame:w.webContents.mainFrame},{});}catch{rejected=true;}

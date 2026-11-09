@@ -17,12 +17,14 @@ function postOperation(document,request,readText){
   if(request.postId&&e.closest('div.notification-post[data-letter-id]')?.getAttribute('data-letter-id')!==request.postId)return false;
   const t=e.querySelectorAll('app-translation-viewer');return t.length===1&&t[0].textContent.trim()===request.note.title;
  });
- if(cards.length!==1)throw Error('publication-unverified');
+ if(cards.length!==1)throw Error('publication-unverified:card');
  const card=cards[0];
  if(request.postId&&card.closest('div.notification-post[data-letter-id]')?.getAttribute('data-letter-id')!==request.postId)throw Error('publication-unverified');
  const bodies=card.querySelectorAll('app-text-viewer .fr-view');
  const lists=card.querySelectorAll('app-letter-filelist'),media=card.querySelectorAll('app-media-browser');
- if(bodies.length!==1||lists.length!==1||media.length!==1||media[0].querySelectorAll('img,video,a').length)throw Error('publication-unverified');
+ if(bodies.length!==1)throw Error('publication-unverified:body');
+ if(lists.length!==1||media.length!==1)throw Error('publication-unverified:files');
+ if(media[0].querySelectorAll('img,video,a').length)throw Error('publication-unverified:media');
  const body=readText(bodies[0]);if(typeof request.note.body==='string'&&body!==request.note.body.replace(/\r\n?/g,'\n'))throw Error('publication-unverified');
  const rows=Array.from(lists[0].querySelectorAll('.file-item'));
  const names=rows.map(row=>{
@@ -30,18 +32,28 @@ function postOperation(document,request,readText){
   if(base.length!==1||ext.length!==1)throw Error('publication-unverified');
   return base[0].textContent.trim()+ext[0].textContent.trim();
  });
- if(request.names&&JSON.stringify(request.names)!==JSON.stringify(names))throw Error('publication-unverified');
+ if(request.names&&JSON.stringify(request.names)!==JSON.stringify(names))throw Error('publication-unverified:order');
  if(request.action==='expand'){
   if(rows.length&&rows.some(e=>!e.getClientRects().length)){
    const toggles=lists[0].querySelectorAll('.d-flex.align-items-center.cursor-pointer');
-   if(toggles.length!==1)throw Error('publication-unverified');toggles[0].click();
+   if(toggles.length!==1)throw Error('publication-unverified');
+   // Actual UI: the nested "첨부파일 (N)" label opens the list. Clicking the
+   // layout container itself does not dispatch through the label's handler.
+   const isLabel=e=>/^첨부파일\s*\(\d+\)$/.test(e.textContent.trim());
+   const labels=[toggles[0],...toggles[0].querySelectorAll('*')].filter(e=>isLabel(e)&&!Array.from(e.children).some(isLabel));
+   if(labels.length!==1)throw Error('publication-unverified:files');labels[0].click();
   }
  }else if(request.action==='download'){
   const row=rows[request.index];
-  if(!Number.isInteger(request.index)||!row||!row.getClientRects().length)throw Error('publication-unverified');
+  if(!Number.isInteger(request.index)||!row||!row.getClientRects().length)throw Error('publication-unverified:hidden');
   row.click();
  }
- return {title:request.note.title,body,names,dateVerified:false,postIdVerified:false,originalsVerified:false};
+ return {title:request.note.title,body,names,
+  ...(request.action==='ready'?{filesVisible:rows.every(e=>e.getClientRects().length>0),
+   visibility:rows.map(e=>{const result=[];for(let p=e;p&&p!==card;p=p.parentElement){
+    const s=p.ownerDocument.defaultView.getComputedStyle(p);result.push({tag:p.tagName,display:s.display,visibility:s.visibility,rects:p.getClientRects().length});
+   }return result;})}:{}),
+  dateVerified:false,postIdVerified:false,originalsVerified:false};
 }
 function createObservedPostBridge({getWebContents,authorize,tempRoot,timeoutMs=15000}={}){
  let active=false,closed=false;const controller=new AbortController();
@@ -55,14 +67,14 @@ function createObservedPostBridge({getWebContents,authorize,tempRoot,timeoutMs=1
   const wc=current(request,signal),url=wc.getURL();
   if(typeof authorize!=='function'||await authorize({webContents:wc,request})!==true)throw Error('permission-unverified');
   if(current(request,signal)!==wc||wc.getURL()!==url)throw Error('publication-unverified');
-  const code='(()=>{try{return {ok:true,value:('+postOperation.toString()+')(document,'+JSON.stringify(request)+',('+readEditorText.toString()+'))};}catch{return {ok:false};}})()';
+  const code='(()=>{try{return {ok:true,value:('+postOperation.toString()+')(document,'+JSON.stringify(request)+',('+readEditorText.toString()+'))};}catch(e){return {ok:false,stage:(["publication-unverified:card","publication-unverified:body","publication-unverified:files","publication-unverified:media","publication-unverified:order","publication-unverified:hidden"].includes(e.message)?e.message:"publication-unverified")};}})()';
   const result=await wc.executeJavaScriptInIsolatedWorld(17482,[{code}],request.action==='download');
   if(current(request,signal)!==wc||wc.getURL()!==url||await authorize({webContents:wc,request})!==true)throw Error('publication-unverified');
-  if(result?.ok!==true)throw Error('publication-unverified');return result.value;
+  if(result?.ok!==true)throw Error(result?.stage||'publication-unverified');return result.value;
  }
  async function download(request,signal,dir){
   return downloadOriginal({webContents:current(request,signal),destination:path.join(dir,String(request.index)+'.original'),signal,timeoutMs,
-   activate:()=>operation({...request,action:'download'},signal)});
+   errorMessage:'publication-unverified:download',activate:()=>operation({...request,action:'download'},signal)});
  }
  async function run(request,externalSignal,originals,comparison=false){
   if(active||closed)throw Error('driver-state');active=true;
@@ -73,6 +85,14 @@ function createObservedPostBridge({getWebContents,authorize,tempRoot,timeoutMs=1
    if((!comparison&&(!Array.isArray(request.photos)||fields.names.length!==request.photos.length))||fields.names.length>20||!tempRoot)throw Error('publication-unverified');
    if(!fields.names.length)return {fields,attachments:{complete:true,items:[]}};
    await operation({...request,action:'expand',names:fields.names},signal);
+   // Expanding the real file list renders rows asynchronously. Never treat
+   // the click itself as proof that a download target is ready.
+   const readyUntil=Date.now()+timeoutMs;
+   let ready;
+   while(!(ready=await operation({...request,action:'ready',names:fields.names},signal)).filesVisible){
+    if(Date.now()>=readyUntil){const error=Error('publication-unverified:hidden');error.fileVisibility=ready.visibility;throw error;}
+    await new Promise(resolve=>setTimeout(resolve,100));
+   }
    dir=await fs.mkdtemp(path.join(tempRoot,'schoolbell-verify-'));
    const items=[];let total=0;
    for(let i=0;i<fields.names.length;i++){

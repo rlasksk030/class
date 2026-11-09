@@ -11,7 +11,7 @@ module.exports = function setup(main) {
  const liveContext=require('./schoolbell-live-context.cjs');
  const createReader=ses=>{
   // Reuse only this app's session; never copy cookies from another browser.
-  const reader=new BrowserWindow({show:false,webPreferences:{session:ses,contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  const reader=new BrowserWindow({show:false,webPreferences:{session:ses,contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
   reader.webContents.setWindowOpenHandler(()=>({action:'deny'}));
   const guard=(event,url)=>{try{services.safeURL(url);}catch{event.preventDefault();}};
   reader.webContents.on('will-navigate',guard);reader.webContents.on('will-redirect',guard);
@@ -131,6 +131,38 @@ module.exports = function setup(main) {
      result.blockers.map(code=>liveContext.blockerMessages[code]).filter(Boolean).join(' ')};
   }catch(error){return {status:'blocked',message:liveContext.blockerMessages[error.message]||'앱의 로그인 상태와 실제 학급 화면을 확인하지 못했습니다. 자동 등록 잠금과 초안은 유지됩니다.'};}
   finally{abort.abort();provider.close();}
+ });
+ handle('schoolbell:check-posts',async value=>{
+  const to=target(value.target),note=services.payload(value.note),win=windows.get(to.classKey);
+  if(note.classKey!==to.classKey)fail('조회할 초안과 학급이 다릅니다.');
+  if(!win||win.isDestroyed())fail('학교종이 연결하기에서 담당 학급 알림장을 먼저 열어 주세요.');
+  // Verify local originals before comparing their hashes with downloaded files.
+  const photos=[];
+  for(const ref of note.photos){const bytes=await require('./media.cjs').current().read(ref);photos.push({sha256:require('./media-store.cjs').hash(bytes),bytes:bytes.length});}
+  const abort=new AbortController(),initialURL=win.webContents.getURL();
+  const provider=require('./schoolbell-live-posts.cjs').createLivePostProvider({target:to,tempRoot:profile.dir,createReader,
+   getWebContents:()=>win.isDestroyed()?null:win.webContents});
+  try{
+   const result=await bounded(()=>provider.readBaseline({note,
+    stillPermitted:()=>!abort.signal.aborted&&!win.isDestroyed()&&win.webContents.getURL()===initialURL},abort.signal),90000,
+    ()=>{abort.abort();provider.close();});
+   const {summarizeReadback,readbackMessage}=require('./schoolbell-readback.cjs');
+   const report={...summarizeReadback(result,{...note,photos}),draftDate:note.date};
+   // Isolated development-profile evidence only: no bodies, names, URLs, IDs,
+   // session data or originals. Production profiles never write this report.
+   if(process.env.CLASSROOM_TEST_PROFILE)await fs.writeFile(path.join(profile.dir,'schoolbell-readback-check.json'),JSON.stringify(report,null,2),{mode:0o600});
+   return {status:'read-only',message:readbackMessage(report)};
+  }catch(error){
+   if(process.env.CLASSROOM_TEST_PROFILE)await fs.writeFile(path.join(profile.dir,'schoolbell-readback-check.json'),JSON.stringify({complete:false,
+    stage:/^(publication|baseline|date|context)-unverified(?::[a-z]+)?$/.test(error.message)?error.message:'interrupted',
+    locations:(error.stack||'').split('\n').map(line=>line.match(/\/(schoolbell-[a-z-]+\.cjs:\d+:\d+)/)?.[1]).filter(Boolean),
+    ...(error.fileVisibility?{fileVisibility:error.fileVisibility}:{})},null,2),{mode:0o600});
+   const reason={'context-unverified':'담당 학급의 알림장 화면을 열어 주세요.',
+    'baseline-unverified':'검색 없는 전체 게시물 목록의 마지막까지 확인하지 못했습니다.',
+    'date-unverified':'게시물에 표시된 발행 날짜를 확인하지 못했습니다.',
+    'publication-unverified':'게시물 본문 또는 첨부 원본을 대조하지 못했습니다.'}[error.message.split(':')[0]]||'조회 중 화면 변경 또는 연결 중단이 발생했습니다.';
+   return {status:'blocked',message:'게시물 조회 미완료 · '+reason+' 초안과 사진은 유지됩니다.'};
+  }finally{abort.abort();provider.close();}
  });
  handle('schoolbell:link',async value=>{
   const to=target(value), w=windows.get(to.classKey);
