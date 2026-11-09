@@ -140,3 +140,21 @@ test('filtered full-list baseline keeps unrelated IDs and rejects a mismatched f
   assert.deepEqual(mutations(f),[]);await f.driver.close();
  }
 });
+test('immediate publication keeps an older draft date separate from the verified server date and never writes a date field',async t=>{
+ const f=fixture(t,{publicationMode:'immediate'});f.note.date='2026-11-08';
+ const result=await f.publish();assert.equal(result.status,'success');assert.equal(f.state.clicks,1);
+ assert.equal(f.state.events.includes('date'),false);
+ assert.equal(result.publication.draftDate,'2026-11-08');assert.equal(result.publication.publishedDate,'2026-11-09');
+ assert.equal(result.publication.dateMode,'immediate');
+ assert.deepEqual(f.store.get(f.note.classKey).automaticPosts[result.attemptId].publication,result.publication);
+ f.note.date='2026-11-10';assert.equal((await f.publish()).status,'blocked');assert.equal(f.state.clicks,1);
+});
+test('immediate mode rejects scheduling and unverifiable post dates without retransmission',async t=>{
+ const scheduled=fixture(t,{publicationMode:'immediate'});scheduled.state.scheduled=true;
+ assert.equal((await scheduled.publish()).reason,'date-unverified');assert.deepEqual(mutations(scheduled),[]);
+ for(const change of [row=>row.date='2026-02-30',row=>delete row.dateSource]){
+  const f=fixture(t,{publicationMode:'immediate'});f.state.afterCommit=change;
+  assert.equal((await f.publish()).status,'uncertain');assert.equal(f.state.clicks,1);
+  assert.equal((await f.publish()).status,'blocked');assert.equal(f.state.clicks,1);
+ }
+});

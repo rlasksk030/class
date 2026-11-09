@@ -115,7 +115,7 @@ function createLivePostProvider({getWebContents,createReader,target,tempRoot,tim
      // virtualized candidate into view. Only matching-title bodies are read.
      await openCandidate(reader.webContents,url,candidate,request.note.title,signal,stillBound);
      const proof=await originals.readOriginalsForComparison({boardURL:url,postId:candidate.id,note:{title:request.note.title}},signal);
-     posts.push({id:candidate.id,date:candidate.date,scope,kind:'published',title:proof.fields.title,body:proof.fields.body,attachments:proof.attachments});
+     posts.push({id:candidate.id,date:candidate.date,dateSource:'observed-service-ui',scope,kind:'published',title:proof.fields.title,body:proof.fields.body,attachments:proof.attachments});
     }
     if(!stillBound())throw Error('context-changed');baselineIds=result.ids;
     return {complete:true,refreshed:true,ids:baselineIds,filter:{title:request.note.title},posts};
@@ -126,7 +126,7 @@ function createLivePostProvider({getWebContents,createReader,target,tempRoot,tim
    const matches=result.matches.filter(m=>!baselineIds.includes(m.id));
    if(!permitted()||matches.length!==1||!matches[0].date)throw Error('publication-unverified');
    await openCandidate(wc,url,matches[0],request.note.title,signal,permitted);
-   return {complete:true,refreshed:true,boardURL:url,...matches[0],scope:{service:'schoolbell',schoolId:target.schoolId,classKey:target.classKey,boardId:pinned.groupId}};
+   return {complete:true,refreshed:true,boardURL:url,...matches[0],dateSource:'observed-service-ui',scope:{service:'schoolbell',schoolId:target.schoolId,classKey:target.classKey,boardId:pinned.groupId}};
   }finally{originals?.close();if(abort){signal.removeEventListener('abort',abort);abort();}reader=null;active=false;}
  }
  return {readBaseline:(r,s)=>run('baseline',r,s),readPublishedMetadata:(r,s)=>run('published',r,s),

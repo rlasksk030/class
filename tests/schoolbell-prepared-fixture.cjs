@@ -47,7 +47,7 @@ function fixture(t,options={}) {
  const bridge={
   async readContext(){state.events.push('context');return context();},
   async readStructure(probe){return probe(document());},
-  async readDate(){return {verified:state.dateVerified,writable:state.dateWritable,value:state.date};},
+  async readDate(){return options.publicationMode==='immediate'?{verified:state.dateVerified,source:'observed-service-ui',meaning:'publication-mode',mode:state.scheduled?'scheduled':'immediate',writable:false,value:null}:{verified:state.dateVerified,writable:state.dateWritable,value:state.date};},
   async readBaseline(){return {complete:state.baselineComplete,refreshed:state.baselineRefreshed,posts:copy(state.posts)};},
   async openComposer(r,s){atomic(r,s);state.events.push('open');state.title='';state.body='';state.uploads=[];state.revision++;},
   async writeDate(r,s){atomic(r,s);state.events.push('date');state.date=r.value;state.revision++;},
@@ -58,16 +58,16 @@ function fixture(t,options={}) {
   async readUploads(){return attachments();},
   async commitOnce(r,s){
    state.beforeCommit?.();atomic(r,s);
-   if(r.revision!==String(state.revision)||state.title!==r.note.title||state.body!==r.note.body||state.date!==r.note.date||
+   if(r.revision!==String(state.revision)||state.title!==r.note.title||state.body!==r.note.body||(options.publicationMode!=='immediate'&&state.date!==r.note.date)||state.scheduled||
      JSON.stringify(state.uploads.map(b=>({sha256:hash(b),bytes:b.length})))!==JSON.stringify(r.photos))fail('content-unverified');
    state.clicks++;state.events.push('submit');
-   const row={id:'synthetic-post-'+state.clicks,kind:'published',scope:copy(scope),title:state.title,body:state.body,date:state.date,attachments:attachments()};
+   const row={id:'synthetic-post-'+state.clicks,kind:'published',scope:copy(scope),title:state.title,body:state.body,date:state.date,dateSource:'observed-service-ui',attachments:attachments()};
    state.posts.push(row);state.afterCommit?.(row);return {clicked:true};
   },
   async readPublished(){return {complete:state.resultComplete,refreshed:state.resultRefreshed,posts:copy(state.posts)};},
   async close(){state.events.push('close');return state.closeResult;}
  };
- const driver=createPreparedDriver({bridge,target,permission,closeTimeoutMs:30});
+ const driver=createPreparedDriver({bridge,target,permission,publicationMode:options.publicationMode||'fixed',closeTimeoutMs:30});
  const args={profile,store,driver,readPhoto:ref=>originals.find(b=>hash(b)===ref.id.split('.')[0]),review:()=>true,gate:()=>({enabled:true}),timeoutMs:1000};
  const publisher=createPublisher(args);
  return {target,profile,store,originals,note,state,scope,bridge,driver,args,publisher,publish:n=>publisher.publish(n||note),hash};

@@ -3,17 +3,17 @@
 // slots do not establish this fact; an unfiltered empty recipient table does.
 function probeRecipients(document){
  const dialogs=Array.from(document.querySelectorAll('mat-dialog-container')).filter(d=>d.querySelector('app-select-letter-targets'));
- if(dialogs.length!==1)return {known:false};
+ if(dialogs.length!==1)return {known:false,reason:'dialog-count'};
  const root=dialogs[0],tables=root.querySelectorAll('app-select-letter-targets table');
  const searches=root.querySelectorAll('app-table-search input[placeholder="학생명 또는 전화번호"]');
- if(tables.length!==1||searches.length!==1||searches[0].value!==''||root.querySelectorAll('select').length)return {known:false};
+ if(tables.length!==1||searches.length!==1||searches[0].value!==''||root.querySelectorAll('select').length)return {known:false,reason:'table-or-filter'};
  const headers=Array.from(tables[0].querySelectorAll('thead th')).map(e=>e.textContent.trim());
- if(JSON.stringify(headers)!==JSON.stringify(['번호','이름','보호자 휴대폰1','보호자 휴대폰2','학생 휴대폰']))return {known:false};
+ if(JSON.stringify(headers)!==JSON.stringify(['번호','이름','보호자 휴대폰1','보호자 휴대폰2','학생 휴대폰']))return {known:false,reason:'headers'};
  const checks=Array.from(root.querySelectorAll('input[type="checkbox"]'));
  const roles={};for(const c of checks){const label=c.closest('label')?.textContent.replace(/\s/g,'');
   const key=({'관리자':'administrator','보호자1':'guardian1','보호자2':'guardian2','학생':'student'})[label];
-  if(!key||roles[key])return {known:false};roles[key]={checked:c.checked,disabled:c.disabled};}
- if(checks.length!==4)return {known:false};
+  if(!key||roles[key])return {known:false,reason:'roles',checkboxCount:checks.length};roles[key]={checked:c.checked,disabled:c.disabled};}
+ if(checks.length!==4)return {known:false,reason:'role-count',checkboxCount:checks.length};
  const rows=tables[0].querySelectorAll('tbody tr'),cells=rows.length===1?rows[0].querySelectorAll('td'):[];
  const empty=cells.length===1&&cells[0].getAttribute('colspan')==='5'&&cells[0].textContent.trim()==='구성원이 없습니다.';
  return {known:true,unfiltered:true,empty,students:empty?0:null,parents:empty?0:null,roles,
@@ -47,7 +47,7 @@ async function inspectRecipients(webContents,signal,{timeoutMs=5000}={}){
   const until=Date.now()+timeoutMs;let result;
   while(Date.now()<until){result=await evaluate(probeRecipients,null);if(result.known)break;await new Promise(r=>setTimeout(r,100));}
   const after=await evaluate(recipientControl,'read');if(after.label!==before.label)throw Error('context-changed');
-  return result?.known?{...result,targetLabel:before.label}:{known:false};
+  return result?.known?{...result,targetLabel:before.label}:{known:false,reason:result?.reason||'not-ready'};
  }finally{
   if(opened&&!webContents.isDestroyed()&&webContents.getURL()===initial){
    // Close rather than confirm: inspecting must not change a saved audience.

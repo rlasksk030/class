@@ -3,6 +3,7 @@
 // (identity/date/upload receipt/final confirmation) is deliberately not inferred.
 const {probeComposer,probeAttachments}=require('./schoolbell-ui-probe.cjs');
 const {readEditorText}=require('./schoolbell-editor-text.cjs');
+const {readPublicationMode}=require('./schoolbell-publication-mode.cjs');
 const {validateRef,MAX_FILE,MAX_LIBRARY,hash,dimensions}=require('./media-store.cjs');
 const HOSTS=new Set(['schoolbell-e.com','www.schoolbell-e.com','v4.schoolbell-e.com']);
 const WORLD=17481; // Isolated from site JS; shared DOM, no credentials or framework internals.
@@ -12,7 +13,7 @@ function officialPage(url) {
 }
 // Self-contained DOM operation. The trusted, separately reviewed guard must read
 // current DOM evidence synchronously, including binding/date/uploads for commit.
-function browserOperation(action,payload,inspect,guard,readText,readAttachments) {
+function browserOperation(action,payload,inspect,guard,readText,readAttachments,readMode) {
  const info=inspect(document);
  if(info.structureMatched!==true||info.composerCount!==1||
     ['title','body','photos','send','saveDraft'].some(k=>info[k]?.count!==1))throw Error('structure-unverified');
@@ -22,6 +23,13 @@ function browserOperation(action,payload,inspect,guard,readText,readAttachments)
  const file=one('input[type="file"]');
  const normalize=v=>String(v).replace(/\r\n?/g,'\n');
  const bodyText=()=>readText(body);
+ // Opening read-only dropdowns/previews is not an edit. Still invalidate for
+ // all title/body/file/target mutations, native input/change events, and a
+ // replaced document. The final guard separately checks current publish mode.
+ const editSelector='input[placeholder="제목을 입력해 주세요."],div.fr-element.fr-view[contenteditable="true"],input[type="file"],app-letter-write-file-list,app-letter-simplified-target-text';
+ const editNode=node=>{const e=node?.nodeType===3?node.parentElement:node;return !!e?.closest?.(editSelector);};
+ const edits=records=>records.some(r=>editNode(r.target)||
+  [...(r.addedNodes||[]),...(r.removedNodes||[])].some(n=>editNode(n)||!!n.querySelector?.(editSelector)));
  // This state lives only in the isolated world. It never contains draft text,
  // account identifiers or authentication state, and is not persisted.
  const states=globalThis.__classroomSchoolbellStates||(globalThis.__classroomSchoolbellStates=new WeakMap());
@@ -31,13 +39,13 @@ function browserOperation(action,payload,inspect,guard,readText,readAttachments)
   root.addEventListener('compositionstart',()=>{state.composing=true;},true);
   root.addEventListener('compositionend',()=>{state.composing=false;state.revision++;},true);
   for(const name of ['input','change'])root.addEventListener(name,()=>state.revision++,true);
-  state.observer=new MutationObserver(()=>state.revision++);
+  state.observer=new MutationObserver(records=>{if(edits(records))state.revision++;});
   state.observer.observe(root,{subtree:true,childList:true,characterData:true,attributes:true});
  }
- const revision=()=>{if(state.observer.takeRecords().length)state.revision++;return state.documentToken+':'+state.revision;};
+ const revision=()=>{if(edits(state.observer.takeRecords()))state.revision++;return state.documentToken+':'+state.revision;};
  const fields=()=>({title:title.value,body:bodyText(),revision:revision()});
  const guarded=()=>typeof guard==='function'&&guard(document,{...payload,action,
-  ...(action==='commit'?{attachmentState:readAttachments(document)}:{})})===true;
+  ...(action==='commit'?{attachmentState:readAttachments(document)}:{})},readMode)===true;
  if(action==='inspect')return info;
  if(action==='read')return fields();
  if(action==='attachments-read')return readAttachments(document);
@@ -141,7 +149,7 @@ function createObservedComposerBridge({getWebContents,authorize,domGuard,prepare
    payload.proof=await prepareProof({action,request,href:url},signal);
    await verify(action,request,signal,wc,url);
   }
-  const operation='('+browserOperation.toString()+')('+JSON.stringify(action)+','+JSON.stringify(payload)+',('+probeComposer.toString()+'),'+(typeof domGuard==='function'?'('+domGuard.toString()+')':'null')+',('+readEditorText.toString()+'),('+probeAttachments.toString()+'))';
+  const operation='('+browserOperation.toString()+')('+JSON.stringify(action)+','+JSON.stringify(payload)+',('+probeComposer.toString()+'),'+(typeof domGuard==='function'?'('+domGuard.toString()+')':'null')+',('+readEditorText.toString()+'),('+probeAttachments.toString()+'),('+readPublicationMode.toString()+'))';
   // Electron otherwise replaces renderer exceptions with an opaque error. Return
   // a fixed code only: never a site exception, account text, or photo payload.
   const script='(()=>{try{return {ok:true,value:'+operation+'};}catch(e){return {ok:false,code:'+JSON.stringify([

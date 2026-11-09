@@ -57,7 +57,14 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
   }});
  const request=()=>({target,binding});
  async function editor(method,r,signal){
-  try{return await composer[method](r,signal);}
+  try{
+   // Audience inspection may close the send dropdown. Reopen/read the actual
+   // choice immediately before each guarded mutation, so the atomic DOM guard
+   // can inspect native checked state in the same task as that mutation.
+   if(evidence.publicationMode==='immediate'&&['writeTitle','writeBodyText','attachFiles','commitOnce'].includes(method))
+    lastDate=structuredClone(await read('readDate',signal,'date-unverified'));
+   return await composer[method](r,signal);
+  }
   catch(error){
    if(error?.name==='SchoolbellPreparationError')throw error;
    const code=({ 'structure-unverified':'structure-unverified','context-unverified':'context-unverified',
@@ -80,7 +87,7 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
    if(m?.complete!==true||m.refreshed!==true||!preparedText.title||typeof preparedText.body!=='string')fail('publication-unverified');
    let proof;try{proof=await posts.readOriginals({boardURL:m.boardURL,postId:m.id,note:preparedText,photos:expectedPhotos},s);}
    catch{fail('publication-unverified');}
-   return {complete:true,refreshed:true,posts:[{id:m.id,date:m.date,scope:m.scope,kind:'published',
+   return {complete:true,refreshed:true,posts:[{id:m.id,date:m.date,dateSource:m.dateSource,scope:m.scope,kind:'published',
     title:proof.fields.title,body:proof.fields.body,attachments:proof.attachments}]};
   },
   async readUploads(_r,s){
@@ -118,7 +125,7 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
   },
   async close(){try{const readStopped=posts.close(),stopped=await composer.close();return readStopped&&stopped&&(typeof evidence.close!=='function'||await evidence.close()===true);}finally{unwatch();invalidate();}}
  };
- return createPreparedDriver({target,permission,bridge});
+ return createPreparedDriver({target,permission,bridge,publicationMode:evidence.publicationMode||'fixed'});
 }
 // Lazily creates one per-attempt driver. The publisher gate runs BEFORE this
 // code opens a remote window. A missing official grant independently denies it.

@@ -4,6 +4,7 @@
 const {hash}=require('./media-store.cjs');
 const {officialPage}=require('./schoolbell-observed-composer.cjs');
 const {audienceVerified}=require('./schoolbell-audience.cjs');
+const {immediateEvidence}=require('./schoolbell-date-policy.cjs');
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const isoDate=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&
  Number.isFinite(Date.parse(v))&&new Date(v).toISOString().slice(0,10)===v;
@@ -12,10 +13,14 @@ function sameScope(c,target,binding){
  return c&&['schoolId','schoolName','year','grade','classroom','classKey'].every(k=>c[k]===target[k])&&
   ['boardId','contextId','actorKey'].every(k=>typeof binding?.[k]==='string'&&binding[k]&&c[k]===binding[k]);
 }
-// App-side rule: never convert the draft date into a claimed service date.
-// A service-UI publication date must be fresh, scoped and equal to the draft.
-// No PC-clock fallback, guessed date selector, title prefix or HTML injection.
+// Fixed-date integrations retain their old contract. Observed immediate mode
+// has no pre-send server date; keep the draft date separate and verify the
+// actual date from the new post after sending. No clock/title fallback.
 function publicationDate(evidence,{target,binding,note,now=Date.now()}){
+ if(immediateEvidence(evidence)){
+  if(!isoDate(note?.date)||!fresh(evidence.observedAt,now)||!sameScope(evidence.scope,target,binding))throw Error('date-unverified');
+  return null;
+ }
  if(evidence?.verified!==true||evidence.source!=='observed-service-ui'||
     evidence.meaning!=='publication-calendar-date'||!isoDate(evidence.value)||
     evidence.value!==note?.date||!fresh(evidence.observedAt,now)||
@@ -46,12 +51,13 @@ function makeGuardProof({action,target,binding,note,context,date,uploads,expecte
   action==='commit'?uploads.observedAt+15000:Infinity,
   recipients.mandatoryAdministrator?context.notificationEvidence.observedAt+15000:Infinity),
   target:structuredClone(target),binding:structuredClone(binding),date:value,
+  ...(immediateEvidence(date)?{publicationMode:'immediate',draftDate:note.date}:{}),
   recipientLabel:recipients.targetLabel,revision:action==='commit'?revision:null,
   names:action==='commit'?[...expectedNames]:[],photos};
 }
 // Self-contained, serialized only into Electron's isolated world. There are no
 // synthetic identity attributes or inferred school/year/date selectors here.
-function finalDOMGuard(document,payload){
+function finalDOMGuard(document,payload,readMode){
  const p=payload.proof,same=(a,b)=>JSON.stringify(a)===JSON.stringify(b),now=Date.now();
  if(p?.schema!==1||p.action!==payload.action||!Number.isFinite(p.issuedAt)||!Number.isFinite(p.expiresAt)||
     now<p.issuedAt||now>=p.expiresAt||!same(p.target,payload.target)||!same(p.binding,payload.binding)||
@@ -63,9 +69,13 @@ function finalDOMGuard(document,payload){
  if(labels.length!==1||labels[0].textContent!==p.recipientLabel)return false;
  // A modal audience edit/preview must be finished before any mutation or send.
  if(document.querySelector('app-select-letter-targets,app-mobile-preview'))return false;
+ if(p.publicationMode==='immediate'){
+  if(typeof readMode!=='function')return false;
+  const mode=readMode(document);if(mode.known!==true||mode.mode!=='immediate'||p.date!==null)return false;
+ }
  if(payload.action==='commit'){
   const a=payload.attachmentState;
-  if(p.date!==payload.note?.date||p.revision!==payload.revision||!same(p.photos,payload.photos)||
+  if((p.publicationMode==='immediate'?p.draftDate!==payload.note?.date:p.date!==payload.note?.date)||p.revision!==payload.revision||!same(p.photos,payload.photos)||
      a?.listKnown!==true||a.uploading||!same(a.names,p.names)||payload.finalAction!=='single-send')return false;
  }
  return true;

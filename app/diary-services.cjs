@@ -52,7 +52,13 @@ function publication(value,count) {
     !Number.isSafeInteger(value.verifiedAt) || value.verifiedAt<=0 || !Array.isArray(value.photos) ||
     value.photos.length!==count || value.photos.some(p=>!p || !/^[a-f0-9]{64}$/.test(p.sha256) ||
       !Number.isSafeInteger(p.bytes) || p.bytes<=0))throw Error('게시물 및 사진 검증 기록을 확인해 주세요.');
- return {postId:value.postId,boardId:value.boardId,attachmentsVerified:true,
+ const dateProof={};
+ if(value.dateMode!==undefined||value.draftDate!==undefined||value.publishedDate!==undefined){
+  const {validDate}=require('./schoolbell-date-policy.cjs');
+  if(value.dateMode!=='immediate'||!validDate(value.draftDate)||!validDate(value.publishedDate))throw Error('발행 날짜 검증 기록을 확인해 주세요.');
+  Object.assign(dateProof,{dateMode:value.dateMode,draftDate:value.draftDate,publishedDate:value.publishedDate});
+ }
+ return {postId:value.postId,boardId:value.boardId,attachmentsVerified:true,...dateProof,
   photos:value.photos.map(p=>({sha256:p.sha256,bytes:p.bytes})),verifiedAt:value.verifiedAt};
 }
 function matchTarget(expected, actual) {

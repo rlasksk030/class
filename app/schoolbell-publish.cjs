@@ -4,6 +4,7 @@ const crypto=require('node:crypto');
 const services=require('./diary-services.cjs');
 const capability=require('./schoolbell-capability.cjs');
 const {publicFailure}=require('./schoolbell-driver-errors.cjs');
+const {contentDateMatches}=require('./schoolbell-date-policy.cjs');
 const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
 const text=s=>typeof s==='string'?s.replace(/\r\n?/g,'\n'):null;
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
@@ -13,8 +14,8 @@ function matches(actual,expected) {
   actual.authenticated===true && actual.teacher===true && (!expected.boardId || actual.boardId===expected.boardId)&&
   (expected.selfNotification===undefined||(actual.selfNotification===true)===expected.selfNotification);
 }
-function contentMatches(actual,note,photos) {
- return actual?.date===note.date && actual.title===note.title && text(actual.body)===text(note.body) &&
+function contentMatches(actual,note,photos,mode='fixed',published=false) {
+ return contentDateMatches(actual,note,mode,published) && actual.title===note.title && text(actual.body)===text(note.body) &&
   Array.isArray(actual.photos) && same(actual.photos.map(p=>({sha256:p.sha256,bytes:p.bytes})),photos);
 }
 function createPublisher({profile,store,readPhoto,driver=null,review,gate=capability.status,timeoutMs=20000}) {
@@ -54,6 +55,8 @@ function createPublisher({profile,store,readPhoto,driver=null,review,gate=capabi
    if(!matches(observed,expected))throw Error('identity');
    expected.boardId=observed.boardId;
    expected.selfNotification=observed.selfNotification===true;
+   expected.publicationMode=observed.publicationMode||'fixed';
+   if(!['fixed','immediate'].includes(expected.publicationMode))throw Error('date');
    const baseline=await step(signal=>driver.snapshot({scope:{...expected},note:structuredClone(note)},signal));
    if(!Array.isArray(baseline?.ids) || baseline.ids.some(id=>typeof id!=='string') || baseline.matching!==0)throw Error('duplicate');
    // The driver must not write or upload anything before the local confirmation and pending record.
@@ -66,7 +69,7 @@ function createPublisher({profile,store,readPhoto,driver=null,review,gate=capabi
    record('attachments');await step(signal=>driver.attach(files,signal));
    record('review');
    if(!matches(await step(signal=>driver.inspect(expected,signal)),expected) ||
-      !contentMatches(await step(signal=>driver.readComposer(signal)),note,expectedPhotos))throw Error('partial');
+      !contentMatches(await step(signal=>driver.readComposer(signal)),note,expectedPhotos,expected.publicationMode))throw Error('partial');
    // Separate final permission after the actual composer and attachment bytes have been checked.
    if(await step(()=>review({phase:'submit',scope:{...expected},note:structuredClone(note),photos:structuredClone(expectedPhotos)}))!==true)
     throw Error('final-confirmation-cancelled');
@@ -77,9 +80,10 @@ function createPublisher({profile,store,readPhoto,driver=null,review,gate=capabi
    const result=await step(signal=>driver.readPublished(expected,signal));
    if(result?.kind!=='published' || result.refreshed!==true || !services.remoteId(result.id) ||
       baseline.ids.includes(result.id) || !matches(result.scope,expected) ||
-      !contentMatches(result,note,expectedPhotos))throw Error('unverified');
+      !contentMatches(result,note,expectedPhotos,expected.publicationMode,true))throw Error('unverified');
    checkLocal();
    const publication=services.publication({postId:result.id,boardId:expected.boardId,
+    ...(expected.publicationMode==='immediate'?{dateMode:'immediate',draftDate:note.date,publishedDate:result.date}:{}),
     photos:expectedPhotos,attachmentsVerified:true,verifiedAt:Date.now()},note.photos.length);
    store.automaticState(note.classKey,attempt.id,{status:'auto-success',stage,publication});
    // No draft writes here. Caller may clear only an unchanged snapshot after saving history.

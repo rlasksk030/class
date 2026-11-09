@@ -27,15 +27,18 @@ module.exports = function setup(main) {
    readBaseline:posts.readBaseline,readPublishedMetadata:posts.readPublishedMetadata,readUploads:uploads.readUploads,
    // A/B/C observed one send action, with no second service confirmation click.
    // The independent app final confirmation and disabled production gate remain.
-   finalAction:'single-send',
+   finalAction:'single-send',publicationMode:'immediate',
    openComposer:(request,signal)=>require('./schoolbell-composer-entry.cjs').openObservedComposer(win.webContents,{
     groupId:request.binding?.boardId,signal,allowed:request.stillPermitted}),
    async readContext(_r,signal){const facts=await context.inspect(signal);return {...to,...facts,service:'schoolbell',scopeType:'class',board:'diary',
     authenticated:facts.checks.classPage,teacher:facts.authorityVerified,classApproved:false,testClassApproved:false,
     contextId:facts.boardId,students:facts.students,parents:facts.parents,externalNotifications:null};},
-   // The observed composer has no draft-date control. Do not substitute the
-   // app date or the computer clock for a verified service publication date.
-   readDate:async()=>({verified:false,writable:false,value:null}),
+   async readDate(request,signal){
+    const mode=await require('./schoolbell-publication-mode.cjs').inspectPublicationMode(win.webContents,signal,{keepOpen:true});
+    return {verified:mode.known===true&&mode.mode==='immediate',
+     source:'observed-service-ui',meaning:'publication-mode',mode:mode.mode,value:null,writable:false,
+     observedAt:Date.now(),scope:{...to,...request.binding}};
+   },
    close(){const contextStopped=context.close(),postsStopped=posts.close(),uploadsStopped=uploads.close();return contextStopped&&postsStopped&&uploadsStopped;}
   };},
   closeClass:key=>{const w=windows.get(key);if(w&&!w.isDestroyed())w.destroy();return true;}});
@@ -45,6 +48,7 @@ module.exports = function setup(main) {
    const answer=await dialog.showMessageBox(main(),{type:'question',buttons:['취소',final?'이 내용으로 한 번 게시':'입력 준비'],defaultId:0,cancelId:0,
     message:final?'검증된 학교종이 알림장을 게시할까요?':'학교종이 작성 화면에 초안을 입력할까요?',
     detail:expectedSchool()+' · '+scope.classKey+'\n'+note.date+' · 사진 '+note.photos.length+'장\n'+note.title+'\n'+
+     (scope.publicationMode==='immediate'?'즉시발행입니다. 앱 작성일은 초안 구분용이며 학교종이 게시 날짜를 지정하지 않습니다. 실제 발행일은 게시 후 서버 표시로 확인해 기록합니다.\n':'')+
      (scope.selfNotification?'필수 관리자(현재 교사 본인)에게 알림이 전달될 수 있습니다.\n':'')+
      (final?'학교·학급·수신대상과 본문·사진이 검증된 경우에만 게시합니다. 결과가 불확실하면 재전송하지 않습니다.':'아직 게시하지 않습니다. 입력·사진 검증 후 별도로 최종 확인합니다.')});
    return answer.response===1;
@@ -66,6 +70,7 @@ module.exports = function setup(main) {
  const status = key => {
   const row = store.get(key);
   return {service:row.service,link:row.schoolbell ? {confirmation:row.schoolbell.confirmation} : null,
+   developmentChecks:!!process.env.CLASSROOM_TEST_PROFILE,
    connection:connection.describe(windows.get(key)),
    automatic:false,capability:capability.status(),posts:Object.entries(row.posts).map(([hash,p])=>({hash,...p})),
    automaticPosts:Object.entries(row.automaticPosts||{}).map(([id,p])=>({id,...p}))};
@@ -123,11 +128,14 @@ module.exports = function setup(main) {
   const provider=contextProvider(win,to),abort=new AbortController();
   try{
    const result=await bounded(()=>provider.inspect(abort.signal),25000,()=>{abort.abort();provider.close();});
+   if(process.env.CLASSROOM_TEST_PROFILE)await fs.writeFile(path.join(profile.dir,'schoolbell-evidence-check.json'),JSON.stringify({checks:result.checks,
+    blockers:result.blockers,publicationMode:result.publicationMode,recipientCheck:result.recipientCheck},null,2),{mode:0o600});
    // Never expose display names, avatar URLs, group IDs or actor hashes to the
    // renderer/log. This report is not a stored verified link or publication grant.
    return {status:'blocked',checks:result.checks,blockers:result.blockers,
     message:'실제 화면 확인: '+(result.checks.gradeClass?'학년·반 일치. ':'학년·반 확인 필요. ')+
      (result.checks.recipientTableEmpty?'발행 대상 구성원 없음 확인. ':result.checks.rosterEmpty?'명단 입력 값 0건(발행 대상은 별도 확인 필요). ':'명단 확인 필요. ')+
+     (result.publicationMode?.known?'발행 방식: '+(result.publicationMode.mode==='immediate'?'즉시발행. ':'예약발행(지원하지 않음). '):'발행 방식 확인 필요. ')+
      result.blockers.map(code=>liveContext.blockerMessages[code]).filter(Boolean).join(' ')};
   }catch(error){return {status:'blocked',message:liveContext.blockerMessages[error.message]||'앱의 로그인 상태와 실제 학급 화면을 확인하지 못했습니다. 자동 등록 잠금과 초안은 유지됩니다.'};}
   finally{abort.abort();provider.close();}
@@ -163,6 +171,24 @@ module.exports = function setup(main) {
     'publication-unverified':'게시물 본문 또는 첨부 원본을 대조하지 못했습니다.'}[error.message.split(':')[0]]||'조회 중 화면 변경 또는 연결 중단이 발생했습니다.';
    return {status:'blocked',message:'게시물 조회 미완료 · '+reason+' 초안과 사진은 유지됩니다.'};
   }finally{abort.abort();provider.close();}
+ });
+ handle('schoolbell:check-uploads',async value=>{
+  if(!process.env.CLASSROOM_TEST_PROFILE)fail('개발 시험 프로필에서만 사용할 수 있는 읽기 전용 검사입니다.');
+  const to=target(value.target),note=services.payload(value.note),win=windows.get(to.classKey);
+  if(note.classKey!==to.classKey||!win||win.isDestroyed()||!liveContext.classRoute(win.webContents.getURL()))fail('시험 학급의 작성 화면을 먼저 확인해 주세요.');
+  const original=[];
+  for(const ref of note.photos){const bytes=await require('./media.cjs').current().read(ref);original.push({sha256:require('./media-store.cjs').hash(bytes),bytes:bytes.length});}
+  const expectedNames=note.photos.map((f,i)=>String(i+1).padStart(2,'0')+'-'+f.id),initial=win.webContents.getURL();
+  const abort=new AbortController(),provider=require('./schoolbell-preview-originals.cjs').createPreviewOriginals({getWebContents:()=>win.isDestroyed()?null:win.webContents,tempRoot:profile.dir});
+  let report;
+  try{
+   const proof=await bounded(()=>provider.readUploads({expectedNames,expectedPhotos:original,
+    stillPermitted:()=>!abort.signal.aborted&&!win.isDestroyed()&&win.webContents.getURL()===initial},abort.signal),45000,()=>{abort.abort();provider.close();});
+   report={complete:proof.complete===true,count:proof.items.length,photos:original};
+  }catch(error){report={complete:false,stage:/^upload-unverified(?::[a-z-]+)?$/.test(error.message)?error.message:'interrupted',...(error.previewDetails?{previewDetails:error.previewDetails}:{})};}
+  finally{abort.abort();provider.close();}
+  await fs.writeFile(path.join(profile.dir,'schoolbell-upload-check.json'),JSON.stringify(report,null,2),{mode:0o600});
+  return {status:report.complete?'read-only':'blocked',message:report.complete?'게시 전 첨부 원본 '+report.count+'장 대조 완료. 아직 게시하지 않았으며 초안과 사진은 유지됩니다.':'게시 전 원본 다운로드 또는 대조를 완료하지 못했습니다. 게시와 초안 초기화는 차단됩니다.'};
  });
  handle('schoolbell:link',async value=>{
   const to=target(value), w=windows.get(to.classKey);

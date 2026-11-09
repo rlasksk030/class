@@ -7,18 +7,22 @@ const {probeComposer}=require('./schoolbell-ui-probe.cjs');
 const {remoteId}=require('./diary-services.cjs');
 const {fail}=require('./schoolbell-driver-errors.cjs');
 const {audienceVerified}=require('./schoolbell-audience.cjs');
+const {immediateEvidence,contentDateMatches}=require('./schoolbell-date-policy.cjs');
 const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const text=v=>typeof v==='string'?v.replace(/\r\n?/g,'\n'):null;
 const date=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(v))&&new Date(v).toISOString().slice(0,10)===v;
 const sameContent=(a,b)=>a.title===b.title&&text(a.body)===text(b.body)&&a.date===b.date&&same(a.photos,b.photos);
-function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,maxAgeMs=15000,closeTimeoutMs=5000}) {
+function createPreparedDriver({bridge,target,permission=()=>null,publicationMode='fixed',now=Date.now,maxAgeMs=15000,closeTimeoutMs=5000}) {
  target=structuredClone(target);
  if(!target||typeof target.schoolId!=='string'||!target.schoolId||typeof target.schoolName!=='string'||!target.schoolName||
     !/^\d{4}$/.test(target.year)||!/^[1-6]$/.test(target.grade)||typeof target.classroom!=='string'||!target.classroom||
     target.classKey!==[target.year,target.grade,target.classroom].join(':'))fail('context-unverified');
  let phase='idle',controller=new AbortController(),bound=null,boundAudience=null,note=null,baseline=[],photos=[],submitted=false;
  const requirePhase=(...allowed)=>{if(!allowed.includes(phase))fail('driver-state');};
+ if(!['fixed','immediate'].includes(publicationMode))fail('date-unverified');
+ const matchesContent=(actual,expected,published=false)=>actual.title===expected.title&&text(actual.body)===text(expected.body)&&
+  same(actual.photos,expected.photos)&&contentDateMatches(actual,expected,publicationMode,published);
  const signalFor=signal=>signal?AbortSignal.any([signal,controller.signal]):controller.signal;
  function permitted(action) {
   const p=permission();
@@ -35,7 +39,7 @@ function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,ma
   return value;
  }
  const scope=c=>({service:'schoolbell',schoolId:target.schoolId,classKey:target.classKey,boardId:c.boardId,
-  scopeType:'class',board:'diary',authenticated:true,teacher:true,
+  scopeType:'class',board:'diary',authenticated:true,teacher:true,...(publicationMode==='immediate'?{publicationMode}:{}),
   selfNotification:c.externalNotifications===true&&c.recipientEvidence?.mandatoryAdministrator===true&&c.notificationEvidence?.kind==='current-teacher-only'});
  async function guard(action,signal) {
   permitted(action);
@@ -72,7 +76,7 @@ function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,ma
  }
  async function readDate(signal) {
   const d=await call('readDate',null,signal);
-  if(d?.verified!==true||!date(d.value))fail('date-unverified');return d;
+  if(publicationMode==='immediate'?!immediateEvidence(d):d?.verified!==true||!date(d.value))fail('date-unverified');return d;
  }
  // Require independently downloaded original bytes, not filenames, preview URLs or claimed hashes.
  function originals(value,code) {
@@ -84,15 +88,17 @@ function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,ma
   });
  }
  async function content(signal) {
-  const c=await call('readContent',null,signal),d=await readDate(signal);
+  const d=await readDate(signal),uploaded=originals(await call('readUploads',null,signal),'upload-unverified');
+  const c=await call('readContent',null,signal);
   if(typeof c?.title!=='string'||typeof c.body!=='string'||typeof c.revision!=='string'||!c.revision)fail('content-unverified');
-  return {title:c.title,body:c.body,date:d.value,revision:c.revision,photos:originals(await call('readUploads',null,signal),'upload-unverified')};
+  return {title:c.title,body:c.body,date:d.value,...(publicationMode==='immediate'?{publicationMode,draftDate:note.date}:{}),revision:c.revision,photos:uploaded};
  }
  function post(raw) {
   if(!remoteId(raw?.id)||typeof raw.title!=='string'||typeof raw.body!=='string'||!date(raw.date)||
      raw.kind!=='published'||raw.scope?.boardId!==bound.boardId||raw.scope?.schoolId!==target.schoolId||
      raw.scope?.classKey!==target.classKey||raw.scope?.service!=='schoolbell')fail('publication-unverified');
-  return {id:raw.id,title:raw.title,body:raw.body,date:raw.date,photos:originals(raw.attachments,'publication-unverified')};
+  if(publicationMode==='immediate'&&raw.dateSource!=='observed-service-ui')fail('publication-unverified');
+  return {id:raw.id,title:raw.title,body:raw.body,date:raw.date,...(publicationMode==='immediate'?{publicationMode,draftDate:note?.date,dateSource:raw.dateSource}:{}),photos:originals(raw.attachments,'publication-unverified')};
  }
  async function inspect(expected,externalSignal) {
   requirePhase('idle','inspected','baselined','opened','filled','attached','reviewed','submitted');
@@ -109,27 +115,27 @@ function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,ma
   if(new Set(rows.map(r=>r.id)).size!==rows.length)fail('baseline-unverified');
   if(new Set(ids).size!==ids.length)fail('baseline-unverified');
   note=structuredClone(input);if(!date(note.date)||note.classKey!==target.classKey)fail('date-unverified');
-  const matching=rows.filter(r=>r.title===note.title&&text(r.body)===text(note.body)&&r.date===note.date&&
+  const matching=rows.filter(r=>r.title===note.title&&text(r.body)===text(note.body)&&(publicationMode==='immediate'||r.date===note.date)&&
    same(r.photos.map(p=>p.sha256),note.photos.map(p=>p.id.split('.')[0]))).length;
   baseline=ids;phase='baselined';return {ids:[...ids],matching};
  }
  async function openComposer(expected,externalSignal) {
   requirePhase('baselined');expectScope(expected);const signal=signalFor(externalSignal);await guard('input',signal);
   await act('input','openComposer',null,signal);await guard('input',signal);await structure(signal);
-  const d=await readDate(signal);if(d.value!==note.date&&d.writable!==true)fail('date-unverified');
+  const d=await readDate(signal);if(publicationMode!=='immediate'&&d.value!==note.date&&d.writable!==true)fail('date-unverified');
   phase='opened';
  }
  async function fill(input,externalSignal) {
   requirePhase('opened');const signal=signalFor(externalSignal);
   if(!['title','body','date'].every(k=>input[k]===note[k]))fail('content-unverified');
   await guard('input',signal);await structure(signal);
-  const d=await readDate(signal);if(d.value!==note.date&&d.writable!==true)fail('date-unverified');
+  const d=await readDate(signal);if(publicationMode!=='immediate'&&d.value!==note.date&&d.writable!==true)fail('date-unverified');
   // Unknown date fails before the first title/body mutation. Plain text only; no HTML injection.
-  if(d.value!==note.date){await act('input','writeDate',note.date,signal);await guard('input',signal);}
+  if(publicationMode!=='immediate'&&d.value!==note.date){await act('input','writeDate',note.date,signal);await guard('input',signal);}
   await act('input','writeTitle',note.title,signal);await guard('input',signal);
   await act('input','writeBodyText',note.body,signal);await guard('input',signal);
   const c=await call('readContent',null,signal),currentDate=await readDate(signal);
-  if(c?.title!==note.title||text(c.body)!==text(note.body)||currentDate.value!==note.date)fail('content-unverified');
+  if(c?.title!==note.title||text(c.body)!==text(note.body)||(publicationMode!=='immediate'&&currentDate.value!==note.date))fail('content-unverified');
   phase='filled';
  }
  async function attach(files,externalSignal) {
@@ -147,13 +153,13 @@ function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,ma
  async function readComposer(externalSignal) {
   requirePhase('attached','reviewed');const signal=signalFor(externalSignal);await guard('read',signal);await structure(signal);
   const c=await content(signal);await guard('read',signal);
-  if(!sameContent(c,{...note,photos}))fail('content-unverified');phase='reviewed';return c;
+  if(!matchesContent(c,{...note,photos}))fail('content-unverified');phase='reviewed';return c;
  }
  async function submit(expected,externalSignal) {
   requirePhase('reviewed');expectScope(expected.scope);const signal=signalFor(externalSignal);
   if(submitted||!same(expected.beforeIds,baseline)||!sameContent({...expected.note,photos:expected.photos},{...note,photos}))fail('driver-state');
   await guard('submit',signal);const p=await structure(signal),c=await content(signal);await guard('submit',signal);
-  if(p.send.enabled!==true||!sameContent(c,{...note,photos}))fail('content-unverified');
+  if(p.send.enabled!==true||!matchesContent(c,{...note,photos}))fail('content-unverified');
   submitted=true;phase='submitted'; // Consume before awaiting: failed/unknown commits can never be retried.
   // The approved bridge must check this binding + revision + whole content and current permission
   // atomically with its single UI click, including changes occurring after the reads above.
@@ -172,7 +178,7 @@ function createPreparedDriver({bridge,target,permission=()=>null,now=Date.now,ma
   if(result?.complete!==true||result.refreshed!==true||!Array.isArray(result.posts))fail('publication-unverified');
   const rows=result.posts.map(post);
   if(new Set(rows.map(r=>r.id)).size!==rows.length)fail('publication-unverified');
-  const matches=rows.filter(r=>!baseline.includes(r.id)&&sameContent(r,{...note,photos}));
+  const matches=rows.filter(r=>!baseline.includes(r.id)&&matchesContent(r,{...note,photos},true));
   if(matches.length!==1)fail('publication-unverified');phase='published';
   return {...matches[0],kind:'published',refreshed:true,scope:current};
  }

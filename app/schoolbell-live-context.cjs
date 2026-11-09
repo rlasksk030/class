@@ -2,7 +2,6 @@
 // DOM-only evidence from the actual account/group/roster screens observed on
 // 2026-11-09. Private display values stay in memory; only booleans/counts leave
 // the provider. Available controls are never promoted to verified authority.
-const crypto=require('node:crypto');
 const {officialPage}=require('./schoolbell-observed-composer.cjs');
 const {inspectRecipients}=require('./schoolbell-recipients.cjs');
 const {openObservedComposer}=require('./schoolbell-composer-entry.cjs');
@@ -30,7 +29,11 @@ function readContextScreen(document,kind){
  if(kind==='account'){
   const root=one('app-main-userinfo'),name=one('app-update-info input[placeholder="새로운 이름을 입력해주세요."]');
   const avatar=one('app-update-info app-profile-img img');
+  const phone=root?.textContent.match(/현재\s*휴대폰번호\s*:\s*(0\d{1,2}[- ]?\d{3,4}[- ]?\d{4})/);
   return {known:!!root&&!!name&&!!avatar,name:name?.value||'',avatar:avatar?.getAttribute('src')||'',
+   // Only presence of the displayed current contact leaves this DOM probe.
+   // It is not yet proof of the administrator's identity.
+   currentContactPresent:!!phone,
    // A "new name" form is not an authoritative current-account identifier.
    actorVerified:false};
  }
@@ -57,7 +60,7 @@ function summarizeContext({group,account,roster,invite,recipients},target){
  const checks={classPage:group?.known===true,
   gradeClass:!!match&&match[1]===target.grade&&match[2].trim()===target.classroom,
   school:group?.schoolVerified===true,year:group?.yearVerified===true,
-  actor:account?.actorVerified===true,adminDisplayMatch:displayMatch,
+  actor:account?.actorVerified===true,accountContactAvailable:account?.currentContactPresent===true,adminDisplayMatch:displayMatch,
   rosterEmpty:roster?.known===true&&roster.empty===true,
   inviteEmpty:invite?.known===true&&invite.noInviteTargets===true,
   recipientTableEmpty:recipients?.known===true&&recipients.unfiltered===true&&recipients.empty===true};
@@ -75,7 +78,8 @@ function summarizeContext({group,account,roster,invite,recipients},target){
   // Transient main-process proof only; inspect IPC returns checks/messages,
   // never this label/role data or account identifiers.
   recipientEvidence:recipients?.known===true?recipients:null,
-  actorKey:account?.name&&account.avatar?crypto.createHash('sha256').update(JSON.stringify([account.name,account.avatar])).digest('hex'):null};
+  // A display name/avatar hash is not a unique account identifier.
+  actorKey:null};
 }
 function createLiveContextProvider({getWebContents,createReader,target,timeoutMs=12000}={}){
  let reader=null,active=false,closed=false;
@@ -109,7 +113,7 @@ function createLiveContextProvider({getWebContents,createReader,target,timeoutMs
    const roster=await screen('roster',route.base+'/settings/studentlist',signal);
    const invite=await screen('invite',route.base+'/settings/invite',signal);
    if(owner.isDestroyed()||owner.getURL()!==initialURL)throw Error('context-changed');
-   let recipients=await inspectRecipients(owner,signal);
+   let recipients=await inspectRecipients(owner,signal),modeContents=owner;
    if(!recipients.known&&!/\/boards\/write\/classnews$/.test(initialURL)){
     // The owner may be on the list or a posted result. Inspect the send-target
     // dialog in our disposable same-session reader, never move/overwrite the
@@ -118,9 +122,12 @@ function createLiveContextProvider({getWebContents,createReader,target,timeoutMs
     await openObservedComposer(reader.webContents,{groupId:route.groupId,signal,
      allowed:()=>!owner.isDestroyed()&&owner.getURL()===initialURL&&!closed});
     recipients=await inspectRecipients(reader.webContents,signal);
+    modeContents=reader.webContents;
    }
    if(owner.isDestroyed()||owner.getURL()!==initialURL)throw Error('context-changed');
-   return {...summarizeContext({group,account,roster,invite,recipients},target),boardId:route.groupId,observedAt:Date.now()};
+   const publicationMode=await require('./schoolbell-publication-mode.cjs').inspectPublicationMode(modeContents,signal);
+   return {...summarizeContext({group,account,roster,invite,recipients},target),publicationMode,
+    recipientCheck:recipients.known?{known:true,empty:recipients.empty}:{known:false,reason:recipients.reason},boardId:route.groupId,observedAt:Date.now()};
   }finally{signal?.removeEventListener('abort',abort);abort();reader=null;active=false;}
  }
  return {inspect,close(){closed=true;controller.abort();if(reader&&!reader.isDestroyed())reader.destroy();return !active;}};
