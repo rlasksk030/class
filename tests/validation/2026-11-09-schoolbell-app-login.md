@@ -53,4 +53,4 @@
 
 ## GitHub
 
-현재 브랜치를 구독하지 않는 기존 Windows workflow의 트리거를 재확인했다. 변경 전 Actions 19 / 마지막 41977391612. 새 실행·재실행 요청 0회, 비용을 발생시키는 작업 0건. 기존 브랜치에 `[skip ci]`로 커밋/Push하고 PR #5 Draft와 Issue #4에 이번 실제 UI 상태를 갱신한다. Push 후 SHA/Actions 결과는 아래에 추가한다. 병합·tag·Release·운영 업데이트·워크플로·결제·권한 설정 변경 없음.
+현재 브랜치를 구독하지 않는 기존 Windows workflow의 트리거를 재확인했다. 변경 전 Actions 19 / 마지막 41977391612. 새 실행·재실행 요청 0회, 비용을 발생시키는 작업 0건. 기존 브랜치에 `[skip ci]`로 커밋/Push하고 PR #5 Draft와 Issue #4에 이번 실제 UI 상태를 갱신한다. 코드 `a8d1edb3e5e1a0b5a94596a60f37ec0e4ec2fe34` 및 감사 포함 `39ec0b7d5d4c50ef115669f647e37f6f964054c2`를 기존 브랜치에 Push 완료했다. Push 후에도 Actions 19 / 마지막 41977391612로 동일했다. PR/Issue에는 최종 감사 커밋과 상태를 기록한다. 병합·tag·Release·운영 업데이트·워크플로·결제·권한 설정 변경 없음.
