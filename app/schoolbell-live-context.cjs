@@ -128,8 +128,8 @@ function createLiveContextProvider({getWebContents,createReader,target,timeoutMs
 const blockerMessages=Object.freeze({
  'class-page-unverified':'담당 학급의 알림장 화면을 열어 주세요.',
  'class-mismatch':'실제 학급 이름의 학년·반을 앱 설정과 대조하지 못했습니다.',
- 'school-unverified':'이 학급 화면에는 확인 가능한 학교명이 없습니다.',
- 'year-unverified':'이 학급 화면에는 확인 가능한 학년도가 없습니다.',
+ 'school-unverified':'학급 이름과 별도로 검증할 학교 정보를 확인하지 못했습니다.',
+ 'year-unverified':'학급의 학년도 정보를 별도로 확인하지 못했습니다.',
  'actor-unverified':'현재 로그인 계정의 고유 식별정보를 확인하지 못했습니다.',
  'teacher-unverified':'현재 계정과 실제 교사·관리자 권한의 일치를 확인하지 못했습니다.',
  'roster-unverified':'학생명단의 빈 입력란 여부를 확인하지 못했습니다.',

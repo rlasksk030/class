@@ -31,6 +31,10 @@ async function launch(){
 }
 const note=()=>page.evaluate(()=>({classKey:[academicYear(),settings.grade,settings.classroom].join(':'),date:document.querySelector('#diaryDate').value,title:document.querySelector('#diaryTitle').value,body:document.querySelector('#diaryBody').value,photos:Object.values(JSON.parse(localStorage.getItem('diaryDrafts'))).find(x=>x.body===document.querySelector('#diaryBody').value)?.photos||[]}));
 async function ready(){await page.waitForFunction(()=>!document.querySelector('#diaryService').disabled);}
+async function manualControls(){
+ for(const id of ['schoolbellManual','schoolbellConnection'])
+  if(await page.locator('#'+id).getAttribute('open')===null)await page.locator('#'+id+' > summary').click();
+}
 const state=async()=>page.evaluate(()=>desktop.diaryServiceStatus([academicYear(),settings.grade,settings.classroom].join(':')));
 (async()=>{try{
  await launch();
@@ -60,6 +64,7 @@ const state=async()=>page.evaluate(()=>desktop.diaryServiceStatus([academicYear(
  },browser);
  assert.deepEqual(isolated,{sandbox:true,node:false,preload:false,rejected:true});pass('remote window has no preload, Node or trusted IPC access');
  await app.evaluate(({BrowserWindow},id)=>BrowserWindow.fromId(id).loadURL('https://schoolbell-e.com/ko/classes/synthetic/notes'),browser);
+ await manualControls();
  await page.fill('#schoolbellSchool','다른초등학교');await page.fill('#schoolbellYear',to.year);await page.fill('#schoolbellGrade','6');await page.fill('#schoolbellClass','1');
  await page.click('#schoolbellLink');await ready();assert.match(await page.textContent('#diaryStatus'),/다릅니다/);assert.equal((await state()).link,null);pass('wrong school blocks manual class confirmation');
  await page.fill('#schoolbellSchool','옥구초등학교');await page.fill('#schoolbellYear',String(Number(to.year)-1));
@@ -74,6 +79,7 @@ const state=async()=>page.evaluate(()=>desktop.diaryServiceStatus([academicYear(
  await page.click('#schoolbellPrepare');await ready();assert.equal((await state()).posts.length,1);assert.match(await page.textContent('#diaryStatus'),/미확인|같은 내용/);pass('duplicate handoff blocked');
  await app.evaluate(({BrowserWindow},id)=>BrowserWindow.fromId(id).destroy(),browser);
  await app.close();app=null;await launch();assert.equal(await page.inputValue('#diaryService'),'schoolbell');assert.equal(await page.inputValue('#diaryBody'),'가상 본문');assert.equal(await page.locator('#diaryPhotos figure').count(),2);assert.equal((await state()).posts[0].status,'manual-pending');pass('restart restores service, draft, photos and unresolved publication');
+ await manualControls();
  await page.fill('#diaryTitle','바뀐 제목');await page.click('#schoolbellPrepare');await ready();assert.equal((await state()).posts.length,1);pass('editing content cannot bypass unresolved handoff');
  const hash=(await state()).posts[0].hash;
  await app.evaluate(()=>globalThis.confirmResponse=0);
@@ -86,7 +92,7 @@ const state=async()=>page.evaluate(()=>desktop.diaryServiceStatus([academicYear(
  await app.evaluate(()=>globalThis.failPage=true);
  await page.click('#schoolbellPrepare');await ready();
  const unresolved=(await state()).posts.find(p=>p.status==='manual-pending');
- assert.ok(unresolved);assert.match(await page.textContent('#diaryStatus'),/마치지 못했습니다/);
+ assert.ok(unresolved);assert.match(await page.textContent('#diaryStatus'),/서버에 연결하지 못했습니다|연결 시간이 초과/);
  const attempts=await app.evaluate(()=>globalThis.requestCount);
  await page.click('#schoolbellPrepare');await ready();
  assert.equal(await app.evaluate(()=>globalThis.requestCount),attempts);assert.equal(await page.locator('#diaryPhotos figure').count(),2);pass('network failure preserves draft/photos and pending record, duplicate never retries network');

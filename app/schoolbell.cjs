@@ -3,6 +3,7 @@ const {BrowserWindow,ipcMain,dialog,clipboard,shell} = require('electron');
 const fs = require('node:fs/promises'), path = require('node:path');
 const services = require('./diary-services.cjs');
 const capability = require('./schoolbell-capability.cjs');
+const connection = require('./schoolbell-window.cjs');
 const {bounded} = require('./hiclass-navigation.cjs');
 module.exports = function setup(main) {
  const profile = require('./school-profile.cjs').get(), store = services.createStore(profile);
@@ -65,6 +66,7 @@ module.exports = function setup(main) {
  const status = key => {
   const row = store.get(key);
   return {service:row.service,link:row.schoolbell ? {confirmation:row.schoolbell.confirmation} : null,
+   connection:connection.describe(windows.get(key)),
    automatic:false,capability:capability.status(),posts:Object.entries(row.posts).map(([hash,p])=>({hash,...p})),
    automaticPosts:Object.entries(row.automaticPosts||{}).map(([id,p])=>({id,...p}))};
  };
@@ -75,26 +77,28 @@ module.exports = function setup(main) {
   for (const [other,w] of windows) if (other !== key && !w.isDestroyed()) w.close();
   let w = windows.get(key);
   if (!w || w.isDestroyed()) {
-   w = new BrowserWindow({width:1200,height:850,title:'학교종이 · 직접 로그인 / 수동 발행',
+   w = new BrowserWindow({width:1200,height:850,title:'학교종이 · 우리 교실에서 직접 로그인',
     webPreferences:{partition:services.partition(profile.id,'schoolbell',key),contextIsolation:true,nodeIntegration:false,sandbox:true}});
    windows.set(key,w); w.removeMenu();
    w.on('closed',()=>windows.delete(key));
-   w.webContents.on('did-fail-load',(_e,code,_description,_url,isMainFrame)=>{if(isMainFrame&&code!==-3)w.schoolbellLoadFailed=true;});
-   w.webContents.on('did-finish-load',()=>{w.schoolbellLoadFailed=false;});
+   const watched=connection.watch(w);
+   const loginNavigation=require('./schoolbell-login-navigation.cjs').createLoginNavigation();
    w.webContents.session.setPermissionRequestHandler((_wc,_permission,done)=>done(false));
    w.webContents.session.setPermissionCheckHandler(()=>false);
-   const navigate = (event,url) => { try { services.safeURL(url); } catch { event.preventDefault(); } };
+   const navigate = (event,url) => {
+    if(!loginNavigation.allow(url,w.webContents.getURL())){watched.block(url);event.preventDefault();}
+   };
    w.webContents.on('will-navigate',navigate); w.webContents.on('will-redirect',navigate);
    w.webContents.setWindowOpenHandler(({url})=>{
-    try { services.safeURL(url); void w.loadURL(url).catch(()=>{}); } catch {}
+    if(loginNavigation.allow(url,w.webContents.getURL()))void connection.load(w,url,20000,()=>true).catch(()=>{});
+    else watched.block(url);
     return {action:'deny'};
    });
-   try { await bounded(()=>w.loadURL(destination),20000,()=>{if(!w.isDestroyed())w.webContents.stop();}); }
-   catch(error) { w.schoolbellLoadFailed=true;throw error; }
+   await connection.load(w,destination);
   } else if(w.schoolbellLoadFailed) {
-   await bounded(()=>w.loadURL(destination),20000,()=>{if(!w.isDestroyed())w.webContents.stop();});
+   await connection.load(w,destination);
   }
-  w.show(); w.focus(); return w;
+  if(w.isMinimized())w.restore();w.show(); w.focus(); return w;
  }
  function target(value) {
   if (!value || !/^[1-6]$/.test(value.grade) || typeof value.classroom !== 'string' ||
@@ -110,8 +114,8 @@ module.exports = function setup(main) {
   return status(classKey);
  });
  handle('schoolbell:open',async value=>{
-  const to=target(value); await open(to.classKey);
-  return {status:'manual',message:'학교종이에서 직접 로그인 → 담당 학급 → 알림장을 여세요. 돌아와 학교·학급을 확인해 주세요. 로그인 및 교사 권한은 자동 확인하지 않습니다.'};
+  const to=target(value),w=await open(to.classKey);
+  return {status:'opened',message:connection.describe(w).message};
  });
  handle('schoolbell:inspect',async value=>{
   const to=target(value),win=windows.get(to.classKey);

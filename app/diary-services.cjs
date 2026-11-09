@@ -3,7 +3,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const {validateRef} = require('./media-store.cjs');
-const HOME = 'https://schoolbell-e.com/';
+// The public root currently redirects to HTTP. Start at the observed HTTPS
+// Korean app entry instead; never weaken the HTTPS navigation allowlist.
+const HOME = 'https://schoolbell-e.com/ko/main';
 const SERVICES = new Set(['hiclass', 'schoolbell']);
 const sha = value => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 function classKey(value) {
