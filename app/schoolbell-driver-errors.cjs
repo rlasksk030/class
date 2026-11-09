@@ -1,6 +1,6 @@
 // Fixed public messages only. Never expose transport errors, DOM text, URLs or identities.
 const messages=Object.freeze({
- 'permission-unverified':'학교종이의 공식 자동화 허용 범위를 확인하지 못했습니다.',
+ 'permission-unverified':'운영 허용 또는 현재 시험 프로필의 별도 사용자 승인 범위를 확인하지 못했습니다.',
  'context-unverified':'학교·학년도·학년·반과 현재 교사 권한을 확인하지 못했습니다.',
  'test-class-unverified':'승인된 시험 학급의 학생·학부모 수신자 없음과 필수 관리자 알림 허용 범위를 확인하지 못했습니다.',
  'structure-unverified':'학교종이 작성 요소가 누락되었거나 여러 개입니다.',

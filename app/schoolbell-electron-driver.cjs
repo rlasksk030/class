@@ -1,8 +1,8 @@
 'use strict';
 // Concrete Electron composer + existing prepared transaction driver. Evidence
 // providers are trusted main-process source code, NEVER renderer/settings data.
-// Partial observed UI evidence is installed; unverified identity/date/upload/list
-// coverage continues to fail closed behind the production permission gate.
+// Observed UI evidence is installed. Production remains locked; isolated test
+// consent never promotes user-confirmed mapping to service identity evidence.
 const {createObservedComposerBridge}=require('./schoolbell-observed-composer.cjs');
 const {createObservedPostBridge}=require('./schoolbell-observed-post.cjs');
 const {hash}=require('./media-store.cjs');
@@ -10,13 +10,15 @@ const {createPreparedDriver}=require('./schoolbell-prepared-driver.cjs');
 const {fail}=require('./schoolbell-driver-errors.cjs');
 const {makeGuardProof,finalDOMGuard}=require('./schoolbell-final-guard.cjs');
 const {audienceVerified}=require('./schoolbell-audience.cjs');
+const trial=require('./schoolbell-test-authorization.cjs');
 function requirePermission(permission,target,action){
  const p=permission?.();
+ if(trial.validTestGrant(p,target,action))return;
  if(p?.official!==true||p.method!=='electron-ui'||!p.evidenceRef?.trim()||p.schoolId!==target.schoolId||
     p.classKey!==target.classKey||p.approvedTestClass!==true||!p.actions?.includes(action))fail('permission-unverified');
 }
 function createElectronDriver({target,getWebContents,permission=()=>null,evidence={},stop,tempRoot}={}){
- const actionOf=a=>({title:'input',body:'input',files:'attachments',commit:'submit'})[a]||'read';
+ const actionOf=a=>({'focus-title':'input','focus-body':'input',title:'input',body:'input',files:'attachments',commit:'submit'})[a]||'read';
  let binding=null,expectedNames=[],expectedPhotos=[],preparedText={title:null,body:null};
  let transactionNote=null,lastContext=null,lastDate=null,lastUploads=null;
  let watched=null,documentEpoch=0;
@@ -50,22 +52,30 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
    expectedNames,expectedPhotos,href,revision:request?.revision,permission:permission()}),
   authorize:({action,target:requested,binding:expected})=>{
    requirePermission(permission,target,actionOf(action));
-   if(['title','body','files','commit'].includes(action)&&typeof evidence.guardDOM!=='function'&&
+   if(['focus-title','focus-body','title','body','files','commit'].includes(action)&&typeof evidence.guardDOM!=='function'&&
       (!lastContext||!audienceVerified(lastContext,permission())))return false;
    if(requested&&JSON.stringify(requested)!==JSON.stringify(target))return false;
-   return !expected||!!binding&&['boardId','contextId','actorKey'].every(k=>expected[k]===binding[k]);
+   return !expected||trial.sameBinding(binding,expected);
   }});
  const request=()=>({target,binding});
  async function editor(method,r,signal){
+  evidence.diagnostic?.({step:method,state:'started'});
   try{
+   // The actual service closes the mode menu when an input gains focus.
+   // Focus first, then reread the native checked radio; the atomic guard stays
+   // mandatory during every edit. No assumed mode or stale dropdown fallback.
+   if(evidence.publicationMode==='immediate'&&['writeTitle','writeBodyText'].includes(method))
+    await composer[method==='writeTitle'?'focusTitle':'focusBody'](r,signal);
    // Audience inspection may close the send dropdown. Reopen/read the actual
    // choice immediately before each guarded mutation, so the atomic DOM guard
    // can inspect native checked state in the same task as that mutation.
    if(evidence.publicationMode==='immediate'&&['writeTitle','writeBodyText','attachFiles','commitOnce'].includes(method))
     lastDate=structuredClone(await read('readDate',signal,'date-unverified'));
-   return await composer[method](r,signal);
+   const result=await composer[method](r,signal);
+   evidence.diagnostic?.({step:method,state:'complete'});return result;
   }
   catch(error){
+   evidence.diagnostic?.({step:method,state:'failed',guardFailure:error.guardFailure||null,proofFailure:error.stack?.includes('makeGuardProof')===true});
    if(error?.name==='SchoolbellPreparationError')throw error;
    const code=({ 'structure-unverified':'structure-unverified','context-unverified':'context-unverified',
     'permission-unverified':'permission-unverified','site-unverified':'context-unverified','driver-state':'driver-state','date-unverified':'date-unverified',
@@ -74,7 +84,7 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
   }
  }
  const bridge={
-  async readContext(_r,s){lastContext=null;const c=await read('readContext',s,'context-unverified');lastContext=structuredClone(c);binding=c&&{boardId:c.boardId,contextId:c.contextId,actorKey:c.actorKey};return c;},
+  async readContext(_r,s){lastContext=null;const c=await read('readContext',s,'context-unverified');lastContext=structuredClone(c);binding=c&&trial.bindingOf(c);return c;},
   readStructure:(_probe,s)=>composer.readStructure(null,s,request()),
   async readDate(_r,s){lastDate=null;const value=await read('readDate',s,'date-unverified');lastDate=structuredClone(value);return value;},
   async readBaseline(r,s){transactionNote=structuredClone(r.note);return read('readBaseline',s,'baseline-unverified',r);},
@@ -128,7 +138,7 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
  return createPreparedDriver({target,permission,bridge,publicationMode:evidence.publicationMode||'fixed'});
 }
 // Lazily creates one per-attempt driver. The publisher gate runs BEFORE this
-// code opens a remote window. A missing official grant independently denies it.
+// code opens a remote window. Missing production/test permission independently denies it.
 function createRuntimeDriver({profile,openClass,closeClass,permission=()=>null,evidenceFactory}={}){
  let driver=null,openingKey=null;
  const methods=['snapshot','openComposer','fill','attach','readComposer','submit','readPublished'];

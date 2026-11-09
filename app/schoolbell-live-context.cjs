@@ -1,10 +1,12 @@
 'use strict';
 // DOM-only evidence from the actual account/group/roster screens observed on
-// 2026-11-09. Private display values stay in memory; only booleans/counts leave
-// the provider. Available controls are never promoted to verified authority.
+// 2026-11-09. Private display values stay in main-process memory. The public IPC
+// report exposes only booleans/counts; native consent can show the bound class.
+// Available controls are never promoted to verified service identity/authority.
 const {officialPage}=require('./schoolbell-observed-composer.cjs');
 const {inspectRecipients}=require('./schoolbell-recipients.cjs');
 const {openObservedComposer}=require('./schoolbell-composer-entry.cjs');
+const crypto=require('node:crypto'),observationSalt=crypto.randomBytes(32);
 function classRoute(value){
  if(!officialPage(value))return null;
  const u=new URL(value);if(u.search||u.hash)return null;
@@ -31,9 +33,9 @@ function readContextScreen(document,kind){
   const avatar=one('app-update-info app-profile-img img');
   const phone=root?.textContent.match(/현재\s*휴대폰번호\s*:\s*(0\d{1,2}[- ]?\d{3,4}[- ]?\d{4})/);
   return {known:!!root&&!!name&&!!avatar,name:name?.value||'',avatar:avatar?.getAttribute('src')||'',
-   // Only presence of the displayed current contact leaves this DOM probe.
-   // It is not yet proof of the administrator's identity.
-   currentContactPresent:!!phone,
+   // The displayed contact is used transiently in main-process memory for
+   // session continuity, never as an account ID or administrator identity proof.
+   currentContactPresent:!!phone,currentContactObservation:phone?phone[1].replace(/[- ]/g,''):null,
    // A "new name" form is not an authoritative current-account identifier.
    actorVerified:false};
  }
@@ -61,6 +63,7 @@ function summarizeContext({group,account,roster,invite,recipients},target){
   gradeClass:!!match&&match[1]===target.grade&&match[2].trim()===target.classroom,
   school:group?.schoolVerified===true,year:group?.yearVerified===true,
   actor:account?.actorVerified===true,accountContactAvailable:account?.currentContactPresent===true,adminDisplayMatch:displayMatch,
+  adminSettingsEditable:group?.known===true&&group.nameEditable===true&&group.adminFlags===1,
   rosterEmpty:roster?.known===true&&roster.empty===true,
   inviteEmpty:invite?.known===true&&invite.noInviteTargets===true,
   recipientTableEmpty:recipients?.known===true&&recipients.unfiltered===true&&recipients.empty===true};
@@ -71,7 +74,7 @@ function summarizeContext({group,account,roster,invite,recipients},target){
  // the sole mandatory administrator may still receive a notification.
  if(!checks.recipientTableEmpty)blockers.push('membership-unverified');
  blockers.push('notification-policy-unverified');
- return {checks,blockers,adminCount:group?.admins?.length??null,filledFields:roster?.known?roster.filled:null,
+ return {checks,blockers,classDisplayName:group?.groupName||null,adminCount:group?.admins?.length??null,filledFields:roster?.known?roster.filled:null,
   identityVerified:false,authorityVerified:false,recipientsVerified:false,
   students:checks.recipientTableEmpty?0:null,parents:checks.recipientTableEmpty?0:null,
   mandatoryAdministrator:recipients?.mandatoryAdministrator===true,
@@ -79,9 +82,13 @@ function summarizeContext({group,account,roster,invite,recipients},target){
   // never this label/role data or account identifiers.
   recipientEvidence:recipients?.known===true?recipients:null,
   // A display name/avatar hash is not a unique account identifier.
-  actorKey:null};
+  actorKey:null,
+  // Equality of a displayed contact only detects changes during this short
+  // app session. It is NOT a service account ID or administrator identity proof.
+  // Salt is process-local; neither raw contact nor digest is persisted/exposed.
+  accountObservationDigest:account?.currentContactObservation?crypto.createHmac('sha256',observationSalt).update(account.currentContactObservation).digest('hex'):null};
 }
-function createLiveContextProvider({getWebContents,createReader,target,timeoutMs=12000}={}){
+function createLiveContextProvider({getWebContents,createReader,target,showRecipientReader=false,timeoutMs=12000}={}){
  let reader=null,active=false,closed=false;
  const controller=new AbortController();
  async function screen(kind,url,signal){
@@ -119,6 +126,10 @@ function createLiveContextProvider({getWebContents,createReader,target,timeoutMs
     // dialog in our disposable same-session reader, never move/overwrite the
     // teacher's existing page. Opening a blank composer does not enter or send.
     await reader.loadURL(route.base+'/boards/classnews');
+    // The live service did not open the target modal reliably in a hidden
+    // window. In isolated development tests, render the blank composer without
+    // taking focus. Account/roster screens have already finished and stay hidden.
+    if(showRecipientReader)reader.showInactive();
     await openObservedComposer(reader.webContents,{groupId:route.groupId,signal,
      allowed:()=>!owner.isDestroyed()&&owner.getURL()===initialURL&&!closed});
     recipients=await inspectRecipients(reader.webContents,signal);

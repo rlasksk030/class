@@ -40,7 +40,7 @@ test('final photo proof is tied to downloaded bytes, their order, binding and do
 });
 test('atomic DOM check rejects target/modal/file/date/revision changes before the single send',()=>{
  const f=fixture(),proof=makeGuardProof(f),label={textContent:'합성 대상'},location={href:f.href};let modal=null;
- const document={location,querySelectorAll:()=>[{querySelectorAll:()=>[label]}],querySelector:()=>modal};
+ const document={location,defaultView:{getComputedStyle:()=>({visibility:'visible'})},querySelectorAll:selector=>selector==='app-boards-write'?[{querySelectorAll:()=>[label]}]:modal?[modal]:[]};
  const payload={...f,proof,finalAction:'single-send',attachmentState:{listKnown:true,uploading:false,names:f.expectedNames},photos:f.expectedPhotos};
  assert.equal(finalDOMGuard(document,payload),true);
  for(const change of [p=>p.note={date:'2026-11-08'},p=>p.revision='changed',p=>p.attachmentState={listKnown:true,uploading:true,names:f.expectedNames},
@@ -48,7 +48,9 @@ test('atomic DOM check rejects target/modal/file/date/revision changes before th
   const p={...payload};change(p);assert.equal(finalDOMGuard(document,p),false);
  }
  label.textContent='다른 대상';assert.equal(finalDOMGuard(document,payload),false);label.textContent='합성 대상';
- modal={};assert.equal(finalDOMGuard(document,payload),false);modal=null;
+ modal={};assert.equal(finalDOMGuard(document,payload),false);
+ modal={getClientRects:()=>[],querySelectorAll:()=>[]};assert.equal(finalDOMGuard(document,payload),true,'closed retained preview is not an open modal');
+ modal={querySelectorAll:()=>[{getClientRects:()=>[{width:300,height:500}]}]};assert.equal(finalDOMGuard(document,payload),false,'visible iframe blocks send');modal=null;
  location.href=f.href.replace('/100/','/101/');assert.equal(finalDOMGuard(document,payload),false);
 });
 test('mandatory administrator requires verified current-teacher-only evidence and matching explicit main-process approval',()=>{

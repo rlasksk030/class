@@ -1,0 +1,23 @@
+{
+  "observedAt": "2026-11-09T14:56:33.590Z",
+  "source": "actual app button, automatic publisher checks, native final confirmation",
+  "title": "우리 교실 앱 자동등록 최종 시험",
+  "body": "우리 교실에서 학교종이로 자동 등록하는\n최종 연결 시험입니다.",
+  "students": 0,
+  "parents": 0,
+  "mandatoryAdministrators": 1,
+  "administratorSelf": "user-confirmed",
+  "automaticTitle": "PASS",
+  "automaticBody": "PASS",
+  "automaticPhotoUpload": "PASS",
+  "downloadedOriginal": "PASS",
+  "photos": [
+    {
+      "sha256": "1d6f13d252fe9b29809f8d04f04872a5013025bf0e5fb34e57c16bc50381ccc3",
+      "bytes": 97
+    }
+  ],
+  "productionEnabled": false,
+  "officialServicePermission": "unconfirmed",
+  "finalPublish": "WAITING_FOR_USER_CONFIRMATION"
+}

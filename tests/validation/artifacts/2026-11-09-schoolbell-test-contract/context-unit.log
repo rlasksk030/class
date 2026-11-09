@@ -1,0 +1,14 @@
+✔ observed class route excludes school announcements, credentials and other origins (1.379125ms)
+✔ matching display names and empty slots cannot establish school, year, actor or notification authority (0.931083ms)
+✔ cancellation while the context reader is opening destroys only that reader and prevents reads (0.554666ms)
+✔ observed post ID and tooltip date do not claim virtual list coverage (6.295333ms)
+✔ missing list-end coverage cannot establish a baseline or enable result readback (152.197958ms)
+✔ empty unfiltered send-target table verifies no student/parent targets but cannot authorize administrator notifications (0.221459ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 235.180958

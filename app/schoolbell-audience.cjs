@@ -2,6 +2,7 @@
 // A required administrator can be the teacher themselves. Treat that as a
 // separate, explicitly scoped permission; an empty student table is not enough.
 function audienceVerified(c,grant,now=Date.now()){
+ if(require('./schoolbell-test-authorization.cjs').testContext(c,grant,now))return true;
  if(c?.testClassApproved!==true||c.recipientsVerified!==true||c.students!==0||c.parents!==0)return false;
  const r=c.recipientEvidence;
  if(c.externalNotifications===false&&r?.mandatoryAdministrator!==true)return true;

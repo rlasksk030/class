@@ -14,7 +14,14 @@ const target={schoolId:'SYNTHETIC',schoolName:'합성 학교',year:'2026',grade:
 const binding={boardId:'100',contextId:'local-context',actorKey:'local-teacher'};
 const scope={service:'schoolbell',schoolId:target.schoolId,classKey:target.classKey,boardId:'100',scopeType:'class',board:'diary',authenticated:true,teacher:true};
 const origin='https://schoolbell-e.com',boardURL=origin+'/ko/main/group/100/boards/classnews',writeURL=origin+'/ko/main/group/100/boards/write/classnews';
-const html=oldHTML.replace('<app-boards-write>','<app-boards-write><app-letter-simplified-target-text>합성 대상</app-letter-simplified-target-text><label><input type="radio" name="mode" id="now" checked>즉시발행하기</label><label><input type="radio" name="mode" id="later">예약발행하기</label>');
+const html=oldHTML.replace('<app-boards-write>','<app-boards-write><app-mobile-preview style="display:none"></app-mobile-preview><app-letter-simplified-target-text>합성 대상</app-letter-simplified-target-text><button type="button" id="mode-toggle">드롭다운 토글</button><div id="mode-options"><label><input type="radio" name="mode" id="now" checked>즉시발행하기</label><label><input type="radio" name="mode" id="later">예약발행하기</label></div>')+`<script>
+// Observed live behavior: changing editing focus removes the mode controls.
+const modeOptions=document.querySelector('#mode-options'),modeToggle=document.querySelector('#mode-toggle');
+modeToggle.onclick=()=>modeOptions.isConnected?modeOptions.remove():modeToggle.after(modeOptions);
+for(const e of [document.querySelector('input[placeholder="제목을 입력해 주세요."]'),document.querySelector('.fr-element')])e.addEventListener('focus',()=>modeOptions.remove());
+</script>`;
+const developmentContract=process.argv.includes('--development-contract');
+const {createTestAuthorization}=require('../app/schoolbell-test-authorization.cjs');
 let win,clicks=0,posts=[],uploads=[],reviews=[];
 async function wait(expression){for(let n=0;n<150;n++){if(await win.webContents.executeJavaScript(expression))return;await new Promise(r=>setTimeout(r,10));}throw Error('local fixture not ready');}
 async function originals(){
@@ -46,25 +53,31 @@ app.whenReady().then(async()=>{
   const png=nativeImage.createFromBitmap(Buffer.from([30,90,150,255]),{width:1,height:1}).toPNG();
   const ref=await images.add(png,'local.png');
   const note={classKey:target.classKey,date:'2026-11-08',title:changeAudience?'합성 변경 차단':'합성 최종 연결',body:'새 최종 검증 연결 확인',photos:[ref]};
+  const testFacts={...target,...binding,actorKey:null,checks:{classPage:true,gradeClass:true,adminSettingsEditable:true,rosterEmpty:true,inviteEmpty:true,recipientTableEmpty:true},students:0,parents:0,adminCount:1,mandatoryAdministrator:true,recipientEvidence:{known:true,unfiltered:true,empty:true,mandatoryAdministrator:true,targetLabel:'합성 대상'},accountObservationDigest:'synthetic-observation',observedAt:Date.now()};
+  const auth=createTestAuthorization({canUse:()=>developmentContract});
+  const trialGrant=developmentContract?await auth.issue({target,facts:testFacts,webContents:win.webContents}):null;
+  const runBinding=trialGrant?{...binding,actorKey:null,approvalId:trialGrant.approvalId}:binding;
+  const permission=()=>trialGrant?auth.current():grant;
   const evidence={finalAction:'single-send',publicationMode:'immediate',
    // These missing live identity/date facts are deliberately local test ports.
    // No custom guardDOM is supplied: use the production default proof + guard.
-   readContext:async()=>({...target,...scope,...binding,identityVerified:true,authorityVerified:true,classApproved:true,testClassApproved:true,
+   readContext:async()=>developmentContract?{...target,...scope,...auth.attach({...testFacts,observedAt:Date.now()},target,win.webContents),identityVerified:false,authorityVerified:false,classApproved:false,testClassApproved:false,teacher:false,externalNotifications:null}:{...target,...scope,...binding,identityVerified:true,authorityVerified:true,classApproved:true,testClassApproved:true,
     recipientsVerified:true,students:0,parents:0,externalNotifications:false,observedAt:Date.now(),
-    recipientEvidence:{known:true,unfiltered:true,empty:true,mandatoryAdministrator:false,targetLabel:'합성 대상'}}),
-   readDate:async()=>({verified:true,source:'observed-service-ui',meaning:'publication-mode',mode:'immediate',value:null,writable:false,scope:{...target,...binding},observedAt:Date.now()}),
+    recipientEvidence:{known:true,unfiltered:true,empty:true,mandatoryAdministrator:false,targetLabel:'합성 대상'}},
+   readDate:async()=>{const mode=await require('../app/schoolbell-publication-mode.cjs').inspectPublicationMode(win.webContents,null,{keepOpen:true});return {verified:mode.known,source:'observed-service-ui',meaning:'publication-mode',mode:mode.mode,value:null,writable:false,scope:{...target,...runBinding},observedAt:Date.now()};},
    readBaseline:async()=>({complete:true,refreshed:true,ids:posts.map(p=>p.id),filter:{title:note.title},posts:[]}),
    readUploads:originals,
    async readPublishedMetadata(){await wait('document.querySelector("main").dataset.sent==="yes"');await win.loadURL(boardURL);await wait('document.querySelector("main")?.dataset.ready==="yes"');return {complete:true,refreshed:true,boardURL,id:posts.at(-1).id,date:'2026-11-09',dateSource:'observed-service-ui',scope};}
   };
-  const driver=createElectronDriver({target,getWebContents:()=>win.webContents,permission:()=>grant,evidence,tempRoot:profile.dir});
-  const publisher=createPublisher({profile,store,driver,readPhoto:r=>images.read(r),gate:()=>({enabled:true}),timeoutMs:8000,
+  const driver=createElectronDriver({target,getWebContents:()=>win.webContents,permission,evidence,tempRoot:profile.dir});
+  const publisher=createPublisher({profile,store,driver,readPhoto:r=>images.read(r),gate:()=>({enabled:true,...(trialGrant?{executionMode:'development-test',approvalId:trialGrant.approvalId}:{})}),timeoutMs:8000,
    review:async r=>{reviews.push(r.phase);if(r.phase==='submit'){
+    if(trialGrant)await auth.approveFinal(r.note,r.photos,r.scope);
     if(changeAudience)await win.webContents.executeJavaScript('document.querySelector("app-letter-simplified-target-text").textContent="다른 대상"');
     else if(changeMode)await win.webContents.executeJavaScript('document.querySelector("#later").checked=true');
     else await win.webContents.executeJavaScript('document.querySelector("app-boards-write").append(document.createElement("div"))');
    }return true;}});
-  const result=await publisher.publish(note);return {result,store,profile,ref};
+  const result=await publisher.publish(note);auth.revoke();return {result,store,profile,ref};
  }
  const blocked=await attempt(true);assert.equal(blocked.result.status,'uncertain');assert.equal(clicks,0);
  assert.equal(Object.values(blocked.store.get(target.classKey).automaticPosts)[0].status,'auto-uncertain');
@@ -82,5 +95,6 @@ app.whenReady().then(async()=>{
  const before=await reader.readFields();await win.loadURL(boardURL);await wait('document.querySelector("main")?.dataset.ready==="yes"');
  const after=await reader.readFields();assert.notEqual(before.revision,after.revision);await reader.close();
  console.log('PASS same-URL document replacement changes the revision identity');
+ console.log(developmentContract?'PASS user-confirmed test mapping with actorKey=null; official/identity/authority flags remain false':'PASS official contract unchanged');
  console.log('4 focused native integration checks; live app publication and draft completion NOT RUN');
 }).catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>{if(win&&!win.isDestroyed())win.destroy();app.exit(process.exitCode||0);});

@@ -53,6 +53,10 @@ function publication(value,count) {
     value.photos.length!==count || value.photos.some(p=>!p || !/^[a-f0-9]{64}$/.test(p.sha256) ||
       !Number.isSafeInteger(p.bytes) || p.bytes<=0))throw Error('게시물 및 사진 검증 기록을 확인해 주세요.');
  const dateProof={};
+ if(value.executionMode!==undefined){
+  if(value.executionMode!=='development-test'||!/^[-a-f0-9]{36}$/.test(value.approvalId||'')||value.identitySource!=='user-confirmation'||value.servicePermission!=='unconfirmed')throw Error('시험 승인 기록을 확인해 주세요.');
+  Object.assign(dateProof,{executionMode:value.executionMode,approvalId:value.approvalId,identitySource:value.identitySource,servicePermission:value.servicePermission});
+ }
  if(value.dateMode!==undefined||value.draftDate!==undefined||value.publishedDate!==undefined){
   const {validDate}=require('./schoolbell-date-policy.cjs');
   if(value.dateMode!=='immediate'||!validDate(value.draftDate)||!validDate(value.publishedDate))throw Error('발행 날짜 검증 기록을 확인해 주세요.');

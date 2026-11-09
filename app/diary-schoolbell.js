@@ -12,7 +12,7 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
   '<p>연결하기 → 앱 전용 창에서 직접 로그인 → 담당 학급의 알림장을 여세요. 외부 브라우저 로그인 정보는 가져오지 않습니다.</p>'+
   '<p>학교종이는 즉시발행으로 연결합니다. 앱 작성일은 초안 구분용이며 학교종이 게시 날짜를 지정하지 않습니다. 실제 발행일은 게시 후 확인합니다.</p>'+
   '<details><summary>기존 게시물 조회 확인</summary><p>현재 초안과 같은 제목의 게시물만 열어 본문과 첨부 원본을 비교합니다. 새 게시물은 만들지 않습니다.</p><button id="schoolbellCheckPosts">현재 초안으로 게시물 조회</button></details>'+
-  '<details id="schoolbellDevelopment" hidden><summary>개발 시험 · 게시 전 원본 확인</summary><p>이미 작성 화면에 올린 시험 사진을 현재 앱 초안 원본과 대조합니다. 업로드·게시·초안 초기화는 하지 않습니다.</p><button id="schoolbellCheckUploads">첨부 원본 확인 (게시 안 함)</button></details>'+
+  '<details id="schoolbellDevelopment" hidden><summary>개발 시험 · 사용자 승인</summary><p>운영 잠금과 분리된 1회 시험입니다. 실제 학급·빈 수신자 상태를 확인하고 학교 설정 연결 및 관리자 본인 여부를 사용자 확인 기록으로 남깁니다.</p><button id="schoolbellAuthorizeTest">현재 테스트 학급 연결 승인</button><p>이미 작성 화면에 올린 시험 사진만 확인하려면 아래 검사를 사용하세요.</p><button id="schoolbellCheckUploads">첨부 원본 확인 (게시 안 함)</button></details>'+
   '<details id="schoolbellManual"><summary>수동 발행 도우미 (임시 대체 기능)</summary>'+
   '<p>이 기능은 자동 등록과 별개입니다. 로그인·학급 일치·게시 결과를 학교종이에서 직접 확인합니다.</p>'+
   '<details id="schoolbellConnection"><summary>담당 학급 직접 확인</summary>'+
@@ -37,13 +37,14 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
   const manual=service==='schoolbell';
   $('diaryHiclass').hidden=manual;panel.hidden=!manual;
   root.querySelector('.diary-recipients').hidden=manual;$('diaryPublish').hidden=manual;
-  automaticEnabled=data.capability?.enabled===true;
+  const trial=data.developmentTrial?.enabled===true;
+  automaticEnabled=data.capability?.enabled===true||trial;
   $('schoolbellDevelopment').hidden=data.developmentChecks!==true;
   autoButton.hidden=!manual;autoButton.disabled=!automaticEnabled||busy;
-  autoButton.title=data.capability?.message||'자동 등록 연결 확인 필요';
+  autoButton.title=trial?data.developmentTrial.message:data.capability?.message||'자동 등록 연결 확인 필요';
   autoButton.setAttribute('aria-describedby','schoolbellAutomaticState');
-  $('schoolbellAutomaticState').textContent=data.capability?.message||'자동 등록 잠김 · 연결 정보를 확인할 수 없습니다.';
-  photoHelp.textContent=manual?'사진은 초안에 보관됩니다. 번호순으로 저장한 파일을 학교종이에 직접 첨부하고 개수와 순서를 확인하세요.':'사진은 표시된 순서로 하이클래스에 첨부됩니다. 업로드와 등록 확인이 끝날 때까지 초안을 보존합니다.';
+  $('schoolbellAutomaticState').textContent=trial?data.developmentTrial.message:data.capability?.message||'자동 등록 잠김 · 연결 정보를 확인할 수 없습니다.';
+  photoHelp.textContent=manual?(trial?'개발 시험: 등록 버튼으로 사진을 자동 첨부하고 원본·순서를 대조합니다. 게시 직전에 다시 확인합니다.':'사진은 초안에 보관됩니다. 번호순으로 저장한 파일을 학교종이에 직접 첨부하고 개수와 순서를 확인하세요.'):'사진은 표시된 순서로 하이클래스에 첨부됩니다. 업로드와 등록 확인이 끝날 때까지 초안을 보존합니다.';
   $('schoolbellState').textContent=data.connection?.message||'앱 전용 창에서 직접 로그인해 주세요.';
   const to=target();$('schoolbellExpected').textContent='우리 교실 설정: '+(settings.school?.SCHUL_NM||'옥구초등학교')+' '+to.label;
   $('schoolbellHistory').replaceChildren(...(data.posts||[]).slice().reverse().map(post=>{
@@ -60,7 +61,7 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
   }));
   $('schoolbellAutoHistory').replaceChildren(...(data.automaticPosts||[]).slice().reverse().map(post=>{
    const row=document.createElement('div');row.className='schoolbell-history-row';
-   const label=document.createElement('span');label.textContent=(post.publication?.dateMode==='immediate'?'작성일 '+post.date+' · 발행일 '+post.publication.publishedDate:post.date)+' · 사진 '+post.photoCount+'장 · '+({
+   const label=document.createElement('span');label.textContent=(post.publication?.executionMode==='development-test'?'개발 시험 · ':'')+(post.publication?.dateMode==='immediate'?'작성일 '+post.date+' · 발행일 '+post.publication.publishedDate:post.date)+' · 사진 '+post.photoCount+'장 · '+({
     'auto-pending':'자동 시도 · 결과 미확인','auto-uncertain':'자동 시도 · 결과 불확실',
     'auto-success':'자동 게시 · 결과 검증됨','auto-user-confirmed':'자동 시도 후 게시 · 사용자 확인',
     'auto-user-not-posted':'자동 시도 후 미게시 · 사용자 확인'}[post.status]||'확인 필요');row.append(label);
@@ -106,6 +107,7 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
  $('schoolbellInspect').onclick=()=>run(()=>desktop.schoolbellInspect(to()));
  $('schoolbellCheckPosts').onclick=()=>run(()=>desktop.schoolbellCheckPosts({target:to(),note:readNote()}));
  $('schoolbellCheckUploads').onclick=()=>run(()=>desktop.schoolbellCheckUploads({target:to(),note:readNote()}));
+ $('schoolbellAuthorizeTest').onclick=()=>run(()=>desktop.schoolbellAuthorizeTest(to()));
  $('schoolbellLink').onclick=()=>run(()=>desktop.schoolbellLink({...to(),observed:{schoolName:$('schoolbellSchool').value,year:$('schoolbellYear').value,grade:$('schoolbellGrade').value,classroom:$('schoolbellClass').value}}));
  $('schoolbellPrepare').onclick=()=>run(async()=>{
   return desktop.schoolbellPrepare(readNote());

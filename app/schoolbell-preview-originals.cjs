@@ -26,7 +26,8 @@ function previewControl(document,action){
  const roots=document.querySelectorAll('app-boards-write');if(roots.length!==1)throw Error('upload-unverified');
  const previews=document.querySelectorAll('app-mobile-preview');
  const frames=previews.length===1?previews[0].querySelectorAll('iframe'):[];
- const visible=frames.length===1&&!!frames[0].getClientRects().length;
+ const visible=frames.length===1&&Array.from(frames[0].getClientRects()).some(r=>r.width>0&&r.height>0);
+ if(action==='prepare-close'&&visible&&document.activeElement===frames[0])frames[0].blur();
  if(previews.length<=1&&!visible&&action==='open'){
   const buttons=Array.from(document.querySelectorAll('button')).filter(b=>b.textContent.trim()==='미리보기');
   if(buttons.length!==1||buttons[0].disabled)throw Error('upload-unverified');buttons[0].click();return {opened:true};
@@ -122,8 +123,26 @@ function createPreviewOriginals({getWebContents,tempRoot,timeoutMs=12000}={}){
   }finally{
    try{
     if(opened&&wc&&!wc.isDestroyed()&&wc.getURL()===initial){
-     const visible=await wc.executeJavaScriptInIsolatedWorld(17485,[{code:'document.querySelectorAll("app-mobile-preview").length===1'}]);
-     if(visible){wc.sendInputEvent({type:'keyDown',keyCode:'Escape'});wc.sendInputEvent({type:'keyUp',keyCode:'Escape'});}
+     const state=()=>wc.executeJavaScriptInIsolatedWorld(17485,[{code:'('+previewControl.toString()+')(document,"read")'}]);
+     if((await state()).ready){
+      // sendInputEvent requires a focused BrowserWindow. After the app's final
+      // native confirmation, the main diary window owns focus, not this one.
+      // Also move keyboard focus out of the downloaded-file iframe, then use
+      // the observed Escape dismissal and wait for the actual overlay to close.
+      const window=require('electron').BrowserWindow.fromWebContents(wc);
+      if(!window||window.isDestroyed())throw Error('upload-unverified:preview-close-window');
+      if(window.isMinimized())window.restore();window.show();window.focus();
+      const focusUntil=Date.now()+1000;while(!window.isFocused()&&Date.now()<focusUntil)await new Promise(r=>setTimeout(r,25));
+      if(!window.isFocused())throw Error('upload-unverified:preview-close-focus');wc.focus();
+      await wc.executeJavaScriptInIsolatedWorld(17485,[{code:'('+previewControl.toString()+')(document,"prepare-close")'}]);
+      wc.sendInputEvent({type:'keyDown',keyCode:'Escape'});wc.sendInputEvent({type:'keyUp',keyCode:'Escape'});
+      const until=Date.now()+3000;let closed=false;
+      while(Date.now()<until){
+       if(wc.isDestroyed()||wc.getURL()!==initial)throw Error('upload-unverified:preview-close-context');
+       if(!(await state()).ready){closed=true;break;}await new Promise(r=>setTimeout(r,50));
+      }
+      if(!closed)throw Error('upload-unverified:preview-close');
+     }
     }
    }finally{
     // Renderer teardown must not strand original bytes or an active attempt.

@@ -51,7 +51,7 @@ function moveList(document,reset){
  const e=nodes[0].closest('.document-wrapper');if(!e)throw Error('baseline-unverified');
  e.scrollTop=reset?0:Math.min(e.scrollHeight-e.clientHeight,e.scrollTop+Math.max(1,e.clientHeight*0.6));
 }
-function createLivePostProvider({getWebContents,createReader,target,tempRoot,timeoutMs=20000}={}){
+function createLivePostProvider({getWebContents,createReader,target,tempRoot,timeoutMs=20000,diagnostic=()=>{}}={}){
  let pinned=null,reader=null,active=false,closed=false,baselineIds=null;
  const controller=new AbortController();
  function current(){const wc=getWebContents?.();if(closed||!wc||wc.isDestroyed())throw Error('publication-unverified');return wc;}
@@ -121,9 +121,33 @@ function createLivePostProvider({getWebContents,createReader,target,tempRoot,tim
     return {complete:true,refreshed:true,ids:baselineIds,filter:{title:request.note.title},posts};
    }
    if(!pinned||!baselineIds||!request.binding||request.binding.boardId!==pinned.groupId||typeof request.note?.title!=='string')throw Error('publication-unverified');
-   const wc=current(),url=pinned.base+'/boards/classnews';await wc.loadURL(url);
+   const wc=current(),url=pinned.base+'/boards/classnews';
+   // A click acknowledgement is not a saved post. Do not navigate away from
+   // the composer while its ordinary upload/publish request is still running.
+   // The observed service returns to classnews or schoolnews after sending.
+   // Wait for that result screen, then perform the independent refreshed read.
+   const until=Date.now()+timeoutMs;let completed=false,previous=null,lastResultRoute=false;
+   diagnostic({step:'published-result-screen',state:'waiting'});
+   while(Date.now()<until){
+    if(!permitted()||wc.isDestroyed())throw Error('publication-unverified');
+    let at;try{at=new URL(wc.getURL());}catch{throw Error('publication-unverified');}
+    if(at.origin!==pinned.origin||at.search||at.hash)throw Error('publication-unverified');
+    const path=at.pathname,base='/ko/main/group/'+pinned.groupId+'/boards/';
+    const resultRoute=path===base+'classnews'||path===base+'schoolnews'||
+     new RegExp('^'+base+'(?:classnews|schoolnews)/posts/\\d+$').test(path);
+    lastResultRoute=resultRoute;
+    if(resultRoute){
+     const ready=await wc.executeJavaScriptInIsolatedWorld(17484,[{code:'document.querySelectorAll("app-group-board").length===1&&document.querySelectorAll("app-boards-write").length===0'}]);
+     if(ready&&previous===wc.getURL()){completed=true;break;}previous=ready?wc.getURL():null;
+    }else if(path!==base+'write/classnews')throw Error('publication-unverified');
+    await new Promise(r=>setTimeout(r,100));
+   }
+   diagnostic({step:'published-result-screen',state:completed?'complete':'unconfirmed',resultRoute:lastResultRoute});
+   if(!completed)throw Error('publication-unverified');
+   await wc.loadURL(url);
    const result=await collect(wc,url,request.note.title,signal,permitted);
    const matches=result.matches.filter(m=>!baselineIds.includes(m.id));
+   diagnostic({step:'published-index',newTitleMatches:matches.length,dateKnown:matches.length===1&&!!matches[0].date});
    if(!permitted()||matches.length!==1||!matches[0].date)throw Error('publication-unverified');
    await openCandidate(wc,url,matches[0],request.note.title,signal,permitted);
    return {complete:true,refreshed:true,boardURL:url,...matches[0],dateSource:'observed-service-ui',scope:{service:'schoolbell',schoolId:target.schoolId,classKey:target.classKey,boardId:pinned.groupId}};

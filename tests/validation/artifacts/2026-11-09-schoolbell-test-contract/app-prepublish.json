@@ -1,0 +1,32 @@
+{
+  "observedAt": "2026-11-09T14:25:37.429Z",
+  "source": "actual app registration button and native final-confirmation dialog",
+  "profile": "isolated development",
+  "productionEnabled": false,
+  "officialServicePermission": "unconfirmed",
+  "serviceIdentityVerified": false,
+  "actorKey": null,
+  "scopeMapping": "user-confirmed, real service class route pinned",
+  "students": 0,
+  "parents": 0,
+  "mandatoryAdministrators": 1,
+  "administratorSelf": "user-confirmed",
+  "automaticTitle": "PASS",
+  "automaticBody": "PASS",
+  "automaticUploadTwoPhotos": "PASS",
+  "prePublishOriginals": "PASS",
+  "orderVerified": true,
+  "photos": [
+    {
+      "sha256": "1d6f13d252fe9b29809f8d04f04872a5013025bf0e5fb34e57c16bc50381ccc3",
+      "bytes": 97
+    },
+    {
+      "sha256": "7e8cfade52a2b1a8c955a3936cdbc8da7b4db8ad3c9d1a6eab7b124a5312b4e5",
+      "bytes": 97
+    }
+  ],
+  "finalPublish": "WAITING_FOR_USER_CONFIRMATION",
+  "serverReadback": "NOT_RUN",
+  "draftClear": "NOT_RUN"
+}

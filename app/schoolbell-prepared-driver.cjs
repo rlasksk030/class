@@ -1,4 +1,4 @@
-// Approved-test-class transaction driver. Runtime creates it only behind the disabled capability and official-permission gates.
+// Transaction driver: production permission and registered, session-bound development consent are separate contracts.
 // The bridge is trusted main-process code, not settings, renderer input or a remote API.
 // Only observed composer selectors are in the probe; unknown date/identity/upload/result
 // UI requires separately implemented bridge evidence. Missing evidence always blocks.
@@ -7,6 +7,7 @@ const {probeComposer}=require('./schoolbell-ui-probe.cjs');
 const {remoteId}=require('./diary-services.cjs');
 const {fail}=require('./schoolbell-driver-errors.cjs');
 const {audienceVerified}=require('./schoolbell-audience.cjs');
+const trial=require('./schoolbell-test-authorization.cjs');
 const {immediateEvidence,contentDateMatches}=require('./schoolbell-date-policy.cjs');
 const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
@@ -26,6 +27,7 @@ function createPreparedDriver({bridge,target,permission=()=>null,publicationMode
  const signalFor=signal=>signal?AbortSignal.any([signal,controller.signal]):controller.signal;
  function permitted(action) {
   const p=permission();
+  if(trial.validTestGrant(p,target,action,now()))return;
   if(p?.official!==true||p.method!=='electron-ui'||typeof p.evidenceRef!=='string'||!p.evidenceRef.trim()||
      p.schoolId!==target.schoolId||p.classKey!==target.classKey||p.approvedTestClass!==true||
      !Array.isArray(p.actions)||!p.actions.includes(action))fail('permission-unverified');
@@ -39,22 +41,23 @@ function createPreparedDriver({bridge,target,permission=()=>null,publicationMode
   return value;
  }
  const scope=c=>({service:'schoolbell',schoolId:target.schoolId,classKey:target.classKey,boardId:c.boardId,
-  scopeType:'class',board:'diary',authenticated:true,teacher:true,...(publicationMode==='immediate'?{publicationMode}:{}),
-  selfNotification:c.externalNotifications===true&&c.recipientEvidence?.mandatoryAdministrator===true&&c.notificationEvidence?.kind==='current-teacher-only'});
+  scopeType:'class',board:'diary',authenticated:true,teacher:c.trial?false:true,...(c.trial?{executionMode:'development-test',approvalId:c.trial.approvalId,identitySource:'user-confirmation',authoritySource:c.trial.authoritySource}:{}),...(publicationMode==='immediate'?{publicationMode}:{}),
+  selfNotification:!!c.trial||c.externalNotifications===true&&c.recipientEvidence?.mandatoryAdministrator===true&&c.notificationEvidence?.kind==='current-teacher-only'});
  async function guard(action,signal) {
   permitted(action);
   const c=await call('readContext',null,signal);permitted(action);
-  if(c?.identityVerified!==true||c.authorityVerified!==true||c.authenticated!==true||c.teacher!==true||c.classApproved!==true||
+  const test=trial.testContext(c,permission(),now());
+  if((!test&&(c?.identityVerified!==true||c.authorityVerified!==true||c.teacher!==true||c.classApproved!==true||typeof c.actorKey!=='string'||!c.actorKey))||c?.authenticated!==true||
      c.service!=='schoolbell'||c.scopeType!=='class'||c.board!=='diary'||!remoteId(c.boardId)||
      !['schoolId','schoolName','year','grade','classroom','classKey'].every(k=>c[k]===target[k])||
      !Number.isFinite(c.observedAt)||c.observedAt>now()||now()-c.observedAt>maxAgeMs||
-     typeof c.contextId!=='string'||!c.contextId||typeof c.actorKey!=='string'||!c.actorKey)fail('context-unverified');
+     typeof c.contextId!=='string'||!c.contextId)fail('context-unverified');
   if(!audienceVerified(c,permission(),now()))fail('test-class-unverified');
   const audience=JSON.stringify([c.students,c.parents,c.externalNotifications,c.recipientEvidence||null,
    c.notificationEvidence?.kind||null,c.notificationEvidence?.actorKey||null,c.notificationEvidence?.otherTargets??null]);
   if(boundAudience!==null&&boundAudience!==audience)fail('test-class-unverified');
   boundAudience=audience;
-  const binding={boardId:c.boardId,contextId:c.contextId,actorKey:c.actorKey};
+  const binding=trial.bindingOf(c);
   if(bound&&!same(bound,binding))fail('context-unverified');
   bound=binding;return scope(c);
  }

@@ -44,11 +44,20 @@ function browserOperation(action,payload,inspect,guard,readText,readAttachments,
  }
  const revision=()=>{if(edits(state.observer.takeRecords()))state.revision++;return state.documentToken+':'+state.revision;};
  const fields=()=>({title:title.value,body:bodyText(),revision:revision()});
- const guarded=()=>typeof guard==='function'&&guard(document,{...payload,action,
-  ...(action==='commit'?{attachmentState:readAttachments(document)}:{})},readMode)===true;
+ const guarded=()=>{
+  const check={...payload,action,...(action==='commit'?{attachmentState:readAttachments(document)}:{})};
+  if(typeof guard==='function'&&guard(document,check,readMode)===true)return true;
+  const error=Error('context-unverified');error.guardFailure=check.guardFailure;throw error;
+ };
  if(action==='inspect')return info;
  if(action==='read')return fields();
  if(action==='attachments-read')return readAttachments(document);
+ if(action==='focus-title'||action==='focus-body'){
+  if(state.composing)throw Error('composition-active');
+  const element=action==='focus-title'?title:body;element.focus();
+  if(document.activeElement!==element)throw Error('context-unverified');
+  return {focused:true};
+ }
  if(!['title','body','files','commit'].includes(action))throw Error('unimplemented-action');
  if(state.composing)throw Error('composition-active');
  if(!guarded())throw Error('context-unverified');
@@ -136,7 +145,7 @@ function createObservedComposerBridge({getWebContents,authorize,domGuard,prepare
   if(closed||!wc||wc.isDestroyed()||!officialPage(wc.getURL())||typeof wc.executeJavaScriptInIsolatedWorld!=='function')throw Error('site-unverified');
   return wc;
  };
- const mutating=action=>['title','body','files','commit'].includes(action);
+ const mutating=action=>['focus-title','focus-body','title','body','files','commit'].includes(action);
  async function verify(action,request,signal,wc,url,submitted=false){
   if(closed||signal?.aborted||typeof authorize!=='function'||(mutating(action)&&request?.stillPermitted?.()!==true)||
      await authorize({action,target:request?.target,binding:request?.binding,webContents:wc})!==true||closed||signal?.aborted||
@@ -145,7 +154,7 @@ function createObservedComposerBridge({getWebContents,authorize,domGuard,prepare
  async function perform(action,value,request,signal){
   const wc=get(),url=wc.getURL();await verify(action,request,signal,wc,url);
   const payload={...value,target:request?.target,binding:request?.binding};
-  if(mutating(action)&&typeof prepareProof==='function'){
+  if(['title','body','files','commit'].includes(action)&&typeof prepareProof==='function'){
    payload.proof=await prepareProof({action,request,href:url},signal);
    await verify(action,request,signal,wc,url);
   }
@@ -154,13 +163,13 @@ function createObservedComposerBridge({getWebContents,authorize,domGuard,prepare
   // a fixed code only: never a site exception, account text, or photo payload.
   const script='(()=>{try{return {ok:true,value:'+operation+'};}catch(e){return {ok:false,code:'+JSON.stringify([
    'structure-unverified','unimplemented-action','composition-active','context-unverified','invalid-payload',
-   'title-unavailable','body-unavailable','content-unverified','upload-unverified','publication-unverified'])+'.includes(e.message)?e.message:"content-unverified"};}})()';
+   'title-unavailable','body-unavailable','content-unverified','upload-unverified','publication-unverified'])+'.includes(e.message)?e.message:"content-unverified",guardFailure:'+JSON.stringify(['proof','route','composer','recipient-label','overlay','preview-overlay','audience-overlay','mode-reader','mode','attachments'])+'.includes(e.guardFailure)?e.guardFailure:null};}})()';
   const result=await wc.executeJavaScriptInIsolatedWorld(WORLD,[{code:script}],false);
   // A successful single-click acknowledgement may already have navigated to a
   // different official board. Preserve the same window/grant checks and let the
   // separate readback verify the original binding; never send again.
   await verify(action,request,signal,wc,url,action==='commit'&&result?.ok===true&&result.value?.clicked===true);
-  if(result?.ok!==true)throw Error(result?.code||'content-unverified');return result.value;
+  if(result?.ok!==true){const error=Error(result?.code||'content-unverified');error.guardFailure=result?.guardFailure;throw error;}return result.value;
  }
  function run(action,value,request,signal){
   // Reject overlapping jobs instead of queuing stale class/content mutations.
@@ -171,6 +180,8 @@ function createObservedComposerBridge({getWebContents,authorize,domGuard,prepare
   readStructure:(_probe,signal,request)=>run('inspect',null,request,signal),
   readFields:(request,signal)=>run('read',null,request,signal),
   readAttachmentState:(request,signal)=>run('attachments-read',null,request,signal),
+  focusTitle:(r,s)=>run('focus-title',null,r,s),
+  focusBody:(r,s)=>run('focus-body',null,r,s),
   writeTitle:(r,s)=>run('title',{value:r?.value},r,s),
   writeBodyText:(r,s)=>run('body',{value:r?.value},r,s),
   attachFiles:async(r,s)=>run('files',{files:encodeFiles(r?.value)},r,s),
