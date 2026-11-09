@@ -1,0 +1,5 @@
+
+> check
+> node tests/check-syntax.cjs
+
+105/105 files parse

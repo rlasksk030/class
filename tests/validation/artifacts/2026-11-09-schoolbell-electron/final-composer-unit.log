@@ -1,0 +1,15 @@
+✔ only official HTTPS hosts may be used (0.736625ms)
+✔ defaults deny before DOM inspection or mutation (1.685292ms)
+✔ reads match only unique observed controls without private account data (3.057709ms)
+✔ title and body text are passed as inert JSON, never HTML or source interpolation (2.4505ms)
+✔ denies disallowed binding, revoked permission, navigation, aborted signal (1.158042ms)
+✔ a main-process grant alone cannot replace atomic DOM identity evidence (0.93375ms)
+✔ closed or overlapping transports never queue stale input (0.516708ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 72.79475

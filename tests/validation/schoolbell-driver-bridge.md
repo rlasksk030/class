@@ -1,12 +1,24 @@
 # 학교종이 사전 드라이버와 미관찰 UI 경계
 
-`app/schoolbell-prepared-driver.cjs`는 기존 `schoolbell-publish.cjs` 계약을 구현하는 **시험 학급용 사전 드라이버**다. 실제 서비스 bridge는 아직 없으며 앱에서 생성하거나 IPC로 연결하지 않는다. `schoolbell-capability.cjs`의 차단과 `schoolbell.cjs`의 기본 driver=null을 유지한다.
+`app/schoolbell-prepared-driver.cjs`는 기존 `schoolbell-publish.cjs` 계약을 구현하는 **시험 학급용 사전 드라이버**다. 2026-11-09 후속 작업에서 `schoolbell.cjs`에 `createRuntimeDriver`를 연결했다. capability=false와 기본 권한/증거 공급자 부재 때문에 실제 앱의 자동 조작은 차단된다. driver=null은 더 이상 현재 상태가 아니다.
+
+최신 구현·실서비스 시험 결과는 [Electron 및 실제 A/B/C 기록](2026-11-09-schoolbell-electron-live.md)을 기준으로 한다. 아래 기본 증거 계약은 유지한다. 학교종이 브라우저에서 실제 게시·사진 원본 다운로드는 통과했지만 앱의 실제 세션에서 이 계약 전체를 충족한 것은 아니다.
+
+### 구체화된 Electron 연결부
+
+- `schoolbell-observed-composer.cjs`: 격리 world의 native 제목/본문 편집, 사진 원본 File 전달, 변경 revision, 같은 조작 안의 DOM guard, 단일 보내기.
+- `schoolbell-editor-text.cjs`, `probeAttachments`: 관찰한 Froala 문단과 파일명/확장자/용량 분리. 미리보기나 파일명을 독립 원본으로 취급하지 않는다.
+- `schoolbell-observed-post.cjs`: classnews 경로/유일한 제목/전문/파일 순서 검사 및 실제 첨부 목록 클릭 → Electron 다운로드 → 원본 해시 비교. ID·날짜·권한은 추정하지 않는다.
+- `schoolbell-electron-driver.cjs`는 기존 `readPublished` 공급자 또는 `readPublishedMetadata` + 관찰 UI 원본 다운로드를 사용할 수 있다. metadata는 원래 학급으로 재조회한 `complete, refreshed, boardURL, id, date, scope`를 요구하며 실서비스 공급자는 아직 없다.
+- 게시 후 schoolnews로 이동해도 재게시하지 않는다. 읽기 공급자가 원래 classnews로 돌아온 뒤 binding과 결과를 검증한다. 실제 서비스 이동을 관찰했고 로컬 Electron 회귀를 추가했다.
+
+`readContext`, 날짜, 게시 전 원본 다운로드, 목록 완결성/ID/date 공급자와 원자적 `guardDOM`의 실제 서비스 구현은 계속 필요하다. 합성 fixture 속성을 운영 근거로 사용하지 않는다.
 
 ## 확정한 구현과 선택자
 
 기존 `probeComposer(document)`를 그대로 호출해 실제로 관찰한 `app-boards-write`, 제목 placeholder, `div.fr-element.fr-view[contenteditable=true]`, 파일 input, 보내기/임시저장 버튼의 유일성과 상태를 확인한다. 선택자가 없거나 중복되면 차단한다. 본문은 일반 텍스트로 전달하며 HTML 변환·주입 기능은 없다.
 
-실사이트에서 아직 관찰하지 못한 날짜, 신원/권한, 업로드 완료·원본, 게시물 ID·최종 확인창에는 임의 선택자를 만들지 않았다. 아래 bridge가 증거를 제공하지 않으면 해당 단계에서 중단한다. 로컬 fixture의 날짜/역할/ID 속성은 합성 전용이며 실제 사이트 선택자가 아니다.
+실사이트에서 날짜와 자동 신원/권한 검증, 게시 전 독립 원본 경로는 아직 확정하지 못했다. 파일 업로드 표시, 게시물 파일 다운로드, 링크 복사, 보내기 한 번의 실제 동작은 관찰했다. 아래 bridge가 필요한 증거를 제공하지 않으면 해당 단계에서 중단한다. 로컬 fixture의 날짜/역할/ID 속성은 합성 전용이며 실제 사이트 선택자가 아니다.
 
 ## 승인·대상
 
@@ -27,9 +39,9 @@ target은 `schoolId, schoolName, year, grade, classroom, classKey`다. 승인 �
 | `readBaseline(null, signal)` | `complete:true, refreshed:true, posts`를 반환. 페이지 범위/로딩이 끝나지 않으면 complete=false. ID 중복이나 결과 누락 시 차단 |
 | `openComposer(request, signal)` | 검증한 대상의 작성 화면 열기. 실제 탐색 경로는 별도 관찰 필요 |
 | `readDate(null, signal)` | `verified, value:YYYY-MM-DD, writable`. 초기값을 추정하지 않음. 미확인/불가능한 날짜면 첫 제목 입력 전에 차단 |
-| `writeDate/writeTitle/writeBodyText(request, signal)` | `request.value`를 검증한 UI에 입력. 날짜/본문 편집기 실제 동작 검증은 미완료 |
+| `writeDate/writeTitle/writeBodyText(request, signal)` | `request.value`를 검증한 UI에 입력. 제목/본문 native Electron 편집은 구현. 날짜 UI 미확인, 실제 앱 세션의 Froala 실행은 미완료 |
 | `attachFiles(request, signal)` | `request.value`의 원본 바이트를 지정 순서로 한 번 첨부. 파일명은 성공 판정 근거가 아님 |
-| `readContent(null, signal)` | `title, body, revision`. revision은 모든 관련 편집·날짜·첨부 변경을 포괄하는 검증 가능한 세대 값이어야 함. 실제 UI 구현 미완료 |
+| `readContent(null, signal)` | `title, body, revision`. revision은 모든 관련 편집·날짜·첨부 변경을 포괄하는 검증 가능한 세대 값이어야 함. 격리 world의 DOM/event revision 구현, 실제 앱 세션에서 전체 검증 미완료 |
 | `readUploads(null, signal)` | `complete, items:[{state:'complete',source:'original-download',bytes}]`. 업로드 완료 후 공식적으로 허용된 UI에서 다시 받은 원본을 요구. input.files/미리보기/파일명/주장된 hash만으로 대체 불가 |
 | `commitOnce(request, signal)` | 아래 최종 조작 조건을 같은 조작 단계에서 검증하고 한 번만 클릭. 성공 호출 결과는 `{clicked:true}`이며 게시 성공 증거가 아님 |
 | `readPublished(null, signal)` | 전체 새로고침한 `complete:true,refreshed:true,posts`. 각 게시물은 `id,kind:'published',scope,title,body,date,attachments`를 포함. attachments는 업로드와 같은 독립 원본 바이트 계약 |
@@ -37,7 +49,7 @@ target은 `schoolId, schoolName, year, grade, classroom, classKey`다. 승인 �
 
 입력/첨부/탐색 request는 `target,binding,value,stillPermitted`를 포함한다. bridge는 실제 조작과 같은 단계에서 대상·현재 계정·화면 연결을 다시 검사하고 signal 및 승인 철회를 반영해야 한다. 앞선 DOM 조회 결과만 믿고 나중에 다른 학급의 요소를 조작하면 안 된다.
 
-최종 `commitOnce`는 `target,binding,revision,note,photos,beforeIds,stillPermitted`를 받는다. 최종 확인 후 생긴 편집·학급 전환·권한 철회도 감지해야 하며 유일한 보내기 요소, 전체 내용/날짜/첨부 순서, 승인 상태를 검증한 뒤 한 번만 조작해야 한다. 이 bridge의 실사이트 구현과 원자적 검사 보장은 아직 미검증이다. 실제 확인창 구조도 임의로 추정하지 않았다.
+최종 `commitOnce`는 `target,binding,revision,note,photos,beforeIds,stillPermitted`를 받는다. 최종 확인 후 생긴 편집·학급 전환·권한 철회도 감지해야 하며 유일한 보내기 요소, 전체 내용/날짜/첨부 순서, 승인 상태를 검증한 뒤 한 번만 조작해야 한다. 원자적 DOM guard 계약과 native 보내기 조작은 구현했다. 실제 대상/날짜/수신자/원본 guard 공급자는 아직 없으므로 운영 실행을 차단한다. 브라우저 A/B/C에서 보내기 한 번 후 게시됐으며 추가 확인창을 추정해 클릭하지 않았다.
 
 ## 결과 판정·실패 보존
 
@@ -51,4 +63,4 @@ target은 `schoolId, schoolName, year, grade, classroom, classKey`다. 승인 �
 
 단위 fixture는 계약 위반을 주입한다. 새 Electron fixture는 관찰한 작성 DOM 모양을 재현하고 localhost 서버에 원본을 올린 뒤 UI 링크로 원본을 다시 내려받아 대조한다. 모든 외부 요청을 차단한다. 본문은 일반 contenteditable이므로 **실제 Froala 런타임/한글 입력 이벤트를 검증한 것은 아니다**. 날짜·역할·ID·revision의 합성 속성도 실서비스 근거가 아니다.
 
-공식 허용 후에도 실사이트 bridge 구현, 현재 대상/권한/수신자/알림 재확인, 허용된 비게시 시험, 별도 사용자 게시 승인, 사진 0/1/여러 장의 실제 원본 대조가 남는다. 그 전까지 자동 등록·정식 배포는 NO GO다.
+브라우저 A/B/C 게시와 실제 원본 대조는 완료했다. 앱 세션에서 신원/날짜/게시 전 원본/원격 ID·목록 증거 공급자를 연결하고 별도 승인된 완주 검증을 해야 한다. 운영용 허용 근거와 최종 활성화 승인, Windows 검사도 남아 있다. 앱 자동 등록 활성화·정식 배포는 NO GO다.
