@@ -103,13 +103,19 @@ window.createClassDiary=function({read,put}){
   try{const state=await desktop.diaryServiceStatus(payload.classKey);
    receipt=state.automaticPosts?.find(p=>p.id===result.attemptId&&p.hash===result.hash&&p.status==='auto-success'&&p.date===payload.date&&p.photoCount===payload.photos.length);
   }catch{}
-  if(!receipt)return {status:'uncertain',message:'학교종이 자동 검증 이력을 확인하지 못했습니다. '+retained};
+  const publication=receipt?.publication;
+  if(!publication||publication.attachmentsVerified!==true||!publication.postId||!publication.boardId||
+     !Number.isSafeInteger(publication.verifiedAt)||publication.verifiedAt<=0||
+     !Array.isArray(publication.photos)||publication.photos.length!==payload.photos.length||
+     publication.photos.some((p,i)=>p.sha256!==payload.photos[i].id.split('.')[0]||!Number.isSafeInteger(p.bytes)||p.bytes<=0)||
+     JSON.stringify(publication)!==JSON.stringify(result.publication))
+   return {status:'uncertain',message:'학교종이 게시물·사진 검증 이력을 확인하지 못했습니다. '+retained};
   const draft=drafts[postingKey];
   const unchanged=(revisions.get(postingKey)||0)===postingRevision&&draft.title===payload.title&&draft.body===payload.body&&JSON.stringify(photos(postingKey))===JSON.stringify(payload.photos);
   const history=read('diaryRegistrationHistory',{});
   const entries=Array.isArray(history[postingKey])?history[postingKey]:[];
   if(!entries.some(p=>p.service==='schoolbell'&&p.attemptId===result.attemptId))
-   history[postingKey]=[...entries,{...payload,service:'schoolbell',attemptId:result.attemptId,hash:result.hash,status:'success',registeredAt:Date.now(),result:{...result}}];
+   history[postingKey]=[...entries,{...payload,service:'schoolbell',attemptId:result.attemptId,hash:result.hash,status:'success',publication,registeredAt:Date.now(),result:{...result}}];
   if(!put('diaryRegistrationHistory',history))
    return {...result,message:'학교종이 등록 완료 · 기록을 저장하지 못해 초안과 사진을 유지합니다. 다시 발행하지 마세요.'};
   const nextDrafts={...drafts,[postingKey]:{...draft,...(unchanged?{title:title(payload.date),body:'',photos:[],updatedAt:Date.now()}:{}),postedHash:result.hash}};

@@ -37,7 +37,10 @@ test('verified synthetic result preserves new edits, whitespace and ordered orig
  assert.equal(f.state.submitted,1);assert.equal(f.store.get(f.note.classKey).automaticPosts[result.attemptId].status,'auto-success');
  assert.equal((await f.publish()).status,'blocked');assert.equal(f.state.submitted,1);
  const raw=fs.readFileSync(path.join(f.profile.dir,'diary-services.json'),'utf8');
- for(const secret of [f.note.title,f.note.body,'secret failure','new-id'])assert.ok(!raw.includes(secret));
+ for(const secret of [f.note.title,f.note.body,'secret failure'])assert.ok(!raw.includes(secret));
+ const receipt=services.createStore(f.profile).get(f.note.classKey).automaticPosts[result.attemptId].publication;
+ assert.deepEqual(result.publication,receipt);assert.equal(receipt.postId,'new-id');assert.equal(receipt.boardId,f.scope.boardId);
+ assert.equal(receipt.attachmentsVerified,true);assert.deepEqual(receipt.photos,f.buffers.map(b=>({sha256:sha(b),bytes:b.length})));
 });
 for(const identity of [{authenticated:false},{teacher:false},{schoolId:'OTHER'},{classKey:'2025:6:1'},{classKey:'2026:6:2'},{service:'hiclass'},{scopeType:'school'}])
  test('rejects unverified identity '+JSON.stringify(identity),async t=>{const f=fixture(t,{identity:()=>identity});assert.equal((await f.publish()).status,'blocked');assert.ok(!f.calls.includes('opening'));});
@@ -80,7 +83,7 @@ test('timeout aborts outstanding input, never submits later, and keeps unresolve
  await new Promise(r=>setTimeout(r,100));assert.equal(f.state.submitted,0);
 });
 test('concurrent clicks are serialized and service change stops final publish',async t=>{
- const f=fixture(t);let release;f.args.review=()=>new Promise(r=>{release=r;});const p=createPublisher(f.args),first=p.publish(f.note);
+ const f=fixture(t);let release;f.args.review=({phase})=>phase==='submit'?true:new Promise(r=>{release=r;});const p=createPublisher(f.args),first=p.publish(f.note);
  while(!release)await new Promise(r=>setTimeout(r,1));assert.equal((await p.publish(f.note)).status,'busy');release(true);await first;assert.equal(f.state.submitted,1);
  const g=fixture(t),attach=g.driver.attach;g.driver.attach=async files=>{await attach(files);g.store.select(g.note.classKey,'hiclass');};
  assert.equal((await g.publish()).status,'uncertain');assert.equal(g.state.submitted,0);
@@ -88,4 +91,26 @@ test('concurrent clicks are serialized and service change stops final publish',a
 test('failure to stop the driver keeps the instance locked',async t=>{
  const f=fixture(t,{fail:'input'});f.driver.close=async()=>false;const p=createPublisher(f.args);
  assert.equal((await p.publish(f.note)).status,'uncertain');assert.equal((await p.publish(f.note)).status,'busy');
+});
+test('final user confirmation follows attachment verification and cancellation cannot submit',async t=>{
+ const f=fixture(t),phases=[];
+ f.args.review=({phase})=>{phases.push(phase);if(phase==='submit'){assert.equal(f.calls.at(-1),'review');return false;}return true;};
+ assert.equal((await f.publish()).status,'uncertain');assert.deepEqual(phases,['prepare','submit']);
+ assert.equal(f.state.submitted,0);assert.equal(Object.values(f.store.get(f.note.classKey).automaticPosts)[0].publication,undefined);
+ assert.equal((await f.publish()).status,'blocked');assert.equal(f.state.submitted,0);
+});
+test('receipt persistence failure after verified readback stays unresolved and cannot resubmit',async t=>{
+ const f=fixture(t),update=f.store.automaticState;
+ f.store.automaticState=(key,id,state)=>{if(state.status==='auto-success')throw Error('disk fixture');return update(key,id,state);};
+ assert.equal((await f.publish()).status,'uncertain');assert.equal(f.state.submitted,1);
+ const record=Object.values(services.createStore(f.profile).get(f.note.classKey).automaticPosts)[0];
+ assert.equal(record.status,'auto-uncertain');assert.equal(record.publication,undefined);
+ assert.equal((await f.publish()).status,'blocked');assert.equal(f.state.submitted,1);
+});
+test('receipt rejects URLs and unverified identifiers without retaining page data',async t=>{
+ const f=fixture(t,{result:{id:'https://example.invalid/?token=synthetic'}});
+ assert.equal((await f.publish()).status,'uncertain');
+ assert.equal(Object.values(f.store.get(f.note.classKey).automaticPosts)[0].publication,undefined);
+ const g=fixture(t,{identity:()=>({boardId:'https://example.invalid/?token=synthetic'})});
+ assert.equal((await g.publish()).status,'blocked');assert.equal(g.calls.includes('opening'),false);
 });

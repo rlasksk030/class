@@ -81,3 +81,24 @@ test('malformed automatic state fails closed without overwriting audit data',t=>
  const raw=JSON.stringify(data);fs.writeFileSync(file,raw);
  assert.throws(()=>store.beginAutomatic(note));assert.equal(fs.readFileSync(file,'utf8'),raw);
 });
+test('successful records require a receipt; persist only whitelisted post and photo proof across restart',t=>{
+ const p=profile(t),store=ready(p),attempt=store.beginAutomatic(note);
+ store.automaticState(note.classKey,attempt.id,{status:'auto-pending',stage:'verifying'});
+ assert.throws(()=>store.automaticState(note.classKey,attempt.id,{status:'auto-success',stage:'verifying'}));
+ const publication={postId:'synthetic-post',boardId:'synthetic-board',attachmentsVerified:true,photos:[],verifiedAt:Date.now()};
+ store.automaticState(note.classKey,attempt.id,{status:'auto-success',stage:'verifying',publication:{...publication,remotePage:'must not persist'}});
+ assert.deepEqual(s.createStore(p).get(note.classKey).automaticPosts[attempt.id].publication,publication);
+ assert.equal(fs.readFileSync(path.join(p.dir,'diary-services.json'),'utf8').includes('must not persist'),false);
+ for(const bad of [{...publication,postId:'https://example.invalid/?token=secret'},{...publication,attachmentsVerified:false},
+  {...publication,verifiedAt:0},{...publication,photos:[{sha256:'a'.repeat(64),bytes:1}]}])
+  assert.throws(()=>s.publication(bad,0));
+});
+test('legacy successful records without receipt remain readable and block duplicates without fabricating proof',t=>{
+ const p=profile(t),store=ready(p),attempt=store.beginAutomatic(note),file=path.join(p.dir,'diary-services.json');
+ const data=JSON.parse(fs.readFileSync(file));const old=data.classes[note.classKey].automaticPosts[attempt.id];old.status='auto-success';old.stage='verifying';
+ fs.writeFileSync(file,JSON.stringify(data));
+ assert.equal(store.get(note.classKey).automaticPosts[attempt.id].publication,undefined);
+ assert.equal(store.beginAutomatic(note).blocked,true);
+ old.publication={postId:'invalid'};const raw=JSON.stringify(data);fs.writeFileSync(file,raw);
+ assert.throws(()=>store.get(note.classKey));assert.equal(fs.readFileSync(file,'utf8'),raw);
+});

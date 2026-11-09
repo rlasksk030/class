@@ -40,14 +40,17 @@ async function release(){await app.evaluate(()=>{globalThis.fixture.hold=false;g
    if(f.result!=='success')return {status:f.result,message:'합성 '+f.result};
    const attempt=store.beginAutomatic(note);
    if(attempt.blocked)return {status:'blocked',message:'합성 중복 차단'};
+   const publication={postId:'synthetic-'+attempt.id,boardId:'synthetic-board',attachmentsVerified:true,
+    photos:note.photos.map(p=>({sha256:p.id.split('.')[0],bytes:1})),verifiedAt:Date.now()};
    if(f.receipt==='manual'){
     store.automaticState(note.classKey,attempt.id,{status:'auto-uncertain',stage:'verifying'});
     store.resolveAutomatic(note.classKey,attempt.id,'auto-user-confirmed');
    }else{
     store.automaticState(note.classKey,attempt.id,{status:'auto-pending',stage:'verifying'});
-    store.automaticState(note.classKey,attempt.id,{status:'auto-success',stage:'verifying'});
+    store.automaticState(note.classKey,attempt.id,{status:'auto-success',stage:'verifying',publication});
    }
-   return {status:'success',attemptId:f.receipt==='missing'?'missing':attempt.id,hash:attempt.hash,attachmentsVerified:f.attachmentsVerified};
+   return {status:'success',attemptId:f.receipt==='missing'?'missing':attempt.id,hash:attempt.hash,attachmentsVerified:f.attachmentsVerified,
+    publication:f.receipt==='no-proof'?undefined:f.receipt==='wrong-proof'?{...publication,postId:'different-post'}:publication};
   });
  },ROOT);
  await page.evaluate(()=>{localStorage.setItem('settings',JSON.stringify({grade:'6',classroom:'1'}));localStorage.setItem('dashboardLocked','false');});
@@ -72,9 +75,15 @@ async function release(){await app.evaluate(()=>{globalThis.fixture.hold=false;g
  await configure({receipt:'missing'});await draft('이력 누락');await publish();
  assert.equal(await photos(),1);assert.equal((await history()).length,0);
  pass('missing photo proof, manual confirmation and unmatched persisted receipt never clear draft');
+ for(const receipt of ['no-proof','wrong-proof']){
+  await configure({receipt});await draft(receipt);await publish();assert.equal(await body(),'합성 본문 '+receipt);assert.equal(await photos(),1);assert.equal((await history()).length,0);
+ }
+ pass('missing or mismatched server post receipt never clears the current draft');
  await configure({receipt:'verified'});await draft('성공');await publish();
  assert.equal(await body(),'');assert.equal(await photos(),0);
  let entries=await history();assert.equal(entries.length,1);assert.equal(entries[0].service,'schoolbell');assert.equal(entries[0].photos.length,1);assert.equal(entries[0].body,'합성 본문 성공');
+ assert.match(entries[0].publication.postId,/^synthetic-/);assert.equal(entries[0].publication.attachmentsVerified,true);
+ assert.equal(entries[0].publication.photos[0].sha256,entries[0].photos[0].id.split('.')[0]);
  await page.reload();await page.click('#diaryTab');await ready();assert.equal(await body(),'');assert.equal((await history()).length,1);
  pass('verified automatic receipt saves service-tagged original history before clearing; reload restores new draft');
  await draft('사진 없음');await publish();assert.equal(await body(),'');assert.equal((await history()).at(-1).photos.length,0);

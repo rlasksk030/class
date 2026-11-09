@@ -42,6 +42,17 @@ function payload(value) {
   photos: value.photos.map(p => ({id: validateRef(p)}))};
 }
 const fingerprint = (school, service, value) => sha([school, service, payload(value)]);
+// Internal receipt contract, not a claim about the live site's ID or selector format.
+// Store only opaque identifiers and verified photo metadata; never remote URLs/page text.
+const remoteId = value => typeof value==='string' && /^[\p{L}\p{N}._:-]{1,256}$/u.test(value);
+function publication(value,count) {
+ if(!value || !remoteId(value.postId) || !remoteId(value.boardId) || value.attachmentsVerified!==true ||
+    !Number.isSafeInteger(value.verifiedAt) || value.verifiedAt<=0 || !Array.isArray(value.photos) ||
+    value.photos.length!==count || value.photos.some(p=>!p || !/^[a-f0-9]{64}$/.test(p.sha256) ||
+      !Number.isSafeInteger(p.bytes) || p.bytes<=0))throw Error('게시물 및 사진 검증 기록을 확인해 주세요.');
+ return {postId:value.postId,boardId:value.boardId,attachmentsVerified:true,
+  photos:value.photos.map(p=>({sha256:p.sha256,bytes:p.bytes})),verifiedAt:value.verifiedAt};
+}
 function matchTarget(expected, actual) {
  const clean = s => String(s || '').normalize('NFC').replace(/\s+/g, '');
  return clean(expected.schoolName) === clean(actual.schoolName) &&
@@ -68,6 +79,8 @@ function createStore(profile) {
       row.automaticPosts!==undefined&&(!object(row.automaticPosts)||Object.values(row.automaticPosts).some(p=>
        !object(p)||!['auto-pending','auto-uncertain','auto-success','auto-user-confirmed','auto-user-not-posted'].includes(p.status)||!/^[a-f0-9]{64}$/.test(p.hash))))
     throw Error('발행 기록 파일을 확인해 주세요. 기존 기록은 보존됩니다.');
+   // Old records without receipts remain readable and continue blocking duplicates.
+   for(const p of Object.values(row.automaticPosts||{}))if(p.publication!==undefined)publication(p.publication,p.photoCount);
   }
   return data;
  };
@@ -138,6 +151,7 @@ function createStore(profile) {
    if(state.status==='auto-success' && post.stage!=='verifying')throw Error('게시 결과를 확인해 주세요.');
    if(!['auto-pending','auto-uncertain','auto-success'].includes(state.status) ||
       !stages.includes(state.stage))throw Error('등록 상태를 확인해 주세요.');
+   if(state.status==='auto-success')post.publication=publication(state.publication,post.photoCount);
    post.status=state.status;post.stage=state.stage;post.updatedAt=Date.now();
    return {...post};
   });
@@ -164,4 +178,4 @@ function createStore(profile) {
  }
  return {get,select,link,prepare,resolve,beginAutomatic,automaticState,resolveAutomatic,hiclassPartition};
 }
-module.exports = {HOME,partition,safeURL,payload,fingerprint,matchTarget,createStore,classKey};
+module.exports = {HOME,partition,safeURL,payload,fingerprint,matchTarget,createStore,classKey,publication,remoteId};
