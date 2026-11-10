@@ -1,0 +1,371 @@
+{
+  "status": "uncertain",
+  "reason": "content-unverified",
+  "attachmentsVerified": false,
+  "publication": null,
+  "trace": [
+    {
+      "step": "recipient-dialog",
+      "stage": "control",
+      "totalCount": 0,
+      "dialogCount": 0,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "open",
+      "totalCount": 0,
+      "dialogCount": 0,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "probe",
+      "totalCount": 0,
+      "dialogCount": 0,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "reason": "dialog-count",
+      "known": false
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "probe",
+      "totalCount": 1,
+      "dialogCount": 1,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": true,
+      "reason": "dialog-covered",
+      "known": false
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "probe",
+      "totalCount": 1,
+      "dialogCount": 1,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "known": true
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "close",
+      "totalCount": 1,
+      "dialogCount": 1,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "close",
+      "totalCount": 0,
+      "dialogCount": 0,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "publication-mode"
+    },
+    {
+      "step": "context-provider",
+      "state": "complete",
+      "elapsedMs": 3289
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "recipientCheck": {
+        "known": true,
+        "empty": true,
+        "totalCount": 1,
+        "dialogCount": 1,
+        "hiddenCount": 0,
+        "unknownCount": 0,
+        "covered": false
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "evidence-read",
+      "method": "readDate",
+      "state": "started"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readUploads",
+      "state": "started"
+    },
+    {
+      "step": "readAttachmentState",
+      "state": "started"
+    },
+    {
+      "step": "readAttachmentState",
+      "state": "complete"
+    },
+    {
+      "step": "readFields",
+      "state": "started"
+    },
+    {
+      "step": "readFields",
+      "state": "complete",
+      "sendTarget": {
+        "visible": true,
+        "enabled": true,
+        "centerHitsButton": true,
+        "visiblePoints": 9,
+        "hitTag": "SPAN",
+        "hitDropdown": false,
+        "hitContainsButton": false,
+        "hitIsParent": false,
+        "pointerEvents": "enabled",
+        "hitIsBackdrop": false,
+        "hitSurfaceClasses": [
+          "btn-main-text"
+        ]
+      }
+    },
+    {
+      "step": "readFields",
+      "state": "started"
+    },
+    {
+      "step": "readFields",
+      "state": "complete",
+      "sendTarget": {
+        "visible": true,
+        "enabled": true,
+        "centerHitsButton": true,
+        "visiblePoints": 9,
+        "hitTag": "SPAN",
+        "hitDropdown": false,
+        "hitContainsButton": false,
+        "hitIsParent": false,
+        "pointerEvents": "enabled",
+        "hitIsBackdrop": false,
+        "hitSurfaceClasses": [
+          "btn-main-text"
+        ]
+      }
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "reviewed",
+      "action": "submit"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "group"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "account"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "roster"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "invite"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "recipients"
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "control",
+      "totalCount": 0,
+      "dialogCount": 0,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "open",
+      "totalCount": 0,
+      "dialogCount": 0,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "probe",
+      "totalCount": 0,
+      "dialogCount": 0,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "reason": "dialog-count",
+      "known": false
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "probe",
+      "totalCount": 1,
+      "dialogCount": 1,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": true,
+      "reason": "dialog-covered",
+      "known": false
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "probe",
+      "totalCount": 1,
+      "dialogCount": 1,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "known": true
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "close",
+      "totalCount": 1,
+      "dialogCount": 1,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "close",
+      "totalCount": 0,
+      "dialogCount": 0,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "publication-mode"
+    },
+    {
+      "step": "context-provider",
+      "state": "complete",
+      "elapsedMs": 2804
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "recipientCheck": {
+        "known": true,
+        "empty": true,
+        "totalCount": 1,
+        "dialogCount": 1,
+        "hiddenCount": 0,
+        "unknownCount": 0,
+        "covered": false
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "commitOnce",
+      "state": "started"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readDate",
+      "state": "started"
+    },
+    {
+      "step": "native-send-focus",
+      "state": "focused"
+    },
+    {
+      "step": "native-send-target",
+      "state": "ready",
+      "target": {
+        "visible": true,
+        "enabled": true,
+        "centerHitsButton": true,
+        "visiblePoints": 9,
+        "hitTag": "SPAN",
+        "hitDropdown": false,
+        "hitContainsButton": false,
+        "hitIsParent": false,
+        "pointerEvents": "enabled",
+        "hitIsBackdrop": false,
+        "hitSurfaceClasses": [
+          "btn-main-text"
+        ]
+      }
+    },
+    {
+      "step": "commitOnce",
+      "state": "failed",
+      "guardFailure": null,
+      "nativeFailure": null,
+      "proofFailure": false
+    }
+  ]
+}
