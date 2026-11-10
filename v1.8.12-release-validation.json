@@ -1,0 +1,52 @@
+{
+  "source": "070a181b4cd7ddb0b19c838e89cf636801a5e9b2",
+  "version": "1.8.12",
+  "sourceFilesMatched": 133,
+  "payloadMachine": "AMD64",
+  "appId": "org.school.classroomdashboard",
+  "validationBuild": false,
+  "updateChannel": {
+    "provider": "generic",
+    "url": "https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/",
+    "channel": "nationwide"
+  },
+  "asarSha256": "2cf199207fcbad67a650b56bff9e06a866cb6a71ee81096d3b83c4beb5a814da",
+  "windowsExecution": "NOT RUN",
+  "artifacts": [
+    {
+      "name": "classroom-dashboard-nationwide-setup-1.8.12-x64.exe",
+      "bytes": 99404360,
+      "sha256": "14d678619b067e767adf2e315f1038616d709213334c04fe0d447037845c68c5"
+    },
+    {
+      "name": "classroom-dashboard-nationwide-setup-1.8.12-x64.exe.blockmap",
+      "bytes": 105122,
+      "sha256": "84bf849d5fd88d74e3bda496e2c82f87fd7e5e5acee986e8c43d0aac9d1ab878"
+    },
+    {
+      "name": "nationwide.yml",
+      "bytes": 399,
+      "sha256": "4fd2d5a5531cb09f60bdb0c152b46457a1f5a7599c8fabcab91bc947caecf1e6"
+    }
+  ],
+  "checks": {
+    "changedUnit": "PASS (41)",
+    "mainPreloadClassConnection": "PASS (local Electron; no network)",
+    "macRegression": "PASS; prior split-run evidence retained",
+    "hiClassRegression": "PASS (Mac; no new live send)",
+    "priorLiveTestClassCompleteFlow": "PASS at its original commit; not rerun",
+    "priorOrdinaryClassNonpublishing": "PASS at its original commit; not rerun",
+    "newOperatingContractLiveRecheck": "NOT RUN",
+    "windowsCurrentVersionExecution": "NOT RUN",
+    "windowsCurrentVersionInstallUpdateReboot": "NOT RUN",
+    "priorInstallerEvidence": "v1.8.11 unchanged NSIS/data paths only",
+    "artifactSourceAndChannel": "PASS"
+  },
+  "servicePermission": "unconfirmed",
+  "actionsNewRuns": 0,
+  "additionalCost": 0,
+  "channel": "nationwide",
+  "okguChanged": false,
+  "mergeCommit": "1df89ee8782bc6ee2022597123321db62844e8ad",
+  "releaseTag": "timer-pip-nationwide-v1.8.12"
+}
