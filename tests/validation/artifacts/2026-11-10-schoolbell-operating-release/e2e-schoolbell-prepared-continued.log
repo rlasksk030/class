@@ -1,0 +1,8 @@
+PASS observed DOM shape: 0 file(s) uploaded to local server and original bytes re-downloaded after publication
+PASS observed DOM shape: 1 file(s) uploaded to local server and original bytes re-downloaded after publication
+PASS observed DOM shape: 2 file(s) uploaded to local server and original bytes re-downloaded after publication
+PASS fresh local ledger still blocks duplicate found in refreshed remote fixture
+PASS unknown date prevents first title/body/file mutation
+PASS partial uploaded originals stop before final submit
+PASS changed persisted result remains uncertain and blocks all retries
+7/7 passed (local synthetic bridge only; live Schoolbell NOT RUN)

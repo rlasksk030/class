@@ -1,0 +1,109 @@
+{
+  "base": "402b384e62c3647518b27139bc532299d8e2f427",
+  "implementationCommit": "ebb4d34c02acaadd4f758372a79b244bfd8a5066",
+  "branch": "feature/schoolbell-diary-nationwide",
+  "productionCapabilityEnabled": false,
+  "release": "NO GO",
+  "live": {
+    "appSession": "REUSED",
+    "immediateMode": "OBSERVED PASS",
+    "studentParentRecipients": "OBSERVED EMPTY",
+    "schoolYearIdentity": "BLOCKED missing independent UI evidence",
+    "teacherMandatoryAdminIdentity": "BLOCKED missing shared unique identifier",
+    "permissionProvider": "BLOCKED default null; no official grant",
+    "prepublicationOriginalsOne": "PASS",
+    "prepublicationOriginalsTwo": "PASS SHA-256/bytes/order",
+    "automaticAppButtonInputAttach": "BLOCKED / NOT RUN",
+    "newPublicationCount": 0,
+    "newPublicationReadback": "NOT RUN",
+    "newSuccessReceiptAndDraftClear": "NOT RUN",
+    "draftPreserved": true,
+    "oldABCTestsRepeated": false
+  },
+  "tests": {
+    "finalSyntax": {
+      "passed": 131,
+      "total": 131
+    },
+    "finalNodeUnit": {
+      "passed": 211,
+      "total": 211
+    },
+    "nativeImmediateFinalGuard": {
+      "passed": 4,
+      "total": 4,
+      "environment": "isolated local Electron"
+    },
+    "nativePreviewPorts": {
+      "passed": 4,
+      "total": 4,
+      "environment": "isolated local Electron"
+    },
+    "schoolbellUI": {
+      "passed": 20,
+      "total": 20
+    },
+    "hiclassSubmit": {
+      "passed": 21,
+      "total": 21
+    },
+    "hiclassPhotos": {
+      "passed": 4,
+      "total": 4
+    },
+    "windowsProduct": "NOT RUN environment blocked"
+  },
+  "github": {
+    "runsBefore": 19,
+    "latestRunBefore": 41977391612,
+    "newRunsRequested": 0,
+    "extraSpend": 0,
+    "currency": "KRW",
+    "draft": true,
+    "pushVerification": "recorded in PR5 and Issue4 after push"
+  },
+  "sourceSha256": {
+    "app/diary-schoolbell.js": "2fce34d1687deb026364883b6f582a946ccefc3d6fcb292df018fad9f0595a71",
+    "app/diary-services.cjs": "d79fa1de3a82136fe788ec2fa98e39d36dc759cab6a69c59a6db88daf84a9478",
+    "app/preload.cjs": "e1268735022d8104d4aace067fc84569324c054f32b7ada2844ceb70e90889c4",
+    "app/schoolbell-date-policy.cjs": "b1cb765a76638a3d5dbc9dd11dc4a0e596baa5cbf99a5667fc4c41354ba020f0",
+    "app/schoolbell-electron-driver.cjs": "2ff3c4187f54a903bb270a88546fcc67e929a563e3d61ca7b2397a9bdfa6618b",
+    "app/schoolbell-final-guard.cjs": "bda16fe6636a34f2a75c9372373f10d363b94513c1e11d173ab49c74e485e0d1",
+    "app/schoolbell-live-context.cjs": "f51ed0b2dc79748904613f78e3308bc993b3e1ef4e455d7ecca92161923dd561",
+    "app/schoolbell-live-posts.cjs": "fefc59670c35a2ec25d9f2ff43605b23950b9e2bd53b70efdf3f5974ab654edd",
+    "app/schoolbell-observed-composer.cjs": "47cebd7fbf16d7c8fec40699af0fe1e0b3fd389f0fefd8d2c42c769f960ff8b9",
+    "app/schoolbell-prepared-driver.cjs": "8b57816c76f58ec931bbb8085368e152bd1b7f58d86661ae4cf17e9d955fac89",
+    "app/schoolbell-prepared-driver.test.cjs": "26d664c74450488c7ce12ad7da7b1a11ec3591b11292f925d1593e2d497795f1",
+    "app/schoolbell-preview-originals.cjs": "13eda4cf78966210b09bfcaba28bd4efe160c70393acb79bb46459be74221603",
+    "app/schoolbell-preview-originals.test.cjs": "61562b1b8e53cfd323d107bddbaa4c3bd81a7a876f94d6d717dfb3d58cc3fe18",
+    "app/schoolbell-publication-mode.cjs": "eca1796431c8300004e019215074d295d5c4198d05440aa01baf1ea997901450",
+    "app/schoolbell-publication-mode.test.cjs": "95c834e0e64059101cf8effea8f4d122e138f34aef5370e18e8524355ff6b8d9",
+    "app/schoolbell-publish.cjs": "0f7c54b67b4bf519437a06d5ade5e93105ea3732614d1b2246ea6281eff079d3",
+    "app/schoolbell-recipients.cjs": "7c07b8a3be994f8dd0821669d9da86925a415cf9a8ab20b9bcafd7e7a78bdf68",
+    "app/schoolbell.cjs": "0bbc7e07b501504fae4681969399e1d959e699bf59c5ef9ee7dce18e2ebfdf63",
+    "tests/schoolbell-final-integration-fixture.cjs": "f24c784bf3b646cbdb711eabab2c7d64954ecb2731eb38f911457f7200a3b357",
+    "tests/schoolbell-live-ports-fixture.cjs": "8b87d29b13bb8836def6443ed938174bd7e78ce4b656bdd0319cac711bba03b4",
+    "tests/schoolbell-prepared-fixture.cjs": "467081b8413bcb3f64802276abd596ff3864bcd893cb4029c2573a69c9ef6623"
+  },
+  "artifactSha256": {
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/composer-unit.log": "bf7a4eefd796d604987dc94175d4387046815213df2a0c4ea74e00851cf578bc",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/date-contract-focused.log": "91e693aba002a410fcb354379b8fa2584a336ed332cbd0dff0e9c048fab43919",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/date-contract-initial.log": "1c757fc600d14cb0b21906b6ca64a55c7b539a6e9a681c7cc74700c5b65bafa4",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/date-native.log": "ca17a986bcc7461de7fda638e9360b9715ee07c318179702006c98330bd7f32d",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/final-syntax.log": "20db33af0f4755ffd7d09d2106192a9990c38d88dc5b80f83dab9859ce434fe3",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/final-unit.log": "9e4a176288bea397336ff1c493fd3659af6f2c31df2ace2e319d91336e187dd0",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/full-unit.log": "bc27c6bd0f6bed0083195868cc7d7e5059d0e8abe3e4297edbb9d6ed432e8ba1",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/hiclass-photos.log": "cde3b5f7c3e3a2ddda41ed68e2bc265642e92bd36bc9d3d3980452e45aea9ea4",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/hiclass-submit.log": "1ef5c9e7959538d1a02bc8534af0dff4efcdd0a466f18cad18924b3176c5cba2",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/live-context-and-mode.json": "3a76062a86c650e086831b653f9fbbc40d8aa33646cf30578694b156f713fcca",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/live-observation-notes.json": "527fd3ca71984355ebeb0334e63265ee7470331a40a43882ee3394bca88477cb",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/live-original-one.json": "fb9db3a115fbfb093599368fce43199afd5be42e425700201076fa6866ba807c",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/live-original-two.json": "e735c3b5f6945c2569cc8d8e1f8933b9c21f5ff3b5673dd5e99c021a1a108cdb",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/live-preview-before-route-fix.json": "be7695746aa2c78b94cfcb272f5c2cb249770fc7c92a347ada4013399ce57e03",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/preview-and-context-unit.log": "8a88fd488eb6353fe91b2ad7c5caa47399d361ea30d2977b15e0821f34f02505",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/preview-native.log": "93dbd897c78647fed5e8ec6edaa3d71409fa1e827bd85c36ae8f0e4467c74319",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/preview-url-final-unit.log": "136cdac4835ed6c583ad11a5010b4209f9831303216256ea8e8252dc54c3da4c",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/schoolbell-ui.log": "9c864760c1b3c584509f203aa64043cf62b347c6a016d37678f5fc6462e2c00a",
+    "tests/validation/artifacts/2026-11-09-schoolbell-blocker-resolution/windows-environment.json": "b687f8c35226f2c50be1b6430fe7acfc793628433a8dc588adae0b116b843503"
+  }
+}

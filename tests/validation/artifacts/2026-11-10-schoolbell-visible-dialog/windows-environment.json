@@ -1,0 +1,20 @@
+{
+  "initialState": "suspended",
+  "resumeConfirmed": true,
+  "windowsVersion": "10.0.26200.8655",
+  "basicCommandResponded": true,
+  "basicCommandResponse": "delayed",
+  "nodeOnPATH": false,
+  "additionalEnvironmentProbe": "timeout after 50 seconds",
+  "newNodeInstalled": false,
+  "newVM": false,
+  "finalState": "suspended",
+  "appRun": "NOT RUN",
+  "installedVersionUpdate": "NOT RUN",
+  "draftPhotoSessionPreservation": "NOT RUN",
+  "schoolbellConnection": "NOT RUN",
+  "hiclassRegression": "NOT RUN",
+  "rebootRun": "NOT RUN",
+  "reason": "Guest command execution unreliable; Node not located on PATH. No product result inferred.",
+  "additionalCost": 0
+}

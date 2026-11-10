@@ -1,0 +1,5 @@
+sandbox_extension_issue_file_to_process failed for <workspace>/node_modules/electron/dist/Electron.app: 1 (Operation not permitted)
+TypeError: decode is not a function
+    at inspect (<workspace>/app/media-store.cjs:37:14)
+    at store (<workspace>/app/media-store.cjs:42:49)
+    at <workspace>/app/media-store.cjs:47:53

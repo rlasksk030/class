@@ -1,0 +1,14 @@
+[
+  {
+    "test": "schoolbell-completion",
+    "exitCode": 0
+  },
+  {
+    "test": "schoolbell-prepared",
+    "exitCode": 0
+  },
+  {
+    "test": "schoolbell-electron",
+    "exitCode": 1
+  }
+]

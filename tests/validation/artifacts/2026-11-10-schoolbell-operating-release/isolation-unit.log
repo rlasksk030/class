@@ -1,0 +1,14 @@
+✔ validation metadata isolates data even when a production test-profile override is supplied (9.229625ms)
+✔ validation updater registers read-only status but never loads the network updater or installs (6.660417ms)
+✔ registered ordinary binding distinguishes declarations from service identity and release gate (9.508084ms)
+✔ class, session, management and audience changes revoke the ordinary binding (5.927459ms)
+✔ only exact final content authorizes submit; official permission stays unconfirmed (3.753ms)
+✔ ordinary receipts retain declaration provenance without inventing identity or member totals (2.713584ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 287.964041

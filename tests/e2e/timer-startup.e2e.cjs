@@ -19,11 +19,14 @@ async function idle(){await page.waitForFunction(()=>classroomTools.timer().stat
  await preset(10);await page.click('#timerStart');const deadline=(await state()).deadline;await page.click('#timerDialog .close-extra');await page.waitForTimeout(1200);assert.equal((await state()).state,'running');assert.equal((await state()).deadline,deadline);assert.match(await page.textContent('#timerButton'),/⏱ 00:0[89]/);pass('running close preserves deadline and countdown');
  await page.click('#timerButton');await page.click('#timerPause');const paused=await state();await page.keyboard.press('Escape');await page.waitForTimeout(400);assert.deepEqual(await state(),paused);await page.click('#timerButton');assert.equal(await page.textContent('#timerStart'),'계속하기');pass('paused Escape preserves remaining time and resume');
  await page.click('#timerReset');await page.keyboard.press('Escape');await idle();
+ // Exercise the completion/close path in a short renderer, independent of host work area.
+ await page.setViewportSize({width:900,height:550});
  for(const mode of ['button','Escape','native close']){
   await finished();assert.ok(await page.isVisible('#timerFinished'));const pulses=await page.evaluate(()=>soundPulses);await page.waitForTimeout(400);assert.equal(await page.evaluate(()=>soundPulses),pulses);
   if(mode==='button')await page.click('#timerDialog .close-extra');else if(mode==='Escape')await page.keyboard.press('Escape');else await page.locator('#timerDialog').evaluate(e=>e.close());
   await idle();await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>soundPulses),pulses);pass('finished '+mode+' resets saved state, banner and button without another alarm');
  }
+ await page.setViewportSize({width:1280,height:900});
  await finished();await page.click('#timerFinished button');await idle();assert.equal(await page.inputValue('#timerSeconds'),'1');await page.click('#timerStart');assert.equal((await state()).state,'running');pass('acknowledge inside open dialog resets and immediately restarts configured time');
  await page.keyboard.press('Escape');await page.waitForFunction(()=>classroomTools.timer().state==='finished');await page.waitForTimeout(500);assert.ok(await page.isVisible('#timerFinished'));pass('closed-dialog completion keeps alert until user acknowledgement');
  await page.click('#timerFinished button');await idle();pass('banner acknowledgement outside dialog clears completion');

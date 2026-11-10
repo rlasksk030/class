@@ -1,0 +1,11 @@
+electronApplication.evaluate: AssertionError: {"status":"uncertain","message":"학교종이 작성 내용이 제출할 초안과 다릅니다. 초안과 사진은 유지됩니다. 자동으로 재전송하지 않습니다.","reason":"content-unverified"}
++ actual - expected
+
++ 'uncertain'
+- 'success'
+
+    at global.runSchoolbellElectronTests (<REPO>/tests/schoolbell-electron-fixture.cjs:117:11)
+    at async <anonymous>:337:30
+    at <REPO>/tests/e2e/schoolbell-electron.e2e.cjs:9:26 {
+  log: []
+}

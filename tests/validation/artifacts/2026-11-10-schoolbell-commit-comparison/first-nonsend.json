@@ -1,0 +1,94 @@
+{
+  "status": "uncertain",
+  "reason": "commit-revision-mismatch",
+  "sent": false,
+  "comparisons": [
+    {
+      "step": "checkCommit",
+      "state": "started"
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "before-readDate",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": false,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": false,
+      "reason": "commit-revision-mismatch"
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "after-readDate",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": false,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": false,
+      "reason": "commit-revision-mismatch"
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "before-focus",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": false,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": false,
+      "reason": "commit-revision-mismatch"
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "after-focus",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": false,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": false,
+      "reason": "commit-revision-mismatch"
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "after-target-ready",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": false,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": false,
+      "reason": "commit-revision-mismatch"
+    },
+    {
+      "step": "checkCommit",
+      "state": "failed",
+      "guardFailure": null,
+      "nativeFailure": null,
+      "proofFailure": false,
+      "comparisonFailure": "commit-revision-mismatch",
+      "comparisons": {
+        "notSubmitted": true,
+        "sendEnabled": true,
+        "singleAction": true,
+        "revisionMatch": false,
+        "titleMatch": true,
+        "bodyMatch": true,
+        "sameDocument": true,
+        "semanticRevisionMatch": false
+      }
+    }
+  ]
+}

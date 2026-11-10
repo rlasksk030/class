@@ -1,0 +1,19 @@
+✔ final proof requires scoped live authority and cannot promote partial observed context (10.308458ms)
+✔ draft date never substitutes for an unknown, stale, wrong-scope or different-meaning service date (0.313ms)
+✔ final photo proof is tied to downloaded bytes, their order, binding and document revision (0.420209ms)
+✔ atomic DOM check rejects target/modal/file/date/revision changes before the single send (0.514458ms)
+✔ mandatory administrator requires verified current-teacher-only evidence and matching explicit main-process approval (3.046208ms)
+✔ observed class route excludes school announcements, credentials and other origins (2.970583ms)
+✔ matching display names and empty slots cannot establish school, year, actor or notification authority (1.118125ms)
+✔ cancellation while the context reader is opening destroys only that reader and prevents reads (0.5085ms)
+✔ observed post ID and tooltip date do not claim virtual list coverage (5.182125ms)
+✔ missing list-end coverage cannot establish a baseline or enable result readback (152.156667ms)
+✔ empty unfiltered send-target table verifies no student/parent targets but cannot authorize administrator notifications (0.142458ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 240.803375

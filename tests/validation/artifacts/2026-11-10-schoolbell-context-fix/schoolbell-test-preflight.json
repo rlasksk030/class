@@ -1,0 +1,67 @@
+{
+  "observedAt": 1794288726431,
+  "sendTarget": {
+    "visible": true,
+    "enabled": true,
+    "centerHitsButton": true,
+    "visiblePoints": 9,
+    "hitTag": "SPAN",
+    "hitDropdown": false,
+    "hitContainsButton": false,
+    "hitIsParent": false,
+    "pointerEvents": "enabled",
+    "hitIsBackdrop": false,
+    "hitSurfaceClasses": [
+      "btn-main-text"
+    ]
+  },
+  "immediate": {
+    "target": {
+      "visible": true,
+      "enabled": true,
+      "centerHitsButton": false,
+      "visiblePoints": 0,
+      "hitTag": "DIV",
+      "hitDropdown": false,
+      "hitContainsButton": false,
+      "hitIsParent": false,
+      "pointerEvents": "enabled",
+      "hitIsBackdrop": false,
+      "hitSurfaceClasses": [
+        "ng-busy-backdrop",
+        "ng-tns-c1582823415-0",
+        "ng-trigger",
+        "ng-trigger-fadeInOut",
+        "ng-star-inserted",
+        "ng-animating"
+      ]
+    },
+    "mode": {
+      "known": false,
+      "immediateCount": 0,
+      "scheduledCount": 0
+    }
+  },
+  "settled": {
+    "target": {
+      "visible": true,
+      "enabled": true,
+      "centerHitsButton": true,
+      "visiblePoints": 9,
+      "hitTag": "SPAN",
+      "hitDropdown": false,
+      "hitContainsButton": false,
+      "hitIsParent": false,
+      "pointerEvents": "enabled",
+      "hitIsBackdrop": false,
+      "hitSurfaceClasses": [
+        "btn-main-text"
+      ]
+    },
+    "mode": {
+      "known": false,
+      "immediateCount": 0,
+      "scheduledCount": 0
+    }
+  }
+}

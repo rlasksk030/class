@@ -1,0 +1,120 @@
+[
+  {
+    "step": "context-provider",
+    "state": "started",
+    "stage": "group"
+  },
+  {
+    "step": "context-provider",
+    "state": "started",
+    "stage": "account"
+  },
+  {
+    "step": "context-provider",
+    "state": "started",
+    "stage": "roster"
+  },
+  {
+    "step": "context-provider",
+    "state": "started",
+    "stage": "invite"
+  },
+  {
+    "step": "context-provider",
+    "state": "started",
+    "stage": "recipients"
+  },
+  {
+    "step": "recipient-dialog",
+    "stage": "control",
+    "totalCount": 0,
+    "dialogCount": 0,
+    "hiddenCount": 0,
+    "unknownCount": 0,
+    "covered": false,
+    "ready": true
+  },
+  {
+    "step": "recipient-dialog",
+    "stage": "open",
+    "totalCount": 0,
+    "dialogCount": 0,
+    "hiddenCount": 0,
+    "unknownCount": 0,
+    "covered": false,
+    "ready": true
+  },
+  {
+    "step": "recipient-dialog",
+    "stage": "probe",
+    "totalCount": 0,
+    "dialogCount": 0,
+    "hiddenCount": 0,
+    "unknownCount": 0,
+    "covered": false,
+    "reason": "dialog-count",
+    "known": false
+  },
+  {
+    "step": "recipient-dialog",
+    "stage": "probe",
+    "totalCount": 1,
+    "dialogCount": 0,
+    "hiddenCount": 1,
+    "unknownCount": 0,
+    "covered": false,
+    "reason": "dialog-count",
+    "known": false
+  },
+  {
+    "step": "recipient-dialog",
+    "stage": "probe",
+    "totalCount": 1,
+    "dialogCount": 1,
+    "hiddenCount": 0,
+    "unknownCount": 0,
+    "covered": true,
+    "reason": "dialog-covered",
+    "known": false
+  },
+  {
+    "step": "recipient-dialog",
+    "stage": "probe",
+    "totalCount": 1,
+    "dialogCount": 1,
+    "hiddenCount": 0,
+    "unknownCount": 0,
+    "covered": false,
+    "known": true
+  },
+  {
+    "step": "recipient-dialog",
+    "stage": "close",
+    "totalCount": 1,
+    "dialogCount": 1,
+    "hiddenCount": 0,
+    "unknownCount": 0,
+    "covered": false,
+    "ready": true
+  },
+  {
+    "step": "recipient-dialog",
+    "stage": "close",
+    "totalCount": 0,
+    "dialogCount": 0,
+    "hiddenCount": 0,
+    "unknownCount": 0,
+    "covered": false,
+    "ready": true
+  },
+  {
+    "step": "context-provider",
+    "state": "started",
+    "stage": "publication-mode"
+  },
+  {
+    "step": "context-provider",
+    "state": "complete",
+    "elapsedMs": 5882
+  }
+]

@@ -1,0 +1,6 @@
+electronApplication.evaluate: Error: content-unverified synthetic DOM {"text":"합성 첫 줄\n\n\n둘째 줄  공백 <b>일반 문자</b>\n끝","html":"합성 첫 줄<div><br></div><div>둘째 줄  공백 &lt;b&gt;일반 문자&lt;/b&gt;</div><div>끝</div>","model":{"title":"합성 제목","body":"합성 첫 줄\n\n\n둘째 줄  공백 <b>일반 문자</b>\n끝","titleEvents":["input","change"],"bodyEvents":[{"type":"input","trusted":true},{"type":"input","trusted":true},{"type":"input","trusted":true},{"type":"input","trusted":true},{"type":"input","trusted":true},{"type":"input","trusted":true}]}}
+    at global.runSchoolbellElectronTests (<REPO>/tests/schoolbell-electron-fixture.cjs:120:119)
+    at async <anonymous>:337:30
+    at <REPO>/tests/e2e/schoolbell-electron.e2e.cjs:9:26 {
+  log: []
+}

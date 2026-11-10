@@ -56,3 +56,17 @@ body.diary-active>.size-controls{visibility:hidden}
 #diaryPhotos figure div{display:flex;gap:4px}
 #diaryPhotos button{font-size:14px;padding:4px 8px;min-height:36px}
 #diaryPhotoFiles[hidden]{display:none}
+
+#diaryScreen [hidden]{display:none!important}
+.diary-service-selector{display:flex;align-items:center;gap:12px}
+.diary-service-selector>span{white-space:nowrap;flex-shrink:0}
+.diary-service-selector select{font-size:18px;padding:6px;max-width:100%;min-width:0;flex:1}
+#diarySchoolbell{border:1px solid #dce1e8;border-radius:10px;padding:10px;background:#f7f9fc}
+#diarySchoolbell p{font-size:15px;line-height:1.5;margin:6px 0}
+#diarySchoolbell summary{cursor:pointer;padding:6px 0;font-size:17px}
+.schoolbell-connect-line{flex-wrap:wrap}
+.schoolbell-connect-line strong{margin-right:auto}
+.schoolbell-match{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
+.schoolbell-match label{display:flex;align-items:center;gap:6px;white-space:nowrap}
+#schoolbellSchool{width:220px}#schoolbellGrade{width:50px}#schoolbellClass{width:80px}
+.schoolbell-history-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;border-top:1px solid #dce1e8}

@@ -1,0 +1,418 @@
+
+> test:e2e
+> node tests/e2e/board-titles.e2e.cjs && node tests/e2e/v182-features.e2e.cjs && node tests/e2e/regression.e2e.cjs && node tests/e2e/hiclass-link.e2e.cjs && node tests/e2e/recovery.e2e.cjs && node tests/e2e/timetable-layout.e2e.cjs && node tests/e2e/diary-drafts.e2e.cjs && node tests/e2e/hiclass-recipients.e2e.cjs && node tests/e2e/hiclass-submit.e2e.cjs && node tests/e2e/timer-startup.e2e.cjs && node tests/e2e/diary-layout.e2e.cjs && node tests/e2e/hiclass-window.e2e.cjs && npm run test:photos && node tests/e2e/multischool.e2e.cjs && node tests/e2e/schoolbell.e2e.cjs && npm run test:schoolbell-auto
+
+PASS 1. 기본 제목 표시 — ☀ 아침활동
+PASS 10a. 잠금 시 연필 숨김
+PASS 10b. 잠금 시 더블클릭 편집 불가
+PASS 11a. 잠금 해제
+PASS 11b. 잠금 해제 시 연필 표시
+PASS 4a. 편집 중 헤더 높이 유지 — 80 vs 80
+PASS 2/4. 아침활동 Enter 저장
+PASS 5. Esc 취소
+PASS 3/6. 안내사항 바깥 클릭 저장 — ✳ 꼭 확인하세요
+PASS 13a. 최대 30자 제한 — 30/30
+PASS 13b. 긴 제목에서도 보드 크기·위치 불변 — ellipsis=true
+PASS 13c. 제목 스타일 불변
+PASS 13d. 좁은 창에서도 헤더 넘침 없음
+PASS 9. 기본 제목 복원
+PASS 12a. 터치 길게 누르기로 편집 시작
+PASS 12b. 터치 바깥 탭 저장 — ✳ 알립니다
+PASS 12c. 연필 터치로 편집 시작
+PASS 10c. 편집 중 잠그면 편집 종료·연필 숨김
+PASS 8a. 본문 내용 유지(화면·저장소) — 책 읽기 20분
+일기 쓰기 / 체육복 챙기기
+PASS 7. 재실행 후 제목 유지
+PASS 8b. 재실행 후 본문 유지
+PASS 10d. 재실행 후 잠금 유지·연필 숨김
+PASS health. 업데이트 헬스체크 조건
+PASS store. 제목·본문 별도 키
+
+24/24 passed
+PASS A. 정상 수업일 시간표
+PASS A. 정상 급식
+PASS C. API 장애 + 캐시 → 저장된 시간표 유지 — 연결 실패 · 저장된 정보 · 오후 03:54
+PASS C. API 장애 + 캐시 → 저장된 급식 유지
+PASS B. 휴일(정상 응답+0건) 시간표 — 오늘은 등록된 수업이 없습니다.
+PASS B. 급식 없는 날 — 오늘은 급식이 없습니다.
+PASS B. 휴일은 오류 문구 없음
+PASS D. API 장애 + 캐시 없음 → 작은 안내
+PASS 방학에도 다른 보드 정상
+PASS 캐시 복구: 연결 회복 시 자동 재조회
+PASS WB. 초기 실행취소/다시실행 비활성
+PASS WB. 텍스트 생성·자동저장
+PASS WB. 실행취소 활성/다시실행 비활성
+PASS WB. 입력 묶음 한 번에 취소 — ["@0.142,0.197#36"]
+PASS WB. 블록 생성 취소
+PASS WB. 되돌릴 것 없으면 비활성
+PASS WB. 다시 실행 2회
+PASS WB. 이동
+PASS WB. 이동 취소 — 오늘 준비물@0.142,0.197#36 vs 오늘 준비물@0.142,0.197#36
+PASS WB. 이동 다시 실행
+PASS WB. 글씨 크기 변경 취소 — 오늘 준비물@0.283,0.329#40
+PASS WB. 텍스트 수정 + 바깥 클릭 시 기록
+PASS WB. 삭제→취소→다시 실행 — 1/2/1
+PASS WB. 판서도 같은 기록으로 취소/다시
+PASS WB. 전체 지우기(확인창 유지)
+PASS WB. 전체 지우기 후 실행 취소
+PASS WB. Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z
+PASS WB. 취소 후 상태가 재실행 후 유지
+PASS WB. 대시보드에서는 단축키 무시
+PASS BK. 백업 완료 메시지 — 백업이 완료되었습니다. (backup-out.json)
+PASS BK. schemaVersion·appVersion·createdAt — 1.8.11
+PASS BK. 사용자 데이터 포함
+PASS BK. 민감정보·캐시·위치 제외
+PASS BK. 로그인 세션(Partitions)은 백업 대상 아님 — Cache,Code Cache,DIPS,DIPS-wal,DawnGraphiteCache,DawnWebGPUCache,DevToolsActivePort,GPUCache,Local Storage,Network Persistent State,Preferences,Session Storage,Shared Dictionary,SingletonCookie,SingletonLock,SingletonSocket,Trust Tokens,Trust Tokens-journal,blob_storage,desktop-settings.json,migration-v187,neis-key.bin
+PASS BK. 잘못된 파일 거부
+PASS BK. 손상 파일 거부, 기존 데이터 유지
+PASS BK. 확인창 취소 시 변경 없음
+PASS BK. 복원 후 화면을 실제로 다시 불러옴(저장 차단 해제)
+PASS BK. 복원 후 다시 불러오기·값 복원
+PASS BK. 복원 시 화이트보드 덮어쓰기 없음
+PASS BK. 복원 전 자동 보관본 생성
+PASS BK. 복원 뒤 기존 인증키는 로컬 암호화 저장소에만 유지
+PASS health. 업데이트 헬스체크 조건
+
+43/43 passed
+PASS 시간표 자동 조회
+PASS 현재 교시 자동 강조
+PASS 시간표 당일 직접 수정
+PASS 원래 시간표로 되돌리기
+PASS 안내사항 어제 내용 불러오기
+PASS 안내사항 저장
+PASS D-Day 최대 2개 표시(가까운 순)
+PASS D-Day 제목/날짜 수정·당일 D-Day
+PASS D-Day 글씨 18px 이상 — 20.16px
+PASS D-Day 삭제·없으면 영역 숨김
+PASS 보드 숨김(자리 유지)
+PASS 보드별 글씨 크기
+PASS 보드 크기 조절·기본 크기 복원 — 277→316→277
+PASS 팝업 닫아도 진행·버튼에 남은 시간 — ⏱ 00:02
+PASS 타이머 완료 표시
+PASS 타이머 초기화
+PASS 일시정지→계속하기
+PASS 1명 뽑기
+PASS 여러 명 뽑기
+PASS 한 라운드 중복 없음
+PASS 남은 인원 초과 시 안내
+PASS 오늘 제외
+PASS 전체 다시 포함
+PASS 새 라운드
+PASS 모둠 자동 편성·다시 섞기
+PASS 학부모·학생 모두 OFF 안내
+PASS 모두 OFF면 등록 차단(하이클래스 호출 없음)
+PASS 수신대상 4개 조합 초안과 함께 저장
+PASS 선택 시 등록 요청 전달·실패해도 초안 유지
+PASS 하이클래스 자동화 실패가 앱을 멈추지 않음
+PASS 날짜별 초안(새 날짜는 빈 본문)
+PASS 기존 날짜 초안 복원
+PASS 잠금 시 편집 버튼·설정 숨김
+PASS 잠금 해제
+PASS 재실행 후 명단 유지
+PASS 재실행 후 알림장 초안 유지
+
+36/36 passed
+PASS 미연결 상태 표시·버튼 하나
+PASS ① 로그인 안내와 단계 표시
+PASS 연결 진행 중에도 버튼 하나
+PASS ② 담당 학급 선택 안내
+PASS ③ 학급 홈만 열면 연결하지 않고 구체적 안내 — 옥구초등학교 6학년 1반 학급은 확인했습니다. 이제 해당 학급의 알림장 게시판을 열어 주세요.
+PASS 학급 홈에서는 저장 없음
+PASS ④ 알림장 게시판 자동 감지 → 확인창 1회 — [{"message":"옥구초등학교 6학년 1반을(를) 찾았습니다.\n이 학급에 연결할까요?","detail":"우리 교실: 옥구초등학교 6학년 1반\n알림장 게시판: https://www.hiclass.net/main/clazzes/c1/note/n1","buttons":["취소","연결하기"]}]
+PASS [연결하기] 순간 classKey·게시판 URL·학급명 저장 — {"url":"https://www.hiclass.net/main/clazzes/c1/note/n1","title":"옥구초등학교 6학년 1반","schoolName":"옥구초등학교"}
+PASS 완료 메시지
+PASS 연결 완료 후 하이클래스 숨김·대시보드 포커스
+PASS 연결 완료 표시·[연결 변경]
+PASS 비밀번호·쿠키 저장 없음
+PASS 재실행 후에도 "연결됨" 표시
+PASS 로그인 만료 시에만 다시 로그인 안내
+PASS 확인창 [취소] 시 저장 안 함
+PASS [하이클래스 연결하기]로 다시 확인창
+
+16/16 passed
+PASS 빈 프로필 + 업데이트 직전 백업 → 자동 복구
+PASS 복구 안내 표시 — 이전 데이터를 복구했습니다 (업데이트 직전 자동 백업 2026. 9. 21. 오후 11:13:20).
+PASS 자동 복구 전 현재 상태 보관본 생성
+PASS 다시 실행해도 반복 복구 없음
+PASS 현재 데이터가 있으면 자동으로 덮어쓰지 않음
+PASS 수동: 업데이트 직전 자동 백업 목록·요약
+PASS 확인창 취소 시 변경 없음
+PASS 다른 폴더(Local Storage) 읽기·요약
+PASS 가져온 뒤 화면을 실제로 다시 불러옴
+PASS 다른 폴더에서 가져오기 → 값 동일
+PASS 원본 폴더는 바뀌지 않음
+PASS 임시 읽기 사본은 다음 실행 때까지 정리
+PASS 가져온 데이터 재실행 후 유지
+PASS 다른 설치본이 없으면 안내 없음
+PASS 다른 설치본 안내: 위치·버전·관리자 계정 안내 — 이 PC의 다른 위치에도 우리 교실이 설치되어 있습니다: C:\Program Files\classroom-dashboard (버전 1.8.1). 바로가기나 Windows 시작 시 자동 실행이 그쪽을 열 수 있습니다. 이 화면에서 데이터가 모두 보이는 것을 확인한 뒤, 관리자 계정으로 Windows 설정 > 앱에서 그 위치의 항목만 제거해 주세요.
+PASS 안내가 상단 상태줄에도 표시
+PASS 안내 후에도 데이터 유지
+
+17/17 passed
+PASS default card {"rows":[{"number":68.90625,"left":110.34375,"right":252.984375,"height":82.875,"line":41.445,"align":"left"},{"number":68.90625,"left":110.34375,"right":252.984375,"height":82.875,"line":41.445,"align":"left"},{"number":68.90625,"left":110.34375,"right":252.984375,"height":41.4375,"line":41.445,"align":"left"},{"number":68.90625,"left":110.34375,"right":252.984375,"height":41.4375,"line":41.445,"align":"left"},{"number":68.90625,"left":110.34375,"right":252.984375,"height":41.4375,"line":41.445,"align":"left"},{"number":68.90625,"left":110.34375,"right":252.984375,"height":41.4375,"line":41.445,"align":"left"}],"center":160.9453125,"cardCenter":160.9453125,"left":63.390625,"right":258.5,"overflow":0,"verticalOverflow":0,"font":30.7}
+PASS wider card {"rows":[{"number":120.4375,"left":174.296875,"right":409.3125,"height":53.859375,"line":53.865,"align":"left"},{"number":120.4375,"left":174.296875,"right":409.3125,"height":53.859375,"line":53.865,"align":"left"},{"number":120.4375,"left":174.296875,"right":409.3125,"height":53.859375,"line":53.865,"align":"left"},{"number":120.4375,"left":174.296875,"right":409.3125,"height":53.859375,"line":53.865,"align":"left"},{"number":120.4375,"left":174.296875,"right":409.3125,"height":53.859375,"line":53.865,"align":"left"},{"number":120.4375,"left":174.296875,"right":409.3125,"height":53.859375,"line":53.865,"align":"left"}],"center":264.875,"cardCenter":264.875,"left":63.390625,"right":466.359375,"overflow":0,"verticalOverflow":0,"font":39.9}
+PASS larger font {"rows":[{"number":103.421875,"left":163.609375,"right":426.3125,"height":60.1875,"line":60.21,"align":"left"},{"number":103.421875,"left":163.609375,"right":426.3125,"height":60.1875,"line":60.21,"align":"left"},{"number":103.421875,"left":163.609375,"right":426.3125,"height":60.1875,"line":60.21,"align":"left"},{"number":103.421875,"left":163.609375,"right":426.3125,"height":60.1875,"line":60.21,"align":"left"},{"number":103.421875,"left":163.609375,"right":426.3125,"height":60.1875,"line":60.21,"align":"left"},{"number":103.421875,"left":163.609375,"right":426.3125,"height":60.1875,"line":60.21,"align":"left"}],"center":264.8671875,"cardCenter":264.875,"left":63.390625,"right":466.359375,"overflow":0,"verticalOverflow":1,"font":44.6}
+PASS smaller font {"rows":[{"number":178.359375,"left":210.609375,"right":351.390625,"height":32.265625,"line":32.265,"align":"left"},{"number":178.359375,"left":210.609375,"right":351.390625,"height":32.265625,"line":32.265,"align":"left"},{"number":178.359375,"left":210.609375,"right":351.390625,"height":32.265625,"line":32.265,"align":"left"},{"number":178.359375,"left":210.609375,"right":351.390625,"height":32.265625,"line":32.265,"align":"left"},{"number":178.359375,"left":210.609375,"right":351.390625,"height":32.265625,"line":32.265,"align":"left"},{"number":178.359375,"left":210.609375,"right":351.390625,"height":32.265625,"line":32.265,"align":"left"}],"center":264.875,"cardCenter":264.875,"left":63.390625,"right":466.359375,"overflow":0,"verticalOverflow":0,"font":23.9}
+PASS current period highlight {"rows":[{"number":178.359375,"left":210.609375,"right":351.390625,"height":32.265625,"line":32.265,"align":"left"},{"number":178.359375,"left":210.609375,"right":351.390625,"height":32.265625,"line":32.265,"align":"left"},{"number":178.359375,"left":210.609375,"right":351.390625,"height":32.265625,"line":32.265,"align":"left"},{"number":178.359375,"left":210.609375,"right":351.390625,"height":32.265625,"line":32.265,"align":"left"},{"number":178.359375,"left":210.609375,"right":351.390625,"height":32.265625,"line":32.265,"align":"left"},{"number":178.359375,"left":210.609375,"right":351.390625,"height":32.265625,"line":32.265,"align":"left"}],"center":264.875,"cardCenter":264.875,"left":63.390625,"right":466.359375,"overflow":0,"verticalOverflow":0,"font":23.9}
+PASS narrow card {"rows":[{"number":67.6875,"left":99.9375,"right":239.09375,"height":64.53125,"line":32.265,"align":"left"},{"number":67.6875,"left":99.9375,"right":239.09375,"height":32.265625,"line":32.265,"align":"left"},{"number":67.6875,"left":99.9375,"right":239.09375,"height":32.265625,"line":32.265,"align":"left"},{"number":67.6875,"left":99.9375,"right":239.09375,"height":32.265625,"line":32.265,"align":"left"},{"number":67.6875,"left":99.9375,"right":239.09375,"height":32.265625,"line":32.265,"align":"left"},{"number":67.6875,"left":99.9375,"right":239.09375,"height":32.265625,"line":32.265,"align":"left"}],"center":153.390625,"cardCenter":153.390625,"left":63.390625,"right":243.390625,"overflow":0,"verticalOverflow":0,"font":23.9}
+PASS long subject wraps {"rows":[{"number":67.359375,"left":97.171875,"right":239.421875,"height":238.5,"line":29.835,"align":"left"},{"number":67.359375,"left":97.171875,"right":239.421875,"height":29.8125,"line":29.835,"align":"left"},{"number":67.359375,"left":97.171875,"right":239.421875,"height":29.8125,"line":29.835,"align":"left"},{"number":67.359375,"left":97.171875,"right":239.421875,"height":29.8125,"line":29.835,"align":"left"},{"number":67.359375,"left":97.171875,"right":239.421875,"height":29.8125,"line":29.835,"align":"left"},{"number":67.359375,"left":97.171875,"right":239.421875,"height":29.8125,"line":29.835,"align":"left"}],"center":153.390625,"cardCenter":153.390625,"left":63.390625,"right":243.390625,"overflow":0,"verticalOverflow":0,"font":22.1}
+PASS empty timetable
+8/8 passed
+PASS D-Day dashboard only
+PASS import excludes D-Day
+PASS retain draft: 등록 실패
+PASS retain draft: 로그인 만료
+PASS retain draft: network exception
+PASS retain draft: 학급 불일치
+PASS retain draft: 수신대상 불일치
+PASS retain draft: 결과 불확실
+PASS retain draft: 임시저장
+PASS retain draft: 취소
+PASS retain draft: 성공 여부 없음
+PASS success resets title/body and preserves date, recipients, link, hash
+PASS published v1.8.4 registration history retained
+PASS new draft saved across reload
+PASS pending registration preserves newer edits
+PASS success resets submitted date only
+PASS D-Day restored on dashboard
+17/17 passed
+PASS both OFF: main blocks before opening/navigation
+PASS both OFF: UI blocks IPC and retains draft
+PASS 기존 ID: parents true / students true
+PASS 기존 ID: parents true / students false
+PASS 기존 ID: parents false / students true
+PASS label for: parents true / students true
+PASS label for: parents true / students false
+PASS label for: parents false / students true
+PASS nested label: parents true / students true
+PASS nested label: parents true / students false
+PASS nested label: parents false / students true
+PASS 실제 custom checkbox: parents true / students true
+PASS 실제 custom checkbox: parents true / students false
+PASS 실제 custom checkbox: parents false / students true
+PASS aria-label: parents true / students true
+PASS aria-label: parents true / students false
+PASS aria-label: parents false / students true
+PASS aria-labelledby: parents true / students true
+PASS aria-labelledby: parents true / students false
+PASS aria-labelledby: parents false / students true
+PASS nearby text: parents true / students true
+PASS nearby text: parents true / students false
+PASS nearby text: parents false / students true
+PASS native/custom wrapper dedup: parents true / students true
+PASS native/custom wrapper dedup: parents true / students false
+PASS native/custom wrapper dedup: parents false / students true
+PASS delayed framework update re-read without duplicate click
+PASS framework replaces checkbox: re-find actual state
+PASS ambiguous/contradictory checkbox blocks before clicks
+PASS ambiguous/contradictory checkbox blocks before clicks
+PASS ambiguous/contradictory checkbox blocks before clicks
+PASS missing control has distinct error
+PASS disabled control change blocked
+PASS click without state change fails safely
+PASS recipient mismatch has distinct error
+PASS recipient changed in confirmation: final registration blocked
+PASS recipient mismatch: initial register blocked
+PASS class mismatch still blocks
+38/38 passed
+PASS current generic modal: verified snapshot, normalized popup and new article without showing window
+PASS legacy SweetAlert: verified snapshot, normalized popup and new article without showing window
+PASS hidden controls: verified snapshot, normalized popup and new article without showing window
+PASS removed controls: verified snapshot, normalized popup and new article without showing window
+PASS erased aria state: verified snapshot, normalized popup and new article without showing window
+PASS pre-click mismatch: final publication blocked
+PASS post-popup mismatch: final publication blocked
+PASS partially hidden controls with readable mismatch: final publication blocked
+PASS ambiguous targets: final publication blocked
+PASS unknown confirmation: final publication blocked
+PASS no modal snapshot proof: final publication blocked
+PASS duplicate composer register: final publication blocked
+PASS no confirmation: final publication blocked
+PASS native popup requested before final confirmation: final publication blocked
+PASS trusted manual confirmation continues through actual article verification
+PASS trusted manual confirmation is blocked when recipients change
+PASS manual cancellation remains safely retryable
+PASS unverified result stays uncertain, never success
+PASS unverified result stays uncertain, never success
+PASS proven cancellation permits retry without losing earlier history
+PASS uncertain publication retains duplicate guard and prior history
+21/21 passed
+PASS running close preserves deadline and countdown
+PASS paused Escape preserves remaining time and resume
+PASS finished button resets saved state, banner and button without another alarm
+PASS finished Escape resets saved state, banner and button without another alarm
+PASS finished native close resets saved state, banner and button without another alarm
+PASS acknowledge inside open dialog resets and immediately restarts configured time
+PASS closed-dialog completion keeps alert until user acknowledgement
+PASS banner acknowledgement outside dialog clears completion
+PASS acknowledged completion remains idle after relaunch
+PASS unacknowledged alert survives reload, acknowledgement is persisted
+PASS PIP running timer visible
+PASS PIP paused timer preserved
+PASS PIP completion clears after acknowledgement
+PASS standalone PIP is always on top; close and reopen preserve the running timer
+PASS PIP pause, resume, restart and reset update the main timer
+PASS main-window controls update the standalone PIP
+PASS minimized main window finishes once; PIP acknowledgement clears the saved alert
+PASS small timer PIP fits horizontally; time settings restores main timer without switching to an invalid tab
+PASS manual duplicate launch exits without another window: same path
+PASS manual duplicate launch exits without another window: different app path
+PASS isolated startup OFF persists across relaunch without OS registration
+21/21 passed
+PASS 1440x960 scale 1: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS 1280x720 scale 1: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS 900x650 scale 1: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS scale 1: extreme zoom keeps action accessible and fields scrollable
+PASS scale 1: keyboard reaches every diary control
+PASS 1440x960 scale 1.25: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS 1280x720 scale 1.25: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS 900x650 scale 1.25: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS scale 1.25: extreme zoom keeps action accessible and fields scrollable
+PASS scale 1.25: keyboard reaches every diary control
+PASS 1440x960 scale 1.5: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS 1280x720 scale 1.5: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS 900x650 scale 1.5: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS scale 1.5: extreme zoom keeps action accessible and fields scrollable
+PASS scale 1.5: keyboard reaches every diary control
+15/15 passed
+PASS normal mocked publication never shows or focuses a HiClass window
+PASS duplicate hash blocks a second adapter attempt
+PASS only explicit connect reveals login window
+PASS an existing visible connection window is hidden before publication
+PASS expired login returns guidance without revealing window
+PASS background window.open is denied and stops before submit with explanation
+PASS uncertain result retains ledger and never auto-retries
+PASS explicit authentication may use HTTPS popup instead of blanket blocking it
+PASS all interactive child windows hidden on background transition
+PASS real session inspection recognizes login form without showing a window
+PASS real adapter fills hidden non-focusable editor, verifies recipients/confirmation/article, and records success on fixture only
+11/11 passed
+
+> test:photos
+> node tests/e2e/photos.e2e.cjs && node tests/e2e/hiclass-photos.e2e.cjs && node tests/e2e/photo-boundaries.e2e.cjs && node tests/e2e/photo-transfer.e2e.cjs
+
+PASS paste two photos: native decode, independent references and visible previews
+PASS file selection, reorder and individual deletion
+PASS native clipboard text paste unchanged
+PASS native macOS image clipboard reaches photo paste handler (Windows remains unverified)
+PASS font change defers during composition and preserves selection
+PASS in-flight image remains in original date and class after tab switch
+PASS corrupt/oversized/excess photo count explicitly rejected without losing draft
+PASS draft storage failure preserves body and imported photos for retry
+PASS missing driver blocks posting, keeps body and photos, records no success and does not resend
+PASS partial failure, uncertain, cancellation, expiration and unproved success preserve body/photos
+PASS photo pasted while publish pending preserves entire newer draft
+PASS verified mock success clears submitted body/photos and retains history references
+PASS long text + photos + 48px at small window and zoom keeps footer accessible
+PASS whiteboard image selection/move/resize preserves aspect ratio
+PASS image deletion participates in board undo/redo
+PASS ordinary text paste in a whiteboard text object is not intercepted
+PASS photos, text blocks and pen strokes coexist
+PASS existing whiteboard PIP also displays photos
+PASS diary paste never changes hidden whiteboard
+PASS real backup IPC includes photo bytes, history and editor preference
+PASS actual Electron restart restores diary photos/font and board geometry/images/strokes/text
+PASS portable backup native decode restores every referenced photo in separate data folder
+22/22 passed
+PASS offline full adapter: real file inputs + upload receipt + ordered editor photos + body + confirmed article photos
+PASS partial photo upload stops before register, never body-only publication
+PASS photo removed after popup blocks final confirmation and proves cancellation
+PASS published body without every photo is uncertain, never success or automatic retry
+4/4 passed
+PASS large JPEG fits within initial board while keeping original 3000×2000 image
+PASS whiteboard import started before tab switch stays on board only
+PASS non-image clipboard file does not intercept ordinary editor paste
+PASS native photo-store write failure retains accepted photos and body
+PASS successful mock registration followed by history/draft write failure never clears body/photos
+PASS actual backup UI confirmation/import/reload restores body and photos
+6/6 passed
+PASS diary pending photo blocks backup and restore without discarding it
+PASS whiteboard pending photo blocks backup and restore without discarding it
+PASS unsaved draft cannot be exported as a successful stale backup
+PASS after saving recovers, backup includes both editors and their photo bytes
+PASS unsaved font preference also blocks stale backup
+5/5 passed
+PASS new installation starts with NEIS helper and no selected school
+PASS both NEIS services receive selected office and school codes
+PASS same name, grade and class in another district open an isolated store
+PASS second school has no first-school HiClass link
+PASS second school has no first-school publishing selection or history
+PASS returning restores all first-school data and the correct link
+PASS returning restores first-school publishing service
+7/7 passed
+PASS legacy default HiClass
+PASS service switch preserves common draft/photos and hides HiClass recipient controls
+PASS actual-screen inspection without a class page cannot grant authority or clear the draft
+PASS remote window has no preload, Node or trusted IPC access
+PASS wrong school blocks manual class confirmation
+PASS wrong academic year blocks manual class confirmation
+PASS matching teacher confirmation is explicitly manual, never authenticated success
+PASS copy/export preserve exact photo bytes and order, remain pending
+PASS duplicate handoff blocked
+PASS restart restores service, draft, photos and unresolved publication
+PASS editing content cannot bypass unresolved handoff
+PASS explicit result confirmation records manual outcome without clearing newer edits
+PASS return to HiClass retains draft and photos
+PASS network failure preserves draft/photos and pending record, duplicate never retries network
+PASS explicit not-posted confirmation permits deliberate recovery from failed handoff
+PASS another class has independent selection, link and publication history
+PASS real Electron cookie stores isolate school, class and service
+PASS automatic Schoolbell publication disabled in main process and UI; renderer cannot opt in
+PASS observed official login redirect passes navigation guard
+19/19 passed
+
+> test:schoolbell-auto
+> node tests/e2e/schoolbell-automatic.e2e.cjs && node tests/e2e/schoolbell-completion.e2e.cjs && node tests/e2e/schoolbell-prepared.e2e.cjs && node tests/e2e/schoolbell-electron.e2e.cjs
+
+PASS no-photo synthetic post is reloaded and verified before success
+PASS synthetic UI fills title/body and uploads one original photo, then verifies newly reloaded result
+PASS multiple real file-input attachments preserve byte content, order, Unicode and line breaks
+PASS existing publication blocks duplicate submit
+PASS different visible class blocks input and submit
+PASS partial persisted photo result is uncertain, keeps draft and blocks changed-content retry
+PASS disk-backed unresolved attempt survives coordinator restart
+7/7 passed (synthetic website only)
+PASS disabled production capability blocks even direct click handler invocation
+PASS failure, cancellation, blocked response, uncertainty and exception retain body/photos
+PASS missing photo proof, manual confirmation and unmatched persisted receipt never clear draft
+PASS missing or mismatched server post receipt never clears the current draft
+PASS verified automatic receipt saves service-tagged original history before clearing; reload restores new draft
+PASS verified no-photo success creates new draft
+PASS new text and photo added during posting are preserved; history uses submitted snapshot
+PASS success clears only submitted date and leaves newly edited date intact
+PASS history storage failure keeps complete draft and does not report a fresh draft
+PASS new-draft storage failure preserves saved body/photos and verified history across reload
+PASS class switch during posting cannot clear or relabel another class draft
+PASS return to HiClass retains existing publishing controls
+12/12 passed (synthetic IPC only; live Schoolbell remains BLOCKED)
+PASS observed DOM shape: 0 file(s) uploaded to local server and original bytes re-downloaded after publication
+PASS observed DOM shape: 1 file(s) uploaded to local server and original bytes re-downloaded after publication
+PASS observed DOM shape: 2 file(s) uploaded to local server and original bytes re-downloaded after publication
+PASS fresh local ledger still blocks duplicate found in refreshed remote fixture
+PASS unknown date prevents first title/body/file mutation
+PASS partial uploaded originals stop before final submit
+PASS changed persisted result remains uncertain and blocks all retries
+7/7 passed (local synthetic bridge only; live Schoolbell NOT RUN)
+PASS production gate and independent missing grant block before opening a web window
+PASS actual Electron adapter: 0 original file(s), native text events, one click, refresh and observed UI original downloads
+PASS actual Electron adapter: 1 original file(s), native text events, one click, refresh and observed UI original downloads
+PASS actual Electron adapter: 2 original file(s), native text events, one click, refresh and observed UI original downloads
+PASS corrupt UI-downloaded original prevents success, removes only verification temp files and never republishes
+PASS acknowledged one-click navigation to schoolnews is followed by read-only classnews verification
+PASS refreshed persisted content blocks duplicate even with a new local ledger
+PASS partial originals block final send and retry; local photos remain readable
+PASS reversed originals block final send and retry; local photos remain readable
+PASS corrupt-upload originals block final send and retry; local photos remain readable
+PASS missing readContext never becomes verified success
+PASS missing readDate never becomes verified success
+PASS missing readUploads never becomes verified success
+PASS missing readPublished never becomes verified success
+PASS separate final approval cancellation prevents any click
+PASS edit while final confirmation is open prevents stale submission
+PASS unobserved final confirmation semantics prevent send-button click
+PASS post-storage mismatch remains uncertain and never retries
+PASS framework event model receives trusted native body input; Korean/newlines/literal HTML preserved
+PASS active composition blocks replacement; empty body clears through native editing
+PASS replacing existing text preserves leading/trailing empty lines and spaces exactly
+PASS current DOM authority mismatch blocks actual editor mutation
+22/22 passed (local Electron; live Schoolbell NOT RUN)

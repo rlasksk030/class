@@ -1,0 +1,361 @@
+{
+  "codeCommit": "7637945969b6979a187a7b0f377e13555c6ce920",
+  "status": "PASS",
+  "appButtonToSuccess": "PASS",
+  "singleNativeDispatch": true,
+  "trustedSingleClick": true,
+  "newPostIdRecorded": true,
+  "publishedTitleMatches": 1,
+  "serverReadbackVerified": true,
+  "photoOriginalAndOrderVerified": true,
+  "photos": [
+    {
+      "sha256": "7e8cfade52a2b1a8c955a3936cdbc8da7b4db8ad3c9d1a6eab7b124a5312b4e5",
+      "bytes": 97
+    }
+  ],
+  "successReceiptPersisted": true,
+  "successReceiptCountBefore": 1,
+  "successReceiptCountAfter": 2,
+  "unchangedDraftClearedObservedInApp": true,
+  "draftBodyEmptyObservedInApp": true,
+  "draftPhotosEmptyObservedInApp": true,
+  "reconciliationUsed": false,
+  "automaticRetry": false,
+  "executionMode": "development-test",
+  "servicePermission": "unconfirmed",
+  "dateMode": "immediate",
+  "draftDate": "2026-11-10",
+  "publishedDate": "2026-11-10",
+  "trace": [
+    {
+      "step": "recipient-dialog",
+      "stage": "close",
+      "totalCount": 1,
+      "dialogCount": 1,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "close",
+      "totalCount": 0,
+      "dialogCount": 0,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "publication-mode"
+    },
+    {
+      "step": "context-provider",
+      "state": "complete",
+      "elapsedMs": 2728
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "recipientCheck": {
+        "known": true,
+        "empty": true,
+        "totalCount": 1,
+        "dialogCount": 1,
+        "hiddenCount": 0,
+        "unknownCount": 0,
+        "covered": false
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "evidence-read",
+      "method": "readUploads",
+      "state": "started"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readDate",
+      "state": "started"
+    },
+    {
+      "step": "commit-revalidation",
+      "contextMatches": true,
+      "audienceMatches": true,
+      "originalsMatch": true,
+      "titleMatches": true,
+      "bodyMatches": true,
+      "semanticRevisionMatches": true
+    },
+    {
+      "step": "commit-revision-refresh",
+      "revalidated": true
+    },
+    {
+      "step": "native-send",
+      "state": "dispatching"
+    },
+    {
+      "step": "native-send",
+      "state": "delivered",
+      "trusted": true,
+      "events": [
+        "pointerdown",
+        "mousedown",
+        "pointerup",
+        "mouseup",
+        "click"
+      ]
+    },
+    {
+      "step": "commitOnce",
+      "state": "complete"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readPublishedMetadata",
+      "state": "started"
+    },
+    {
+      "step": "published-result-screen",
+      "state": "waiting"
+    },
+    {
+      "step": "post-click-ui",
+      "composer": true,
+      "sendCount": 1,
+      "sendDisabled": false,
+      "invalidFields": 0,
+      "alerts": 0,
+      "dialogs": 1,
+      "messageKinds": [],
+      "resultBoard": false
+    },
+    {
+      "step": "post-click-ui",
+      "composer": true,
+      "sendCount": 1,
+      "sendDisabled": false,
+      "invalidFields": 0,
+      "alerts": 0,
+      "dialogs": 0,
+      "messageKinds": [],
+      "resultBoard": false
+    },
+    {
+      "step": "post-click-ui",
+      "composer": true,
+      "sendCount": 1,
+      "sendDisabled": true,
+      "invalidFields": 0,
+      "alerts": 0,
+      "dialogs": 0,
+      "messageKinds": [],
+      "resultBoard": false
+    },
+    {
+      "step": "post-click-ui",
+      "composer": false,
+      "sendCount": 0,
+      "sendDisabled": null,
+      "invalidFields": 0,
+      "alerts": 0,
+      "dialogs": 0,
+      "messageKinds": [],
+      "resultBoard": true
+    },
+    {
+      "step": "published-result-screen",
+      "state": "complete",
+      "resultRoute": true
+    },
+    {
+      "step": "published-index",
+      "newTitleMatches": 1,
+      "dateKnown": true
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "submitted",
+      "action": "read"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "group"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "account"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "roster"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "invite"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "recipients"
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "control"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "recipient-reader"
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "control",
+      "reason": "control-occluded",
+      "ready": false
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "control",
+      "totalCount": 0,
+      "dialogCount": 0,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "open",
+      "totalCount": 0,
+      "dialogCount": 0,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "probe",
+      "totalCount": 0,
+      "dialogCount": 0,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "reason": "dialog-count",
+      "known": false
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "probe",
+      "totalCount": 1,
+      "dialogCount": 1,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": true,
+      "reason": "dialog-covered",
+      "known": false
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "probe",
+      "totalCount": 1,
+      "dialogCount": 1,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "known": true
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "close",
+      "totalCount": 1,
+      "dialogCount": 1,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "recipient-dialog",
+      "stage": "close",
+      "totalCount": 0,
+      "dialogCount": 0,
+      "hiddenCount": 0,
+      "unknownCount": 0,
+      "covered": false,
+      "ready": true
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "publication-mode"
+    },
+    {
+      "step": "context-provider",
+      "state": "complete",
+      "elapsedMs": 4156
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "recipientCheck": {
+        "known": true,
+        "empty": true,
+        "totalCount": 1,
+        "dialogCount": 1,
+        "hiddenCount": 0,
+        "unknownCount": 0,
+        "covered": false
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    }
+  ]
+}

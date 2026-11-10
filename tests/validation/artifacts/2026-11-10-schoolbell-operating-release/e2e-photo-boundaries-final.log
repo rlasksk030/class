@@ -1,0 +1,7 @@
+PASS large JPEG fits within initial board while keeping original 3000×2000 image
+PASS whiteboard import started before tab switch stays on board only
+PASS non-image clipboard file does not intercept ordinary editor paste
+PASS native photo-store write failure retains accepted photos and body
+PASS successful mock registration followed by history/draft write failure never clears body/photos
+PASS actual backup UI confirmation/import/reload restores body and photos
+6/6 passed

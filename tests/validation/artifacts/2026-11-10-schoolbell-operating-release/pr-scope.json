@@ -1,0 +1,16 @@
+{
+  "base": "b296c2a6416ba9b4945de7382b5788299e37dfd6",
+  "head": "e90311f5b472e187b786bafd55159f200f7c67c4",
+  "changedFiles": 291,
+  "appSourceFiles": 56,
+  "evidenceAndDocsFiles": 213,
+  "priorNonSchoolbellSourceChanges": [
+    "app/diary.css",
+    "app/diary.js",
+    "app/extras.css",
+    "app/hiclass.cjs",
+    "app/index.html",
+    "app/main.cjs",
+    "app/preload.cjs"
+  ]
+}

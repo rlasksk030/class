@@ -66,7 +66,11 @@ const refresh=async page=>{await page.click('#refresh');await page.waitForTimeou
  ok('WB. 삭제→취소→다시 실행',undel.length===afterDel.length+1&&redel.length===afterDel.length,`${afterDel.length}/${undel.length}/${redel.length}`);
  await page.click(U);
  // pen stroke
- await page.click('#whiteboardPen');const cb=await (await page.$('#whiteboardCanvas')).boundingBox();await page.mouse.move(cb.x+100,cb.y+400);await page.mouse.down();await page.mouse.move(cb.x+300,cb.y+450,{steps:5});await page.mouse.up();
+ // A host display may constrain the Electron window. Fixed y+400/y+450 can hit
+ // the bottom tab bar or fall outside a small viewport instead of drawing ink.
+ await page.click('#whiteboardPen');const cb=await (await page.$('#whiteboardCanvas')).boundingBox();
+ await page.mouse.move(cb.x+cb.width*.15,cb.y+cb.height*.25);await page.mouse.down();
+ await page.mouse.move(cb.x+cb.width*.35,cb.y+cb.height*.35,{steps:5});await page.mouse.up();
  const strokes=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('whiteboardContents')).strokes.length);
  const s1=await strokes();await page.click(U);const s0=await strokes();await page.click(R);ok('WB. 판서도 같은 기록으로 취소/다시',s1===1&&s0===0&&(await strokes())===1);
  await page.click('#whiteboardTyping');

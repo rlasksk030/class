@@ -31,6 +31,10 @@ async function geometry(page,label,{singleLine=false}={}){
 (async()=>{try{
  app=await _electron.launch({executablePath:require('electron'),args:['--no-sandbox',path.join(ROOT,'app')],env:{...process.env,CLASSROOM_TEST_PROFILE:PROFILE}});
  const page=await app.firstWindow();
+ // The host can clamp a visible native window to a very short work area. Pin
+ // this renderer layout test so auto-fit's minimum size does not mask font controls.
+ await page.setViewportSize({width:1280,height:900});
+ assert.deepEqual(await page.evaluate(()=>[innerWidth,innerHeight]),[1280,900]);
  await app.evaluate(({ipcMain})=>{ipcMain.removeHandler('fetch');ipcMain.handle('fetch',async()=>{throw Error('offline test');});});
  await page.evaluate(()=>{localStorage.setItem('settings',JSON.stringify({grade:'6',classroom:'1'}));localStorage.setItem('dashboardLocked','false');});
  await page.reload();await page.evaluate(()=>document.fonts.ready);

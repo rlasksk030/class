@@ -19,6 +19,9 @@
 #whiteboardScreen[hidden]{display:none}.utility-controls{z-index:30}.screen-tabs{display:flex;gap:4px}.screen-tabs [aria-selected="true"]{background:#f4f5f7;color:#354d74}.whiteboard-active .size-controls,.whiteboard-active #ddayBadge{visibility:hidden}.board-size-mode .utility-controls{bottom:38px}
 #whiteboardScreen{padding-bottom:45px}
 #timerFinished{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:40;padding:20px 30px;display:flex;align-items:center;gap:24px;border:2px solid #9aaecb;border-radius:14px;background:#eaf0fa;color:#354d74;box-shadow:0 8px 40px #18233522;font-size:28px}#timerFinished[hidden]{display:none}
+/* Inside a short dialog the fixed banner can cover its close button. Keep it in
+   the dialog's scroll flow; the outside-dialog completion alert remains fixed. */
+#timerDialog #timerFinished{position:static;transform:none;max-width:100%;margin:18px 0 0;padding:14px;flex-wrap:wrap;justify-content:center}
 /* Keep source credits unobstructed; D-Day sits beside the header information. */
 header>div:first-child{position:relative}
 #ddayBadge{position:absolute;top:100%;left:0;bottom:auto;max-width:100%;padding:0;margin-top:5px;font-size:12px}

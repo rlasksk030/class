@@ -1,0 +1,3 @@
+PASS existing native title/body/file transport in nonpublishing-only flow; no send/save
+PASS draft appearing during consent is preserved
+PASS recipient-label change blocks further input and upload

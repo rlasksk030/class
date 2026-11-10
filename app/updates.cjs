@@ -39,6 +39,10 @@ module.exports=function setupUpdates(getMain){
    emit({phase:'installing'});app.quit();return true;
   }catch(error){busy=false;const detail=String(error?.message||error);await fs.appendFile(path.join(app.getPath('userData'),'update-error.log'),new Date().toISOString()+' '+String(error?.stack||detail)+'\n').catch(()=>{});emit({phase:'error',message:'업데이트하지 못했습니다. 현재 버전을 계속 사용할 수 있습니다. 원인: '+detail});return false;}
  });
+ if(require('./build-identity.cjs').validation){
+  status={phase:'disabled',currentVersion:app.getVersion(),message:'검증용 독립 설치판입니다. 정식 업데이트를 조회하거나 적용하지 않습니다.'};
+  return ()=>true;
+ }
  updater=require('./updater-bundle.cjs');updater.autoDownload=false;updater.autoInstallOnAppQuit=false;updater.allowDowngrade=false;updater.disableDifferentialDownload=true;
  updater.setFeedURL(config);
  updater.on('update-not-available',()=>emit({phase:'current',version:null}));

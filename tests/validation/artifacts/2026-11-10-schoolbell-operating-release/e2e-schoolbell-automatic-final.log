@@ -1,0 +1,8 @@
+PASS no-photo synthetic post is reloaded and verified before success
+PASS synthetic UI fills title/body and uploads one original photo, then verifies newly reloaded result
+PASS multiple real file-input attachments preserve byte content, order, Unicode and line breaks
+PASS existing publication blocks duplicate submit
+PASS different visible class blocks input and submit
+PASS partial persisted photo result is uncertain, keeps draft and blocks changed-content retry
+PASS disk-backed unresolved attempt survives coordinator restart
+7/7 passed (synthetic website only)

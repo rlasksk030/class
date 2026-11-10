@@ -1,0 +1,22 @@
+{
+  "kind": "nonpublishing",
+  "steps": {
+    "context": true,
+    "blankComposer": false,
+    "teacherConsent": false,
+    "title": false,
+    "body": false,
+    "upload": false,
+    "original": false,
+    "finalContext": false
+  },
+  "sendCount": 0,
+  "scheduleCount": 0,
+  "saveCount": 0,
+  "identityVerified": false,
+  "authorityVerified": false,
+  "recipientsVerified": false,
+  "status": "blocked",
+  "stage": "blank-composer",
+  "reason": "existing-content"
+}

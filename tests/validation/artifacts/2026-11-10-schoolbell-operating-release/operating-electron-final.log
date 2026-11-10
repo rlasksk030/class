@@ -1,0 +1,7 @@
+PASS final native DOM target change blocks send; durable uncertain receipt preserves the attempt
+PASS atomic DOM guard rejects scheduled mode despite stale immediate evidence; sends zero times
+PASS presentation-only DOM change preserves revision -> single local send -> original download -> distinct draft/server dates in durable receipt
+PASS same-URL document replacement changes the revision identity
+PASS ordinary class role-scoped contract, unknown member totals and false identity flags; explicit final confirmation and durable provenance
+PASS official contract unchanged
+4 focused native integration checks; live app publication and draft completion NOT RUN
