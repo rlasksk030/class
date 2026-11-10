@@ -55,3 +55,13 @@ test('ordinary receipts retain declaration provenance without inventing identity
  assert.throws(()=>services.publication({...receipt,servicePermission:'official'},0));
  assert.throws(()=>services.publication({...receipt,identitySource:'observed-service-ui'},0));
 });
+
+test('release availability alone cannot authorize posting without a registered class connection',async()=>{
+ const status=require('./schoolbell-capability.cjs').status();
+ assert.equal(status.available,true);assert.equal(status.enabled,false);
+ const result=await require('./schoolbell-publish.cjs').createPublisher({profile:{},driver:{inspect(){throw Error('unbound driver opened');}}}).publish({});
+ assert.equal(result.status,'blocked');
+ const f=await fixture({publish:status.available});assert.equal(f.auth.status(target.classKey).enabled,true);
+ assert.equal(f.auth.status('2026:1:3').enabled,false);assert.equal(operating.validGrant(f.grant,target,'submit'),false);
+ f.auth.revoke();assert.equal(f.auth.status(target.classKey).enabled,false);
+});

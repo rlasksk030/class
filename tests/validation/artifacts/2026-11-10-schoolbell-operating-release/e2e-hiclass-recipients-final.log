@@ -1,0 +1,39 @@
+PASS both OFF: main blocks before opening/navigation
+PASS both OFF: UI blocks IPC and retains draft
+PASS 기존 ID: parents true / students true
+PASS 기존 ID: parents true / students false
+PASS 기존 ID: parents false / students true
+PASS label for: parents true / students true
+PASS label for: parents true / students false
+PASS label for: parents false / students true
+PASS nested label: parents true / students true
+PASS nested label: parents true / students false
+PASS nested label: parents false / students true
+PASS 실제 custom checkbox: parents true / students true
+PASS 실제 custom checkbox: parents true / students false
+PASS 실제 custom checkbox: parents false / students true
+PASS aria-label: parents true / students true
+PASS aria-label: parents true / students false
+PASS aria-label: parents false / students true
+PASS aria-labelledby: parents true / students true
+PASS aria-labelledby: parents true / students false
+PASS aria-labelledby: parents false / students true
+PASS nearby text: parents true / students true
+PASS nearby text: parents true / students false
+PASS nearby text: parents false / students true
+PASS native/custom wrapper dedup: parents true / students true
+PASS native/custom wrapper dedup: parents true / students false
+PASS native/custom wrapper dedup: parents false / students true
+PASS delayed framework update re-read without duplicate click
+PASS framework replaces checkbox: re-find actual state
+PASS ambiguous/contradictory checkbox blocks before clicks
+PASS ambiguous/contradictory checkbox blocks before clicks
+PASS ambiguous/contradictory checkbox blocks before clicks
+PASS missing control has distinct error
+PASS disabled control change blocked
+PASS click without state change fails safely
+PASS recipient mismatch has distinct error
+PASS recipient changed in confirmation: final registration blocked
+PASS recipient mismatch: initial register blocked
+PASS class mismatch still blocks
+38/38 passed

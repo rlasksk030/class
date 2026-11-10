@@ -23,13 +23,13 @@ async function release(){await app.evaluate(()=>{globalThis.fixture.hold=false;g
   ipcMain.removeHandler('fetch');ipcMain.handle('fetch',()=>{throw Error('offline fixture');});
   const req=process.mainModule.require;
   const store=req(root+'/app/diary-services.cjs').createStore(req(root+'/app/school-profile.cjs').get());
-  globalThis.fixture={enabled:false,result:'success',receipt:'verified',hold:false,attachmentsVerified:true,calls:0};
+  globalThis.fixture={enabled:false,connected:false,result:'success',receipt:'verified',hold:false,attachmentsVerified:true,calls:0};
   const original=ipcMain._invokeHandlers.get('diary-service:status');
   ipcMain.removeHandler('diary-service:status');
   ipcMain.handle('diary-service:status',async(e,key)=>{
    if(globalThis.fixture.statusError)throw Error('fixture status unavailable');
    const state=await original(e,key);
-   return {...state,capability:{enabled:globalThis.fixture.enabled,message:'LOCAL SYNTHETIC TEST ONLY'}};
+   return {...state,operatingConnection:{connected:globalThis.fixture.connected,enabled:globalThis.fixture.enabled&&globalThis.fixture.connected},capability:{enabled:globalThis.fixture.enabled,message:'LOCAL SYNTHETIC TEST ONLY'}};
   });
   ipcMain.removeHandler('schoolbell:publish');
   ipcMain.handle('schoolbell:publish',async(_e,note)=>{
@@ -60,6 +60,10 @@ async function release(){await app.evaluate(()=>{globalThis.fixture.hold=false;g
  assert.equal(await app.evaluate(()=>globalThis.fixture.calls),0);
  pass('disabled production capability blocks even direct click handler invocation');
  await configure({enabled:true});await page.click('#dashboardTab');await page.click('#diaryTab');await ready();
+ assert.equal(await page.locator('#schoolbellPublish').isDisabled(),true);
+ await page.evaluate(()=>document.querySelector('#schoolbellPublish').onclick());assert.equal(await app.evaluate(()=>globalThis.fixture.calls),0);
+ pass('capability without a current operating connection cannot invoke publication');
+ await configure({connected:true});await page.click('#dashboardTab');await page.click('#diaryTab');await ready();
  const date=await page.inputValue('#diaryDate');
  const png=Buffer.from(await app.evaluate(({nativeImage})=>[...nativeImage.createFromBitmap(Buffer.from([90,40,150,255]),{width:1,height:1}).toPNG()]));
  const addPhoto=async()=>{const n=await photos();await page.locator('#diaryPhotoFiles').setInputFiles({name:'synthetic.png',mimeType:'image/png',buffer:png});await page.waitForFunction(n=>document.querySelectorAll('#diaryPhotos figure').length===n+1,n);};

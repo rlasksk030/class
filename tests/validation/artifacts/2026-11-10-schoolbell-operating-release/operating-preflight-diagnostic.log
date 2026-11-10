@@ -1,0 +1,526 @@
+{
+  "result": {
+    "status": "uncertain",
+    "message": "학교·학년도·학년·반과 현재 교사 권한을 확인하지 못했습니다. 초안과 사진은 유지됩니다. 자동으로 재전송하지 않습니다.",
+    "reason": "context-unverified"
+  },
+  "reviews": [
+    "prepare"
+  ],
+  "diagnostics": [
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "idle",
+      "action": "read"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "inspected",
+      "action": "read"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readBaseline",
+      "state": "started"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "inspected",
+      "action": "read"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "baselined",
+      "action": "input"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "baselined",
+      "action": "input"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "baselined",
+      "action": "input"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readDate",
+      "state": "started"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "opened",
+      "action": "input"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readDate",
+      "state": "started"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "opened",
+      "action": "input"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "writeTitle",
+      "state": "started"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readDate",
+      "state": "started"
+    },
+    {
+      "step": "writeTitle",
+      "state": "complete"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "opened",
+      "action": "input"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "opened",
+      "action": "input"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "writeBodyText",
+      "state": "started"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readDate",
+      "state": "started"
+    },
+    {
+      "step": "writeBodyText",
+      "state": "complete"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "opened",
+      "action": "input"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "readFields",
+      "state": "started"
+    },
+    {
+      "step": "readFields",
+      "state": "complete",
+      "sendTarget": {
+        "visible": true,
+        "enabled": true,
+        "centerHitsButton": true,
+        "visiblePoints": 9,
+        "hitTag": "BUTTON",
+        "hitDropdown": false,
+        "hitContainsButton": true,
+        "hitIsParent": false,
+        "pointerEvents": "enabled",
+        "hitIsBackdrop": false,
+        "hitSurfaceClasses": [
+          "btn-with-description"
+        ]
+      }
+    },
+    {
+      "step": "evidence-read",
+      "method": "readDate",
+      "state": "started"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "filled",
+      "action": "attachments"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "filled",
+      "action": "attachments"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "attachFiles",
+      "state": "started"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readDate",
+      "state": "started"
+    },
+    {
+      "step": "attachFiles",
+      "state": "complete"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "filled",
+      "action": "attachments"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readUploads",
+      "state": "started"
+    },
+    {
+      "step": "readAttachmentState",
+      "state": "started"
+    },
+    {
+      "step": "readAttachmentState",
+      "state": "complete"
+    },
+    {
+      "step": "readFields",
+      "state": "started"
+    },
+    {
+      "step": "readFields",
+      "state": "complete",
+      "sendTarget": {
+        "visible": true,
+        "enabled": true,
+        "centerHitsButton": true,
+        "visiblePoints": 9,
+        "hitTag": "BUTTON",
+        "hitDropdown": false,
+        "hitContainsButton": true,
+        "hitIsParent": false,
+        "pointerEvents": "enabled",
+        "hitIsBackdrop": false,
+        "hitSurfaceClasses": [
+          "btn-with-description"
+        ]
+      }
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "attached",
+      "action": "read"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "attached",
+      "action": "read"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readDate",
+      "state": "started"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readUploads",
+      "state": "started"
+    },
+    {
+      "step": "readAttachmentState",
+      "state": "started"
+    },
+    {
+      "step": "readAttachmentState",
+      "state": "complete"
+    },
+    {
+      "step": "readFields",
+      "state": "started"
+    },
+    {
+      "step": "readFields",
+      "state": "complete",
+      "sendTarget": {
+        "visible": true,
+        "enabled": true,
+        "centerHitsButton": true,
+        "visiblePoints": 9,
+        "hitTag": "BUTTON",
+        "hitDropdown": false,
+        "hitContainsButton": true,
+        "hitIsParent": false,
+        "pointerEvents": "enabled",
+        "hitIsBackdrop": false,
+        "hitSurfaceClasses": [
+          "btn-with-description"
+        ]
+      }
+    },
+    {
+      "step": "readFields",
+      "state": "started"
+    },
+    {
+      "step": "readFields",
+      "state": "complete",
+      "sendTarget": {
+        "visible": true,
+        "enabled": true,
+        "centerHitsButton": true,
+        "visiblePoints": 9,
+        "hitTag": "BUTTON",
+        "hitDropdown": false,
+        "hitContainsButton": true,
+        "hitIsParent": false,
+        "pointerEvents": "enabled",
+        "hitIsBackdrop": false,
+        "hitSurfaceClasses": [
+          "btn-with-description"
+        ]
+      }
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "attached",
+      "action": "read"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "checkCommit",
+      "state": "started"
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "before-readDate",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": true,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": true,
+      "changes": {
+        "inputEvent": false,
+        "titleMutation": false,
+        "changeEvent": false,
+        "bodyMutation": false,
+        "characterData": false,
+        "childList": false,
+        "fileMutation": false
+      }
+    },
+    {
+      "step": "evidence-read",
+      "method": "readDate",
+      "state": "started"
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "after-readDate",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": true,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": true,
+      "changes": {
+        "inputEvent": false,
+        "titleMutation": false,
+        "changeEvent": false,
+        "bodyMutation": false,
+        "characterData": false,
+        "childList": false,
+        "fileMutation": false
+      }
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "before-focus",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": true,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": true,
+      "changes": {
+        "inputEvent": false,
+        "titleMutation": false,
+        "changeEvent": false,
+        "bodyMutation": false,
+        "characterData": false,
+        "childList": false,
+        "fileMutation": false
+      }
+    },
+    {
+      "step": "native-send-focus",
+      "state": "focused"
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "after-focus",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": true,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": true,
+      "changes": {
+        "inputEvent": false,
+        "titleMutation": false,
+        "changeEvent": false,
+        "bodyMutation": false,
+        "characterData": false,
+        "childList": false,
+        "fileMutation": false
+      }
+    },
+    {
+      "step": "native-send-target",
+      "state": "ready",
+      "target": {
+        "visible": true,
+        "enabled": true,
+        "centerHitsButton": true,
+        "visiblePoints": 9,
+        "hitTag": "BUTTON",
+        "hitDropdown": false,
+        "hitContainsButton": true,
+        "hitIsParent": false,
+        "pointerEvents": "enabled",
+        "hitIsBackdrop": false,
+        "hitSurfaceClasses": [
+          "btn-with-description"
+        ]
+      }
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "after-target-ready",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": true,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": true,
+      "changes": {
+        "inputEvent": false,
+        "titleMutation": false,
+        "changeEvent": false,
+        "bodyMutation": false,
+        "characterData": false,
+        "childList": false,
+        "fileMutation": false
+      }
+    },
+    {
+      "step": "checkCommit",
+      "state": "failed",
+      "guardFailure": "mode",
+      "nativeFailure": null,
+      "proofFailure": false,
+      "comparisons": {}
+    }
+  ]
+}

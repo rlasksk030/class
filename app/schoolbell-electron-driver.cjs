@@ -1,8 +1,8 @@
 'use strict';
 // Concrete Electron composer + existing prepared transaction driver. Evidence
 // providers are trusted main-process source code, NEVER renderer/settings data.
-// Observed UI evidence is installed. Production remains locked; isolated test
-// consent never promotes user-confirmed mapping to service identity evidence.
+// Observed UI evidence and registered main-process class permission are required.
+// Teacher confirmation never becomes service identity or official permission.
 const {createObservedComposerBridge,commitCodes}=require('./schoolbell-observed-composer.cjs');
 const {createObservedPostBridge}=require('./schoolbell-observed-post.cjs');
 const {hash}=require('./media-store.cjs');

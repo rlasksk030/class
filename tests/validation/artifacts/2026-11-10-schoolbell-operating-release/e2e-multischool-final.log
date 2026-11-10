@@ -1,0 +1,8 @@
+PASS new installation starts with NEIS helper and no selected school
+PASS both NEIS services receive selected office and school codes
+PASS same name, grade and class in another district open an isolated store
+PASS second school has no first-school HiClass link
+PASS second school has no first-school publishing selection or history
+PASS returning restores all first-school data and the correct link
+PASS returning restores first-school publishing service
+7/7 passed

@@ -1,0 +1,40 @@
+PASS disabled production capability blocks even direct click handler invocation
+page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#schoolbellPublish')[22m
+[2m    - locator resolved to <button disabled id="schoolbellPublish" title="LOCAL SYNTHETIC TEST ONLY" aria-describedby="schoolbellAutomaticState">학교종이 등록</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not enabled[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not enabled[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    34 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is not enabled[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+    at publish (/Users/kimnana/Documents/codex/2026-09-29/referenced-chatgpt-conversation-this-is-an-2/schoolbell-live-verified-20261109/tests/e2e/schoolbell-completion.e2e.cjs:15:37)
+    at /Users/kimnana/Documents/codex/2026-09-29/referenced-chatgpt-conversation-this-is-an-2/schoolbell-live-verified-20261109/tests/e2e/schoolbell-completion.e2e.cjs:68:35 {
+  log: [
+    "  - waiting for locator('#schoolbellPublish')",
+    '    - locator resolved to <button disabled id="schoolbellPublish" title="LOCAL SYNTHETIC TEST ONLY" aria-describedby="schoolbellAutomaticState">학교종이 등록</button>',
+    '  - attempting click action',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not enabled',
+    '    - retrying click action',
+    '    - waiting 20ms',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not enabled',
+    '    - retrying click action',
+    '      - waiting 100ms',
+    '    34 × waiting for element to be visible, enabled and stable',
+    '       - element is not enabled',
+    '     - retrying click action',
+    '       - waiting 500ms'
+  ],
+  name: 'TimeoutError'
+}

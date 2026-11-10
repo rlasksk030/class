@@ -1,0 +1,23 @@
+PASS paste two photos: native decode, independent references and visible previews
+PASS file selection, reorder and individual deletion
+PASS native clipboard text paste unchanged
+PASS native macOS image clipboard reaches photo paste handler (Windows remains unverified)
+PASS font change defers during composition and preserves selection
+PASS in-flight image remains in original date and class after tab switch
+PASS corrupt/oversized/excess photo count explicitly rejected without losing draft
+PASS draft storage failure preserves body and imported photos for retry
+PASS missing driver blocks posting, keeps body and photos, records no success and does not resend
+PASS partial failure, uncertain, cancellation, expiration and unproved success preserve body/photos
+PASS photo pasted while publish pending preserves entire newer draft
+PASS verified mock success clears submitted body/photos and retains history references
+PASS long text + photos + 48px at small window and zoom keeps footer accessible
+PASS whiteboard image selection/move/resize preserves aspect ratio
+PASS image deletion participates in board undo/redo
+PASS ordinary text paste in a whiteboard text object is not intercepted
+PASS photos, text blocks and pen strokes coexist
+PASS existing whiteboard PIP also displays photos
+PASS diary paste never changes hidden whiteboard
+PASS real backup IPC includes photo bytes, history and editor preference
+PASS actual Electron restart restores diary photos/font and board geometry/images/strokes/text
+PASS portable backup native decode restores every referenced photo in separate data folder
+22/22 passed

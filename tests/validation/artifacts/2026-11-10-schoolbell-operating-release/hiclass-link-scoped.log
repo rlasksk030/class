@@ -1,0 +1,12 @@
+/Users/kimnana/Documents/codex/2026-11-02/v1-8-7-main-gpt-6/node_modules/playwright-core/lib/coreBundle.js:44106
+  const failError = new Error("Process failed to launch!");
+                    ^
+
+Error: Process failed to launch!
+    at waitForLine (/Users/kimnana/Documents/codex/2026-11-02/v1-8-7-main-gpt-6/node_modules/playwright-core/lib/coreBundle.js:44106:21)
+    at Electron.launch (/Users/kimnana/Documents/codex/2026-11-02/v1-8-7-main-gpt-6/node_modules/playwright-core/lib/coreBundle.js:44316:36)
+    at async ElectronDispatcher.launch (/Users/kimnana/Documents/codex/2026-11-02/v1-8-7-main-gpt-6/node_modules/playwright-core/lib/coreBundle.js:55551:37)
+    at async _ProgressController.run (/Users/kimnana/Documents/codex/2026-11-02/v1-8-7-main-gpt-6/node_modules/playwright-core/lib/coreBundle.js:12374:27)
+    at async DispatcherConnection.dispatch (/Users/kimnana/Documents/codex/2026-11-02/v1-8-7-main-gpt-6/node_modules/playwright-core/lib/coreBundle.js:19135:27)
+
+Node.js v24.14.1

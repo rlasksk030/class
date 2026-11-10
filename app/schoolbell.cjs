@@ -1,4 +1,4 @@
-// Manual handoff remains available. Automatic UI transport is installed behind the code-owned disabled gate.
+// Automatic UI transport requires a registered main-process class connection.
 const {app,BrowserWindow,ipcMain,dialog,clipboard,shell} = require('electron');
 const fs = require('node:fs/promises'), path = require('node:path');
 const services = require('./diary-services.cjs');
@@ -15,7 +15,7 @@ module.exports = function setup(main) {
   persist:record=>fs.appendFile(path.join(profile.dir,'schoolbell-test-approvals.jsonl'),JSON.stringify(record)+'\n',{mode:0o600})
  });
  const operating=require('./schoolbell-operating-authorization.cjs');
- const operatingAuthorization=operating.createOperatingAuthorization({canPublish:()=>capability.status().enabled===true,
+ const operatingAuthorization=operating.createOperatingAuthorization({canPublish:()=>capability.status().available===true,
   persist:record=>fs.appendFile(path.join(profile.dir,'schoolbell-operating-approvals.jsonl'),JSON.stringify(record)+'\n',{mode:0o600})});
  const createReader=ses=>{
   // Reuse only this app's session; never copy cookies from another browser.
@@ -34,8 +34,8 @@ module.exports = function setup(main) {
    }
   };return provider;
  };
- // No official grant or complete verified live provider exists. These code-owned
- // defaults cannot be enabled by IPC, saved settings or environment variables.
+ // Mutation always needs a registered main-process class grant. Renderer
+ // settings cannot create permission or claim official service approval.
  const makeDriver=(permission=()=>null)=>{
   let trialWindowUsed=false;
   const diagnostic=entry=>{
@@ -49,7 +49,7 @@ module.exports = function setup(main) {
    readBaseline:posts.readBaseline,readPublishedMetadata:posts.readPublishedMetadata,readUploads:uploads.readUploads,
    diagnostic,
    // A/B/C observed one send action, with no second service confirmation click.
-   // The independent app final confirmation and disabled production gate remain.
+   // The independent app final confirmation and current class grant remain mandatory.
    finalAction:'single-send',publicationMode:'immediate',
    openComposer:(request,signal)=>require('./schoolbell-composer-entry.cjs').openObservedComposer(win.webContents,{
     groupId:request.binding?.boardId,signal,allowed:request.stillPermitted}),
@@ -108,7 +108,9 @@ module.exports = function setup(main) {
    if(answer.response===1&&final&&scope.executionMode==='teacher-authorized-class')await operatingAuthorization.approveFinal(note,photos,scope);
    return answer.response===1;
   }};
- const operatingGate=()=>{const p=operatingAuthorization.current();return {...capability.status(),enabled:capability.status().enabled===true&&!!p,
+ const operatingGate=key=>{const p=operatingAuthorization.current(),ready=capability.status().available===true&&!!p&&(!key||p.target.classKey===key);return {...capability.status(),enabled:ready,
+  status:ready?'ready':'connection-required',blockers:ready?[]:['current-class-connection-required'],
+  message:ready?'현재 담당 학급에 등록할 수 있습니다. 게시 직전 대상·내용·사진 확인과 교사의 최종 승인이 필요합니다.':capability.status().message,
   executionMode:'teacher-authorized-class',authorizationId:p?.authorizationId};};
  const publisher=require('./schoolbell-publish.cjs').createPublisher({...publisherOptions,timeoutMs:60000,
   driver:makeDriver(()=>operatingAuthorization.current()),gate:operatingGate});
@@ -131,7 +133,7 @@ module.exports = function setup(main) {
   return {service:row.service,link:row.schoolbell ? {confirmation:row.schoolbell.confirmation} : null,
    developmentChecks:testAuthorization.available(),developmentTrial:testAuthorization.status(key),operatingConnection:operatingAuthorization.status(key),
    connection:connection.describe(windows.get(key)),
-   automatic:operatingGate().enabled,capability:capability.status(),posts:Object.entries(row.posts).map(([hash,p])=>({hash,...p})),
+   automatic:operatingGate(key).enabled,capability:operatingGate(key),posts:Object.entries(row.posts).map(([hash,p])=>({hash,...p})),
    automaticPosts:Object.entries(row.automaticPosts||{}).map(([id,p])=>({id,...p}))};
  };
  async function open(key) {
@@ -392,13 +394,13 @@ module.exports = function setup(main) {
      '이 로그인은 담당 교사 본인 계정이고 위 학교·학년도를 이 학급에 연결하는 것이 맞는지 확인하세요.\n'+
      '실제 UI: 학급·학년·반 일치, 관리 설정 접근, 관리자 필수 선택 및 보호자/학생 역할 선택 확인. 전체 수신 인원을 표 행 수로 추정하지 않습니다.\n'+
      '학교·학년도·본인 신원은 교사 확인 근거이며 서비스 고유 신원 검증이나 공식 자동화 허용을 의미하지 않습니다.\n'+
-     '필수 관리자에게도 알림이 전달됩니다. 연결만 하며 게시하지 않습니다. 등록 시 매번 내용·대상을 재확인합니다. 현재 정식 배포 검증 잠금은 유지됩니다.'});
+     '필수 관리자에게도 알림이 전달됩니다. 연결만 하며 게시하지 않습니다. 등록 시 매번 내용·대상을 재확인합니다. 연결 후 이 학급에만 등록할 수 있습니다.'});
    if(answer.response!==1)return {status:'cancelled',message:'학급 연결을 취소했습니다.'};
    const after=await inspect();
    if(operating.observedBinding(facts)!==operating.observedBinding(after))fail('계정·학급·관리자 또는 대상 선택이 변경됐습니다. 다시 확인해 주세요.');
    await operatingAuthorization.issue({target:to,facts:after,webContents:win.webContents});
    const route=liveContext.classRoute(win.webContents.getURL());store.link(to.classKey,route.base+'/boards/classnews');
-   return {status:'connected',message:'현재 앱 세션과 담당 학급 연결을 확인했습니다. 교사 확인과 서비스 관찰 근거를 구분해 기록했으며 정식 배포 검증 잠금은 유지됩니다.'};
+   return {status:'connected',message:'현재 앱 세션과 담당 학급 연결을 확인했습니다. 교사 확인과 서비스 관찰 근거를 구분해 기록했습니다. 등록할 때마다 최종 게시 확인이 필요합니다.'};
   }finally{controller.abort();reader.close();}
  });
  handle('schoolbell:publish',async value=>{

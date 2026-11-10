@@ -1,0 +1,22 @@
+PASS final native DOM target change blocks send; durable uncertain receipt preserves the attempt
+PASS atomic DOM guard rejects scheduled mode despite stale immediate evidence; sends zero times
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  [
+    'prepare',
+-   'submit',
+    'prepare',
+    'submit',
+    'prepare',
+    'submit'
+  ]
+
+    at /Users/kimnana/Documents/codex/2026-09-29/referenced-chatgpt-conversation-this-is-an-2/schoolbell-live-verified-20261109/tests/schoolbell-final-integration-fixture.cjs:133:9 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [Array],
+  expected: [Array],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}

@@ -176,7 +176,7 @@ global.runSchoolbellElectronTests=async()=>{
   assert.equal((await edit.publisher.publish(edit.note)).status,'uncertain');assert.equal(clicks,before);
   pass('edit while final confirmation is open prevents stale submission');
   const unknownFinal=await make(0,{evidence:{finalAction:undefined}});
-  assert.equal((await unknownFinal.publisher.publish(unknownFinal.note)).reason,'publication-unverified');assert.equal(clicks,before);
+  assert.equal((await unknownFinal.publisher.publish(unknownFinal.note)).reason,'commit-action-mismatch');assert.equal(clicks,before);
   pass('unobserved final confirmation semantics prevent send-button click');
   const uncertain=await make(2);mode='corrupt-post';
   assert.equal((await uncertain.publisher.publish(uncertain.note)).status,'uncertain');assert.equal(clicks,before+1);
