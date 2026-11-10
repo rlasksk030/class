@@ -10,6 +10,6 @@ test('an occluded recipient control cannot be clicked; a clear control opens onc
  blocked=false;assert.equal(recipientControl(document,'open').opened,true);assert.equal(clicks,1);
 });
 test('missing/duplicate recipient dialogs are unknown, with a count and no target text',()=>{
- for(const count of [0,2]){const result=probeRecipients({querySelectorAll:()=>Array.from({length:count},()=>({querySelector:()=>({})}))});
+ for(const count of [0,2]){const result=probeRecipients({},null,()=>({dialogs:Array.from({length:count},()=>({})),counts:{dialogCount:count}}));
   assert.deepEqual(result,{known:false,reason:'dialog-count',dialogCount:count});}
 });

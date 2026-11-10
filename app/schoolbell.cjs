@@ -22,7 +22,15 @@ module.exports = function setup(main) {
   reader.webContents.on('will-navigate',guard);reader.webContents.on('will-redirect',guard);
   return reader;
  };
- const contextProvider=(win,to,diagnostic)=>liveContext.createLiveContextProvider({target:to,getWebContents:()=>win.isDestroyed()?null:win.webContents,createReader,showRecipientReader:testAuthorization.available(),diagnostic});
+ const contextProvider=(win,to,diagnostic)=>{
+  const events=[],provider=liveContext.createLiveContextProvider({target:to,getWebContents:()=>win.isDestroyed()?null:win.webContents,createReader,
+   showRecipientReader:testAuthorization.available(),diagnostic:entry=>{events.push(entry);diagnostic?.(entry);}});
+  const inspect=provider.inspect;provider.inspect=async signal=>{
+   events.length=0;try{return await inspect(signal);}finally{
+    if(testAuthorization.available())await fs.writeFile(path.join(profile.dir,'schoolbell-context-lifecycle.json'),JSON.stringify(events.slice(-80),null,2),{mode:0o600}).catch(()=>{});
+   }
+  };return provider;
+ };
  // No official grant or complete verified live provider exists. These code-owned
  // defaults cannot be enabled by IPC, saved settings or environment variables.
  const makeDriver=(permission=()=>null)=>{

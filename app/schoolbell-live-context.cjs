@@ -121,7 +121,7 @@ function createLiveContextProvider({getWebContents,createReader,target,showRecip
    at('roster');const roster=await screen('roster',route.base+'/settings/studentlist',signal);
    at('invite');const invite=await screen('invite',route.base+'/settings/invite',signal);
    if(owner.isDestroyed()||owner.getURL()!==initialURL)throw Error('context-changed');
-   at('recipients');let recipients=await inspectRecipients(owner,signal),modeContents=owner;
+   at('recipients');let recipients=await inspectRecipients(owner,signal,{diagnostic}),modeContents=owner;
    if(!recipients.known&&!/\/boards\/write\/classnews$/.test(initialURL)){
     // The owner may be on the list or a posted result. Inspect the send-target
     // dialog in our disposable same-session reader, never move/overwrite the
@@ -133,14 +133,14 @@ function createLiveContextProvider({getWebContents,createReader,target,showRecip
     if(showRecipientReader)reader.showInactive();
     await openObservedComposer(reader.webContents,{groupId:route.groupId,signal,
      allowed:()=>!owner.isDestroyed()&&owner.getURL()===initialURL&&!closed});
-    recipients=await inspectRecipients(reader.webContents,signal);
+    recipients=await inspectRecipients(reader.webContents,signal,{diagnostic});
     modeContents=reader.webContents;
    }
    if(owner.isDestroyed()||owner.getURL()!==initialURL)throw Error('context-changed');
    at('publication-mode');const publicationMode=await require('./schoolbell-publication-mode.cjs').inspectPublicationMode(modeContents,signal);
    diagnostic({step:'context-provider',state:'complete',elapsedMs:Date.now()-started});
    return {...summarizeContext({group,account,roster,invite,recipients},target),publicationMode,
-    recipientCheck:recipients.known?{known:true,empty:recipients.empty}:{known:false,reason:recipients.reason,...(Number.isSafeInteger(recipients.dialogCount)?{dialogCount:recipients.dialogCount}:{})},boardId:route.groupId,observedAt:Date.now()};
+    recipientCheck:{...(recipients.known?{known:true,empty:recipients.empty}:{known:false,reason:recipients.reason}),...require('./schoolbell-recipients.cjs').safeCounts(recipients)},boardId:route.groupId,observedAt:Date.now()};
   }catch(error){
    diagnostic({step:'context-provider',state:'failed',stage,elapsedMs:Date.now()-started,aborted:signal.aborted,
     ownerChanged:owner.isDestroyed()||owner.getURL()!==initialURL,
