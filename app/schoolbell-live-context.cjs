@@ -140,7 +140,7 @@ function createLiveContextProvider({getWebContents,createReader,target,showRecip
    at('publication-mode');const publicationMode=await require('./schoolbell-publication-mode.cjs').inspectPublicationMode(modeContents,signal);
    diagnostic({step:'context-provider',state:'complete',elapsedMs:Date.now()-started});
    return {...summarizeContext({group,account,roster,invite,recipients},target),publicationMode,
-    recipientCheck:{...(recipients.known?{known:true,empty:recipients.empty}:{known:false,reason:recipients.reason}),...require('./schoolbell-recipients.cjs').safeCounts(recipients)},boardId:route.groupId,observedAt:Date.now()};
+    recipientCheck:{...(recipients.known?{known:true,empty:recipients.empty,visibleRows:recipients.visibleRows}:{known:false,reason:recipients.reason}),...require('./schoolbell-recipients.cjs').safeCounts(recipients)},boardId:route.groupId,observedAt:Date.now()};
   }catch(error){
    diagnostic({step:'context-provider',state:'failed',stage,elapsedMs:Date.now()-started,aborted:signal.aborted,
     ownerChanged:owner.isDestroyed()||owner.getURL()!==initialURL,

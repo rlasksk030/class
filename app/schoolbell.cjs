@@ -185,7 +185,10 @@ module.exports = function setup(main) {
    // renderer/log. This report is not a stored verified link or publication grant.
    return {status:'blocked',checks:result.checks,blockers:result.blockers,
     message:'실제 화면 확인: '+(result.checks.gradeClass?'학년·반 일치. ':'학년·반 확인 필요. ')+
-     (result.checks.recipientTableEmpty?'발행 대상 구성원 없음 확인. ':result.checks.rosterEmpty?'명단 입력 값 0건(발행 대상은 별도 확인 필요). ':'명단 확인 필요. ')+
+     (result.checks.recipientTableEmpty?'발행 대상 구성원 없음 확인. ':
+     result.recipientCheck?.known===true&&result.recipientCheck.empty===false?
+      '발행 대상 표가 비어 있지 않습니다. 현재 표시된 '+(Number.isSafeInteger(result.recipientCheck.visibleRows)?result.recipientCheck.visibleRows+'행':'행 수 미확인')+'만 관찰했으며 총원·실제 수신자는 미검증입니다. ':
+     result.checks.rosterEmpty?'명단 입력 값 0건(발행 대상은 별도 확인 필요). ':'명단 확인 필요. ')+
      (result.publicationMode?.known?'발행 방식: '+(result.publicationMode.mode==='immediate'?'즉시발행. ':'예약발행(지원하지 않음). '):'발행 방식 확인 필요. ')+
      result.blockers.map(code=>liveContext.blockerMessages[code]).filter(Boolean).join(' ')};
   }catch(error){return {status:'blocked',message:liveContext.blockerMessages[error.message]||'앱의 로그인 상태와 실제 학급 화면을 확인하지 못했습니다. 자동 등록 잠금과 초안은 유지됩니다.'};}

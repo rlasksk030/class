@@ -44,7 +44,11 @@ function probeRecipients(document,_action,findDialogs=recipientDialogs){
  const rows=tables[0].querySelectorAll('tbody tr'),cells=rows.length===1?rows[0].querySelectorAll('td'):[];
  if(!rows.length)return {known:false,reason:'rows-loading'};
  const empty=cells.length===1&&cells[0].getAttribute('colspan')==='5'&&cells[0].textContent.trim()==='구성원이 없습니다.';
- return {known:true,...counts,unfiltered:true,empty,students:empty?0:null,parents:empty?0:null,roles,
+ // A nonempty table has never been independently proven to show every member.
+ // Report only the number of rendered rows; do NOT promote it to recipient count,
+ // selection, authority, or permission evidence. No names/contact values leave.
+ return {known:true,...counts,unfiltered:true,empty,visibleRows:empty?0:rows.length,
+  students:empty?0:null,parents:empty?0:null,roles,
   mandatoryAdministrator:roles.administrator.checked&&roles.administrator.disabled};
 }
 function recipientControl(document,action,findDialogs=recipientDialogs){
