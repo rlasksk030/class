@@ -4,7 +4,7 @@
 const {probeComposer,probeAttachments}=require('./schoolbell-ui-probe.cjs');
 const {readEditorText}=require('./schoolbell-editor-text.cjs');
 const {readPublicationMode}=require('./schoolbell-publication-mode.cjs');
-const {armSend,focusForSend,deliverSend}=require('./schoolbell-send-input.cjs');
+const {inspectSendTarget,armSend,focusForSend,waitForSendTarget,deliverSend}=require('./schoolbell-send-input.cjs');
 const {validateRef,MAX_FILE,MAX_LIBRARY,hash,dimensions}=require('./media-store.cjs');
 const HOSTS=new Set(['schoolbell-e.com','www.schoolbell-e.com','v4.schoolbell-e.com']);
 const WORLD=17481; // Isolated from site JS; shared DOM, no credentials or framework internals.
@@ -14,7 +14,7 @@ function officialPage(url) {
 }
 // Self-contained DOM operation. The trusted, separately reviewed guard must read
 // current DOM evidence synchronously, including binding/date/uploads for commit.
-function browserOperation(action,payload,inspect,guard,readText,readAttachments,readMode,armNative) {
+function browserOperation(action,payload,inspect,guard,readText,readAttachments,readMode,armNative,inspectNative) {
  const info=inspect(document);
  if(info.structureMatched!==true||info.composerCount!==1||
     ['title','body','photos','send','saveDraft'].some(k=>info[k]?.count!==1))throw Error('structure-unverified');
@@ -51,7 +51,10 @@ function browserOperation(action,payload,inspect,guard,readText,readAttachments,
   const error=Error('context-unverified');error.guardFailure=check.guardFailure;throw error;
  };
  if(action==='inspect')return info;
- if(action==='read')return fields();
+ if(action==='read'){
+  const {point,...sendTarget}=inspectNative(document,one('button.btn-with-description'));
+  return {...fields(),sendTarget};
+ }
  if(action==='attachments-read')return readAttachments(document);
  if(action==='focus-title'||action==='focus-body'){
   if(state.composing)throw Error('composition-active');
@@ -131,7 +134,7 @@ function browserOperation(action,payload,inspect,guard,readText,readAttachments,
    const latest=fields();
    return !state.composing&&document.querySelectorAll('app-boards-write')[0]===root&&
     latest.revision===payload.revision&&latest.title===payload.note.title&&latest.body===normalize(payload.note.body)&&guarded();
-  });
+  },inspectNative);
  }
  return {matched:true};
 }
@@ -159,18 +162,19 @@ function createObservedComposerBridge({getWebContents,authorize,domGuard,prepare
  }
  async function perform(action,value,request,signal){
   const wc=get(),url=wc.getURL();await verify(action,request,signal,wc,url);
-  const focused=action==='commit'?await focusForSend(wc):null;
+  const focused=action==='commit'?await focusForSend(wc,diagnostic):null;
+  if(action==='commit')await waitForSendTarget(wc,{diagnostic,permitted:async()=>{await verify(action,request,signal,wc,url);return focused();}});
   const payload={...value,target:request?.target,binding:request?.binding};
   if(['title','body','files','commit'].includes(action)&&typeof prepareProof==='function'){
    payload.proof=await prepareProof({action,request,href:url},signal);
    await verify(action,request,signal,wc,url);
   }
-  const operation='('+browserOperation.toString()+')('+JSON.stringify(action)+','+JSON.stringify(payload)+',('+probeComposer.toString()+'),'+(typeof domGuard==='function'?'('+domGuard.toString()+')':'null')+',('+readEditorText.toString()+'),('+probeAttachments.toString()+'),('+readPublicationMode.toString()+'),('+armSend.toString()+'))';
+  const operation='('+browserOperation.toString()+')('+JSON.stringify(action)+','+JSON.stringify(payload)+',('+probeComposer.toString()+'),'+(typeof domGuard==='function'?'('+domGuard.toString()+')':'null')+',('+readEditorText.toString()+'),('+probeAttachments.toString()+'),('+readPublicationMode.toString()+'),('+armSend.toString()+'),('+inspectSendTarget.toString()+'))';
   // Electron otherwise replaces renderer exceptions with an opaque error. Return
   // a fixed code only: never a site exception, account text, or photo payload.
   const script='(()=>{try{return {ok:true,value:'+operation+'};}catch(e){return {ok:false,code:'+JSON.stringify([
    'structure-unverified','unimplemented-action','composition-active','context-unverified','invalid-payload',
-   'title-unavailable','body-unavailable','content-unverified','upload-unverified','publication-unverified'])+'.includes(e.message)?e.message:"content-unverified",guardFailure:'+JSON.stringify(['proof','route','composer','recipient-label','overlay','preview-overlay','audience-overlay','mode-reader','mode','attachments'])+'.includes(e.guardFailure)?e.guardFailure:null};}})()';
+   'title-unavailable','body-unavailable','content-unverified','upload-unverified','publication-unverified'])+'.includes(e.message)?e.message:"content-unverified",nativeFailure:'+JSON.stringify(['already-armed','geometry','disabled','occluded','validation'])+'.includes(e.nativeFailure)?e.nativeFailure:null,guardFailure:'+JSON.stringify(['proof','route','composer','recipient-label','overlay','preview-overlay','audience-overlay','mode-reader','mode','attachments'])+'.includes(e.guardFailure)?e.guardFailure:null};}})()';
   const result=await wc.executeJavaScriptInIsolatedWorld(WORLD,[{code:script}],false);
   if(action==='commit'&&result?.ok===true){
    result.value=await deliverSend(wc,result.value,{focused,diagnostic,
@@ -181,7 +185,7 @@ function createObservedComposerBridge({getWebContents,authorize,domGuard,prepare
   // different official board. Preserve the same window/grant checks and let the
   // separate readback verify the original binding; never send again.
   await verify(action,request,signal,wc,url,action==='commit'&&result?.ok===true&&result.value?.clicked===true);
-  if(result?.ok!==true){const error=Error(result?.code||'content-unverified');error.guardFailure=result?.guardFailure;throw error;}return result.value;
+  if(result?.ok!==true){const error=Error(result?.code||'content-unverified');error.guardFailure=result?.guardFailure;error.nativeFailure=result?.nativeFailure;throw error;}return result.value;
  }
  function run(action,value,request,signal){
   // Reject overlapping jobs instead of queuing stale class/content mutations.

@@ -72,10 +72,10 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
    if(evidence.publicationMode==='immediate'&&['writeTitle','writeBodyText','attachFiles','commitOnce'].includes(method))
     lastDate=structuredClone(await read('readDate',signal,'date-unverified'));
    const result=await composer[method](r,signal);
-   evidence.diagnostic?.({step:method,state:'complete'});return result;
+   evidence.diagnostic?.({step:method,state:'complete',...(method==='readFields'?{sendTarget:result.sendTarget}:{})});return result;
   }
   catch(error){
-   evidence.diagnostic?.({step:method,state:'failed',guardFailure:error.guardFailure||null,proofFailure:error.stack?.includes('makeGuardProof')===true});
+   evidence.diagnostic?.({step:method,state:'failed',guardFailure:error.guardFailure||null,nativeFailure:error.nativeFailure||null,proofFailure:error.stack?.includes('makeGuardProof')===true});
    if(error?.name==='SchoolbellPreparationError')throw error;
    const code=({ 'structure-unverified':'structure-unverified','context-unverified':'context-unverified',
     'permission-unverified':'permission-unverified','site-unverified':'context-unverified','driver-state':'driver-state','date-unverified':'date-unverified',

@@ -39,11 +39,14 @@ app.whenReady().then(async()=>{
  bridge=await setup();await wc.executeJavaScript('const cover=document.createElement("div");cover.style="position:fixed;inset:0;z-index:999;background:white";document.body.append(cover)');
  await assert.rejects(submit(bridge));assert.equal(await wc.executeJavaScript('events.length'),0);await bridge.close();
  console.log('PASS occluded target blocks all mouse input');
+ bridge=await setup();await wc.executeJavaScript('(()=>{const cover=document.createElement("div");cover.style="position:fixed;inset:0;z-index:999;background:white";document.body.append(cover);setTimeout(()=>cover.remove(),400)})()');
+ await submit(bridge);assert.equal(await wc.executeJavaScript('sends'),1);await bridge.close();
+ console.log('PASS waits for a closing overlay before the one native input; no click against the overlay');
  bridge=await setup();await wc.executeJavaScript('(()=>{const fieldset=document.createElement("fieldset");fieldset.disabled=true;const send=document.querySelector(".btn-with-description");send.replaceWith(fieldset);fieldset.append(send)})()');
  await assert.rejects(submit(bridge));assert.equal(await wc.executeJavaScript('events.length'),0);await bridge.close();
  console.log('PASS inherited disabled state blocks input');
  bridge=await setup();await wc.executeJavaScript('(()=>{const alert=document.createElement("div");alert.role="alert";alert.textContent="합성 오류: 입력 내용을 확인";document.body.append(alert)})()');
  const outcome=await wc.executeJavaScript('('+readSendOutcome.toString()+')(document)');assert.equal(outcome.alerts,1);assert.deepEqual(outcome.messageKinds,['입력','내용','오류']);assert.equal(JSON.stringify(outcome).includes('합성'),false);await bridge.close();
  console.log('PASS post-click UI diagnostics contain only structure and fixed error categories');
- console.log('6 focused checks PASS; real service publication NOT RUN by this fixture');
+ console.log('7 focused checks PASS; real service publication NOT RUN by this fixture');
 }).catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{if(win&&!win.isDestroyed())win.destroy();app.exit(process.exitCode||0);});

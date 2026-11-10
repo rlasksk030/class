@@ -26,11 +26,11 @@ module.exports = function setup(main) {
  // No official grant or complete verified live provider exists. These code-owned
  // defaults cannot be enabled by IPC, saved settings or environment variables.
  const makeDriver=(permission=()=>null)=>{
-  let sendAcknowledged=false;
+  let trialWindowUsed=false;
   const diagnostic=entry=>{
    if(!testAuthorization.available())return;
    testTrace.push(entry);
-   if(entry.step==='commitOnce'&&entry.state==='complete')sendAcknowledged=true;
+   if((entry.step==='commitOnce'&&entry.state==='started')||(entry.step==='writeTitle'&&entry.state==='complete'))trialWindowUsed=true;
   };
   return require('./schoolbell-electron-driver.cjs').createRuntimeDriver({profile,permission,openClass:open,
   evidenceFactory:(to,win)=>{const context=contextProvider(win,to);
@@ -63,10 +63,10 @@ module.exports = function setup(main) {
    const w=windows.get(key);
    if(w&&!w.isDestroyed()){
     // All driver jobs and grants are still stopped/revoked. In the isolated
-    // trial, retain the ordinary service UI after a send acknowledgement so
+    // trial, retain the ordinary service UI once editing starts so
     // a timeout cannot cancel a delayed publish or erase its validation error.
     // This never retries, confirms success, or authorizes another send.
-    if(testAuthorization.available()&&sendAcknowledged){w.show();w.focus();}
+    if(testAuthorization.available()&&trialWindowUsed){w.show();w.focus();}
     else w.destroy();
    }
    return true;
@@ -76,6 +76,14 @@ module.exports = function setup(main) {
  const publisherOptions={profile,store,
   readPhoto:ref=>require('./media.cjs').current().read(ref),review:async ({phase,scope,note,photos=[]})=>{
    const final=phase==='submit';
+   if(final&&scope.executionMode==='development-test'){
+    const wc=windows.get(scope.classKey)?.webContents;
+    const inspect=async()=>wc?.executeJavaScriptInIsolatedWorld(17484,[{code:'(()=>{const e=document.querySelector("app-boards-write button.btn-with-description");if(!e)return null;const {point,...target}=('+require('./schoolbell-send-input.cjs').inspectSendTarget.toString()+')(document,e);return {target,mode:('+require('./schoolbell-publication-mode.cjs').readPublicationMode.toString()+')(document)};})()'}]);
+    const immediate=await inspect();await new Promise(resolve=>setTimeout(resolve,500));const settled=await inspect();
+    await fs.writeFile(path.join(profile.dir,'schoolbell-test-preflight.json'),JSON.stringify({
+     observedAt:Date.now(),sendTarget:testTrace.findLast(e=>e.step==='readFields'&&e.sendTarget)?.sendTarget||null,immediate,settled
+    },null,2),{mode:0o600});
+   }
    const answer=await dialog.showMessageBox(confirmationParent(),{type:'question',buttons:['취소',final?'이 내용으로 한 번 게시':'입력 준비'],defaultId:0,cancelId:0,
     message:final?'검증된 학교종이 알림장을 게시할까요?':'학교종이 작성 화면에 초안을 입력할까요?',
     detail:expectedSchool()+' · '+scope.classKey+'\n'+note.date+' · 사진 '+note.photos.length+'장\n'+note.title+'\n'+note.body+'\n'+
@@ -216,12 +224,15 @@ module.exports = function setup(main) {
   const expectedNames=note.photos.map((f,i)=>String(i+1).padStart(2,'0')+'-'+f.id),initial=win.webContents.getURL();
   const abort=new AbortController(),provider=require('./schoolbell-preview-originals.cjs').createPreviewOriginals({getWebContents:()=>win.isDestroyed()?null:win.webContents,tempRoot:profile.dir});
   let report;
+  const readSendState=async()=>{try{return await win.webContents.executeJavaScriptInIsolatedWorld(17484,[{code:'(()=>{const roots=document.querySelectorAll("app-boards-write"),buttons=roots.length===1?roots[0].querySelectorAll("button.btn-with-description"):[];if(buttons.length!==1)return {known:false};const {point,...target}=('+require('./schoolbell-send-input.cjs').inspectSendTarget.toString()+')(document,buttons[0]);return {target,mode:('+require('./schoolbell-publication-mode.cjs').readPublicationMode.toString()+')(document)};})()'}]);}catch{return {known:false};}};
+  const sendBefore=await readSendState();
   try{
    const proof=await bounded(()=>provider.readUploads({expectedNames,expectedPhotos:original,
     stillPermitted:()=>!abort.signal.aborted&&!win.isDestroyed()&&win.webContents.getURL()===initial},abort.signal),45000,()=>{abort.abort();provider.close();});
    report={complete:proof.complete===true,count:proof.items.length,photos:original};
   }catch(error){report={complete:false,stage:/^upload-unverified(?::[a-z-]+)?$/.test(error.message)?error.message:'interrupted',...(error.previewDetails?{previewDetails:error.previewDetails}:{})};}
   finally{abort.abort();provider.close();}
+  report.sendBefore=sendBefore;report.sendAfter=await readSendState();
   await fs.writeFile(path.join(profile.dir,'schoolbell-upload-check.json'),JSON.stringify(report,null,2),{mode:0o600});
   return {status:report.complete?'read-only':'blocked',message:report.complete?'게시 전 첨부 원본 '+report.count+'장 대조 완료. 아직 게시하지 않았으며 초안과 사진은 유지됩니다.':'게시 전 원본 다운로드 또는 대조를 완료하지 못했습니다. 게시와 초안 초기화는 차단됩니다.'};
  });
