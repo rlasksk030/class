@@ -14,7 +14,7 @@ const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const text=v=>typeof v==='string'?v.replace(/\r\n?/g,'\n'):null;
 const date=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(v))&&new Date(v).toISOString().slice(0,10)===v;
 const sameContent=(a,b)=>a.title===b.title&&text(a.body)===text(b.body)&&a.date===b.date&&same(a.photos,b.photos);
-function createPreparedDriver({bridge,target,permission=()=>null,publicationMode='fixed',now=Date.now,maxAgeMs=15000,closeTimeoutMs=5000}) {
+function createPreparedDriver({bridge,target,permission=()=>null,publicationMode='fixed',now=Date.now,maxAgeMs=15000,closeTimeoutMs=5000,diagnostic=()=>{}}) {
  target=structuredClone(target);
  if(!target||typeof target.schoolId!=='string'||!target.schoolId||typeof target.schoolName!=='string'||!target.schoolName||
     !/^\d{4}$/.test(target.year)||!/^[1-6]$/.test(target.grade)||typeof target.classroom!=='string'||!target.classroom||
@@ -44,6 +44,7 @@ function createPreparedDriver({bridge,target,permission=()=>null,publicationMode
   scopeType:'class',board:'diary',authenticated:true,teacher:c.trial?false:true,...(c.trial?{executionMode:'development-test',approvalId:c.trial.approvalId,identitySource:'user-confirmation',authoritySource:c.trial.authoritySource}:{}),...(publicationMode==='immediate'?{publicationMode}:{}),
   selfNotification:!!c.trial||c.externalNotifications===true&&c.recipientEvidence?.mandatoryAdministrator===true&&c.notificationEvidence?.kind==='current-teacher-only'});
  async function guard(action,signal) {
+  diagnostic({step:'prepared-guard',state:'started',phase,action});
   permitted(action);
   const c=await call('readContext',null,signal);permitted(action);
   const test=trial.testContext(c,permission(),now());
@@ -51,14 +52,21 @@ function createPreparedDriver({bridge,target,permission=()=>null,publicationMode
      c.service!=='schoolbell'||c.scopeType!=='class'||c.board!=='diary'||!remoteId(c.boardId)||
      !['schoolId','schoolName','year','grade','classroom','classKey'].every(k=>c[k]===target[k])||
      !Number.isFinite(c.observedAt)||c.observedAt>now()||now()-c.observedAt>maxAgeMs||
-     typeof c.contextId!=='string'||!c.contextId)fail('context-unverified');
-  if(!audienceVerified(c,permission(),now()))fail('test-class-unverified');
+     typeof c.contextId!=='string'||!c.contextId){
+   diagnostic({step:'prepared-guard',state:'failed',phase,action,reason:'context',checks:{
+    testAccepted:test,identity:c?.identityVerified===true,authority:c?.authorityVerified===true,
+    authenticated:c?.authenticated===true,scope:c?.service==='schoolbell'&&c.scopeType==='class'&&c.board==='diary',
+    boardIdValid:!!remoteId(c?.boardId),targetMatch:!!c&&['schoolId','schoolName','year','grade','classroom','classKey'].every(k=>c[k]===target[k]),
+    fresh:Number.isFinite(c?.observedAt)&&c.observedAt<=now()&&now()-c.observedAt<=maxAgeMs,
+    contextIdPresent:typeof c?.contextId==='string'&&!!c.contextId}});fail('context-unverified');
+  }
+  if(!audienceVerified(c,permission(),now())){diagnostic({step:'prepared-guard',state:'failed',phase,action,reason:'audience-unverified'});fail('test-class-unverified');}
   const audience=JSON.stringify([c.students,c.parents,c.externalNotifications,c.recipientEvidence||null,
    c.notificationEvidence?.kind||null,c.notificationEvidence?.actorKey||null,c.notificationEvidence?.otherTargets??null]);
-  if(boundAudience!==null&&boundAudience!==audience)fail('test-class-unverified');
+  if(boundAudience!==null&&boundAudience!==audience){diagnostic({step:'prepared-guard',state:'failed',phase,action,reason:'audience-changed'});fail('test-class-unverified');}
   boundAudience=audience;
   const binding=trial.bindingOf(c);
-  if(bound&&!same(bound,binding))fail('context-unverified');
+  if(bound&&!same(bound,binding)){diagnostic({step:'prepared-guard',state:'failed',phase,action,reason:'binding-changed'});fail('context-unverified');}
   bound=binding;return scope(c);
  }
  async function act(action,method,value,signal) {

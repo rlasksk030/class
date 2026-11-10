@@ -3,7 +3,7 @@
 // slots do not establish this fact; an unfiltered empty recipient table does.
 function probeRecipients(document){
  const dialogs=Array.from(document.querySelectorAll('mat-dialog-container')).filter(d=>d.querySelector('app-select-letter-targets'));
- if(dialogs.length!==1)return {known:false,reason:'dialog-count'};
+ if(dialogs.length!==1)return {known:false,reason:'dialog-count',dialogCount:dialogs.length};
  const root=dialogs[0],tables=root.querySelectorAll('app-select-letter-targets table');
  const searches=root.querySelectorAll('app-table-search input[placeholder="학생명 또는 전화번호"]');
  if(tables.length!==1||searches.length!==1||searches[0].value!==''||root.querySelectorAll('select').length)return {known:false,reason:'table-or-filter'};
@@ -23,8 +23,22 @@ function probeRecipients(document){
 function recipientControl(document,action){
  const roots=document.querySelectorAll('app-boards-write');if(roots.length!==1)return {composer:false};
  const labels=roots[0].querySelectorAll('app-letter-simplified-target-text');if(labels.length!==1)return {composer:false};
- const before=labels[0].textContent;if(!before.trim())return {composer:true,ready:false};
+ const before=labels[0].textContent;
  const dialogs=Array.from(document.querySelectorAll('mat-dialog-container')).filter(d=>d.querySelector('app-select-letter-targets'));
+ if(!before.trim())return {composer:true,ready:false,dialogOpen:dialogs.length>0};
+ // The live ng-busy backdrop can still cover the newly created composer.
+ // A successful .click() return did not mean that the target dialog opened.
+ // Wait for the observed control to be hit-testable BEFORE the single click;
+ // never click again after a missing dialog or replace unknown evidence.
+ if(!dialogs.length&&action!=='close'){
+  const buttons=roots[0].querySelectorAll('button:has(+ app-letter-simplified-target-text)'),button=buttons[0];
+  if(buttons.length!==1||button.textContent.trim()!=='변경'||button.disabled||button.matches(':disabled'))
+   return {composer:true,ready:false,dialogOpen:false,reason:'control-unavailable'};
+  button.scrollIntoView({block:'center',inline:'nearest'});
+  const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+  if(!r.width||!r.height||!(hit===button||button.contains(hit)))
+   return {composer:true,ready:false,dialogOpen:false,reason:'control-occluded'};
+ }
  if(action==='open'&&!dialogs.length){
   const buttons=roots[0].querySelectorAll('button:has(+ app-letter-simplified-target-text)');
   if(buttons.length!==1||buttons[0].textContent.trim()!=='변경'||buttons[0].disabled)throw Error('context-unverified');
@@ -45,13 +59,16 @@ async function inspectRecipients(webContents,signal,{timeoutMs=5000}={}){
  };
  try{
   let before;const readyUntil=Date.now()+timeoutMs;
-  while(Date.now()<readyUntil){before=await evaluate(recipientControl,'read');if(!before.composer)return {known:false};if(before.ready)break;await new Promise(r=>setTimeout(r,100));}
-  if(!before?.ready)return {known:false,reason:'composer-loading'};
-  before=await evaluate(recipientControl,'open');opened=before.opened;
+  while(Date.now()<readyUntil){
+   before=await evaluate(recipientControl,'read');if(!before.composer)return {known:false};
+   if(before.ready){before=await evaluate(recipientControl,'open');if(before.ready){opened=before.opened;break;}}
+   await new Promise(r=>setTimeout(r,100));
+  }
+  if(!before?.ready)return {known:false,reason:before?.reason||'composer-loading'};
   const until=Date.now()+timeoutMs;let result;
   while(Date.now()<until){result=await evaluate(probeRecipients,null);if(result.known)break;await new Promise(r=>setTimeout(r,100));}
   const after=await evaluate(recipientControl,'read');if(after.label!==before.label)throw Error('context-changed');
-  return result?.known?{...result,targetLabel:before.label}:{known:false,reason:result?.reason||'not-ready'};
+  return result?.known?{...result,targetLabel:before.label}:{known:false,reason:result?.reason||'not-ready',...(Number.isSafeInteger(result?.dialogCount)?{dialogCount:result.dialogCount}:{})};
  }finally{
   if(opened&&!webContents.isDestroyed()&&webContents.getURL()===initial){
    // Close rather than confirm: inspecting must not change a saved audience.

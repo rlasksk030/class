@@ -177,6 +177,17 @@ function createStore(profile) {
    return {...post};
   });
  }
+ function reconcileAutomatic(key,id,hash,proof){
+  return edit(key,row=>{
+   const post=row.automaticPosts?.[id];
+   if(row.service!=='schoolbell'||!post||post.status!=='auto-uncertain'||post.stage!=='verifying'||post.hash!==hash)
+    throw Error('재검증할 게시 시도를 확인해 주세요.');
+   const receipt=publication(proof,post.photoCount);
+   if(receipt.executionMode!=='development-test'||receipt.draftDate!==post.date)throw Error('시험 게시 검증 기록을 확인해 주세요.');
+   post.reconciliation={previousStatus:post.status,previousStage:post.stage,verifiedAt:receipt.verifiedAt};
+   post.publication=receipt;post.status='auto-success';post.updatedAt=Date.now();return {...post};
+  });
+ }
  // Claim the pre-existing HiClass partition for exactly one existing class.
  // Other classes get empty partitions; no session data is copied or deleted.
  function hiclassPartition(key, legacyKey) {
@@ -188,6 +199,6 @@ function createStore(profile) {
   }
   return data.legacyHiclassClass === key ? profile.hiclassPartition : partition(profile.id,'hiclass',key);
  }
- return {get,select,link,prepare,resolve,beginAutomatic,automaticState,resolveAutomatic,hiclassPartition};
+ return {get,select,link,prepare,resolve,beginAutomatic,automaticState,resolveAutomatic,reconcileAutomatic,hiclassPartition};
 }
 module.exports = {HOME,partition,safeURL,payload,fingerprint,matchTarget,createStore,classKey,publication,remoteId};

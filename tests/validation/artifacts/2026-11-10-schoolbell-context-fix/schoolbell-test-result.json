@@ -1,0 +1,303 @@
+{
+  "status": "uncertain",
+  "reason": "context-unverified",
+  "attachmentsVerified": false,
+  "publication": null,
+  "trace": [
+    {
+      "step": "readFields",
+      "state": "started"
+    },
+    {
+      "step": "readFields",
+      "state": "complete",
+      "sendTarget": {
+        "visible": true,
+        "enabled": true,
+        "centerHitsButton": true,
+        "visiblePoints": 9,
+        "hitTag": "SPAN",
+        "hitDropdown": false,
+        "hitContainsButton": false,
+        "hitIsParent": false,
+        "pointerEvents": "enabled",
+        "hitIsBackdrop": false,
+        "hitSurfaceClasses": [
+          "btn-main-text"
+        ]
+      }
+    },
+    {
+      "step": "readFields",
+      "state": "started"
+    },
+    {
+      "step": "readFields",
+      "state": "complete",
+      "sendTarget": {
+        "visible": true,
+        "enabled": true,
+        "centerHitsButton": true,
+        "visiblePoints": 9,
+        "hitTag": "SPAN",
+        "hitDropdown": false,
+        "hitContainsButton": false,
+        "hitIsParent": false,
+        "pointerEvents": "enabled",
+        "hitIsBackdrop": false,
+        "hitSurfaceClasses": [
+          "btn-main-text"
+        ]
+      }
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "reviewed",
+      "action": "submit"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "group"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "account"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "roster"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "invite"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "recipients"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "publication-mode"
+    },
+    {
+      "step": "context-provider",
+      "state": "complete",
+      "elapsedMs": 4647
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "commitOnce",
+      "state": "started"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readDate",
+      "state": "started"
+    },
+    {
+      "step": "native-send-focus",
+      "state": "focused"
+    },
+    {
+      "step": "native-send-target",
+      "state": "ready",
+      "target": {
+        "visible": true,
+        "enabled": true,
+        "centerHitsButton": true,
+        "visiblePoints": 9,
+        "hitTag": "SPAN",
+        "hitDropdown": false,
+        "hitContainsButton": false,
+        "hitIsParent": false,
+        "pointerEvents": "enabled",
+        "hitIsBackdrop": false,
+        "hitSurfaceClasses": [
+          "btn-main-text"
+        ]
+      }
+    },
+    {
+      "step": "native-send",
+      "state": "dispatching"
+    },
+    {
+      "step": "native-send",
+      "state": "delivered",
+      "trusted": true,
+      "events": [
+        "pointerdown",
+        "mousedown",
+        "pointerup",
+        "mouseup",
+        "click"
+      ]
+    },
+    {
+      "step": "commitOnce",
+      "state": "complete"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readPublishedMetadata",
+      "state": "started"
+    },
+    {
+      "step": "published-result-screen",
+      "state": "waiting"
+    },
+    {
+      "step": "post-click-ui",
+      "composer": true,
+      "sendCount": 1,
+      "sendDisabled": false,
+      "invalidFields": 0,
+      "alerts": 0,
+      "dialogs": 1,
+      "messageKinds": [],
+      "resultBoard": false
+    },
+    {
+      "step": "post-click-ui",
+      "composer": true,
+      "sendCount": 1,
+      "sendDisabled": false,
+      "invalidFields": 0,
+      "alerts": 0,
+      "dialogs": 0,
+      "messageKinds": [],
+      "resultBoard": false
+    },
+    {
+      "step": "post-click-ui",
+      "composer": false,
+      "sendCount": 0,
+      "sendDisabled": null,
+      "invalidFields": 0,
+      "alerts": 0,
+      "dialogs": 0,
+      "messageKinds": [],
+      "resultBoard": true
+    },
+    {
+      "step": "published-result-screen",
+      "state": "complete",
+      "resultRoute": true
+    },
+    {
+      "step": "published-index",
+      "newTitleMatches": 1,
+      "dateKnown": true
+    },
+    {
+      "step": "prepared-guard",
+      "state": "started",
+      "phase": "submitted",
+      "action": "read"
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "started"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "group"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "account"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "roster"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "invite"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "recipients"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "recipient-reader"
+    },
+    {
+      "step": "context-provider",
+      "state": "started",
+      "stage": "publication-mode"
+    },
+    {
+      "step": "context-provider",
+      "state": "complete",
+      "elapsedMs": 13406
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": false
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": false,
+      "attached": false
+    },
+    {
+      "step": "evidence-read",
+      "method": "readContext",
+      "state": "failed",
+      "reason": "provider",
+      "aborted": false
+    }
+  ]
+}

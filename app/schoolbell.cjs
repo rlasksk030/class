@@ -22,7 +22,7 @@ module.exports = function setup(main) {
   reader.webContents.on('will-navigate',guard);reader.webContents.on('will-redirect',guard);
   return reader;
  };
- const contextProvider=(win,to)=>liveContext.createLiveContextProvider({target:to,getWebContents:()=>win.isDestroyed()?null:win.webContents,createReader,showRecipientReader:testAuthorization.available()});
+ const contextProvider=(win,to,diagnostic)=>liveContext.createLiveContextProvider({target:to,getWebContents:()=>win.isDestroyed()?null:win.webContents,createReader,showRecipientReader:testAuthorization.available(),diagnostic});
  // No official grant or complete verified live provider exists. These code-owned
  // defaults cannot be enabled by IPC, saved settings or environment variables.
  const makeDriver=(permission=()=>null)=>{
@@ -33,7 +33,7 @@ module.exports = function setup(main) {
    if((entry.step==='commitOnce'&&entry.state==='started')||(entry.step==='writeTitle'&&entry.state==='complete'))trialWindowUsed=true;
   };
   return require('./schoolbell-electron-driver.cjs').createRuntimeDriver({profile,permission,openClass:open,
-  evidenceFactory:(to,win)=>{const context=contextProvider(win,to);
+  evidenceFactory:(to,win)=>{const context=contextProvider(win,to,diagnostic);
    const uploads=require('./schoolbell-preview-originals.cjs').createPreviewOriginals({getWebContents:()=>win.isDestroyed()?null:win.webContents,tempRoot:profile.dir});
    const posts=require('./schoolbell-live-posts.cjs').createLivePostProvider({target:to,tempRoot:profile.dir,createReader,diagnostic,getWebContents:()=>win.isDestroyed()?null:win.webContents});return {
    readBaseline:posts.readBaseline,readPublishedMetadata:posts.readPublishedMetadata,readUploads:uploads.readUploads,
@@ -44,7 +44,7 @@ module.exports = function setup(main) {
    openComposer:(request,signal)=>require('./schoolbell-composer-entry.cjs').openObservedComposer(win.webContents,{
     groupId:request.binding?.boardId,signal,allowed:request.stillPermitted}),
    async readContext(_r,signal){let facts=await context.inspect(signal);
-    const p=permission(),entry={step:'context',checks:facts.checks,grantPresent:!!p,grantMatches:trial.validTestGrant(p,to,'read'),factsReady:trial.testFacts(facts)};
+    const p=permission(),entry={step:'context',checks:facts.checks,recipientCheck:facts.recipientCheck,grantPresent:!!p,grantMatches:trial.validTestGrant(p,to,'read'),factsReady:trial.testFacts(facts)};
     if(testAuthorization.available())testTrace.push(entry);
     if(entry.grantMatches){try{facts=testAuthorization.attach(facts,to,win.webContents);entry.attached=true;}catch(e){entry.attached=false;throw e;}}
     const value={...to,...facts,service:'schoolbell',scopeType:'class',board:'diary',
@@ -336,6 +336,30 @@ module.exports = function setup(main) {
     attachmentsVerified:result.attachmentsVerified===true,publication:result.publication||null,trace:testTrace.slice(-40)},null,2),{mode:0o600});
    return result;
   }finally{testAuthorization.revoke();}
+ });
+ handle('schoolbell:verify-uncertain',async value=>{
+  if(!testAuthorization.available())fail('개발 시험 프로필의 결과 재검증만 지원합니다.');
+  const to=target(value.target),note=services.payload(value.note),win=windows.get(to.classKey);
+  if(note.classKey!==to.classKey||!win||win.isDestroyed())fail('같은 앱 초안과 담당 학급 화면을 확인해 주세요.');
+  const grant=testAuthorization.current();
+  if(!trial.validTestGrant(grant,to,'read'))fail('현재 테스트 학급 연결을 먼저 확인해 주세요.');
+  const controller=new AbortController(),href=win.webContents.getURL(),context=contextProvider(win,to);
+  const posts=require('./schoolbell-live-posts.cjs').createLivePostProvider({target:to,tempRoot:profile.dir,createReader,
+   getWebContents:()=>win.isDestroyed()?null:win.webContents});
+  try{
+   const result=await bounded(()=>require('./schoolbell-reconcile.cjs').reconcile({profile,store,target:to,note,attemptId:value.attemptId,
+    permission:()=>!win.isDestroyed()&&win.webContents.getURL()===href?testAuthorization.current():null,
+    readContext:async signal=>{
+     const facts=testAuthorization.attach(await context.inspect(signal),to,win.webContents);
+     return {...to,...facts,service:'schoolbell',scopeType:'class',board:'diary',authenticated:facts.checks.classPage,contextId:facts.boardId};
+    },readBaseline:posts.readBaseline,readPhoto:ref=>require('./media.cjs').current().read(ref),
+    readSubmissionRecords:async()=>(await fs.readFile(path.join(profile.dir,'schoolbell-test-approvals.jsonl'),'utf8')).trim().split('\n').map(line=>JSON.parse(line)),
+    signal:controller.signal}),90000,
+    ()=>{controller.abort();context.close();posts.close();});
+   return result;
+  }catch(error){return {status:'uncertain',...(require('./schoolbell-driver-errors.cjs').publicFailure(error)||{}),
+   message:'기존 게시물 재검증을 마치지 못했습니다. 새 게시물은 보내지 않았으며 초안과 사진을 유지합니다.'};}
+  finally{controller.abort();context.close();posts.close();testAuthorization.revoke();}
  });
  handle('schoolbell:resolve-automatic',async ({classKey,id,outcome})=>{
   const post=store.get(classKey).automaticPosts?.[id];

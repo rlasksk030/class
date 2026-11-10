@@ -81,4 +81,4 @@ function createTestAuthorization({canUse=()=>false,persist=async()=>{},now=Date.
   revoke(){revoked=true;detach();}
  };
 }
-module.exports={validTestGrant,testContext,testFacts,bindingOf,sameBinding,finalTestContent,createTestAuthorization};
+module.exports={validTestGrant,testContext,testFacts,bindingOf,sameBinding,contentDigest,finalTestContent,createTestAuthorization};

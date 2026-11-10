@@ -88,7 +88,7 @@ function summarizeContext({group,account,roster,invite,recipients},target){
   // Salt is process-local; neither raw contact nor digest is persisted/exposed.
   accountObservationDigest:account?.currentContactObservation?crypto.createHmac('sha256',observationSalt).update(account.currentContactObservation).digest('hex'):null};
 }
-function createLiveContextProvider({getWebContents,createReader,target,showRecipientReader=false,timeoutMs=12000}={}){
+function createLiveContextProvider({getWebContents,createReader,target,showRecipientReader=false,timeoutMs=12000,diagnostic=()=>{}}={}){
  let reader=null,active=false,closed=false;
  const controller=new AbortController();
  async function screen(kind,url,signal){
@@ -109,23 +109,24 @@ function createLiveContextProvider({getWebContents,createReader,target,showRecip
   const signal=external?AbortSignal.any([external,controller.signal]):controller.signal;
   const owner=getWebContents?.(),route=owner&&!owner.isDestroyed()?classRoute(owner.getURL()):null;
   if(!route)throw Error('class-page-unverified');
-  active=true;const initialURL=owner.getURL();
+  active=true;const initialURL=owner.getURL(),started=Date.now();let stage='reader';
+  const at=value=>{stage=value;diagnostic({step:'context-provider',state:'started',stage});};
   const abort=()=>{if(reader&&!reader.isDestroyed())reader.destroy();};signal.addEventListener('abort',abort,{once:true});
   try{
    if(signal.aborted)throw Error('cancelled');
    reader=await createReader(owner.session);
    if(signal.aborted)throw Error('cancelled');
-   const group=await screen('group',route.base+'/settings/groupinfo',signal);
-   const account=await screen('account',route.origin+'/ko/main/userinfo',signal);
-   const roster=await screen('roster',route.base+'/settings/studentlist',signal);
-   const invite=await screen('invite',route.base+'/settings/invite',signal);
+   at('group');const group=await screen('group',route.base+'/settings/groupinfo',signal);
+   at('account');const account=await screen('account',route.origin+'/ko/main/userinfo',signal);
+   at('roster');const roster=await screen('roster',route.base+'/settings/studentlist',signal);
+   at('invite');const invite=await screen('invite',route.base+'/settings/invite',signal);
    if(owner.isDestroyed()||owner.getURL()!==initialURL)throw Error('context-changed');
-   let recipients=await inspectRecipients(owner,signal),modeContents=owner;
+   at('recipients');let recipients=await inspectRecipients(owner,signal),modeContents=owner;
    if(!recipients.known&&!/\/boards\/write\/classnews$/.test(initialURL)){
     // The owner may be on the list or a posted result. Inspect the send-target
     // dialog in our disposable same-session reader, never move/overwrite the
     // teacher's existing page. Opening a blank composer does not enter or send.
-    await reader.loadURL(route.base+'/boards/classnews');
+    at('recipient-reader');await reader.loadURL(route.base+'/boards/classnews');
     // The live service did not open the target modal reliably in a hidden
     // window. In isolated development tests, render the blank composer without
     // taking focus. Account/roster screens have already finished and stay hidden.
@@ -136,9 +137,14 @@ function createLiveContextProvider({getWebContents,createReader,target,showRecip
     modeContents=reader.webContents;
    }
    if(owner.isDestroyed()||owner.getURL()!==initialURL)throw Error('context-changed');
-   const publicationMode=await require('./schoolbell-publication-mode.cjs').inspectPublicationMode(modeContents,signal);
+   at('publication-mode');const publicationMode=await require('./schoolbell-publication-mode.cjs').inspectPublicationMode(modeContents,signal);
+   diagnostic({step:'context-provider',state:'complete',elapsedMs:Date.now()-started});
    return {...summarizeContext({group,account,roster,invite,recipients},target),publicationMode,
-    recipientCheck:recipients.known?{known:true,empty:recipients.empty}:{known:false,reason:recipients.reason},boardId:route.groupId,observedAt:Date.now()};
+    recipientCheck:recipients.known?{known:true,empty:recipients.empty}:{known:false,reason:recipients.reason,...(Number.isSafeInteger(recipients.dialogCount)?{dialogCount:recipients.dialogCount}:{})},boardId:route.groupId,observedAt:Date.now()};
+  }catch(error){
+   diagnostic({step:'context-provider',state:'failed',stage,elapsedMs:Date.now()-started,aborted:signal.aborted,
+    ownerChanged:owner.isDestroyed()||owner.getURL()!==initialURL,
+    reason:['cancelled','login-required','context-changed','context-unverified','date-unverified'].includes(error.message)?error.message:'provider-error'});throw error;
   }finally{signal?.removeEventListener('abort',abort);abort();reader=null;active=false;}
  }
  return {inspect,close(){closed=true;controller.abort();if(reader&&!reader.isDestroyed())reader.destroy();return !active;}};

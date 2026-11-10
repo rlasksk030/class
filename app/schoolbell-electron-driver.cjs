@@ -36,13 +36,16 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
   if(signal?.aborted)fail('driver-state');
   if(typeof evidence[method]!=='function')fail(code);
   const wc=getWebContents(),epoch=watch(wc);
+  evidence.diagnostic?.({step:'evidence-read',method,state:'started'});
   let value;
   try{value=await evidence[method]({...request,webContents:wc,target,binding,note:request.note||preparedText,stillPermitted:()=>{try{requirePermission(permission,target,'read');return !signal?.aborted;}catch{return false;}}},signal);}
-  catch(error){if(error?.name==='SchoolbellPreparationError')throw error;
+  catch(error){evidence.diagnostic?.({step:'evidence-read',method,state:'failed',reason:'provider',aborted:!!signal?.aborted});if(error?.name==='SchoolbellPreparationError')throw error;
    const known=['permission-unverified','context-unverified','baseline-unverified','date-unverified','upload-unverified','publication-unverified'];
    fail(known.includes(error?.message)?error.message:code);
   }
-  if(getWebContents()!==wc||(['readContext','readDate','readUploads','readBaseline'].includes(method)&&epoch!==documentEpoch))fail('context-unverified');
+  if(getWebContents()!==wc||(['readContext','readDate','readUploads','readBaseline'].includes(method)&&epoch!==documentEpoch)){
+   evidence.diagnostic?.({step:'evidence-read',method,state:'failed',reason:'document-changed',windowChanged:getWebContents()!==wc,epochChanged:epoch!==documentEpoch});fail('context-unverified');
+  }
   if(signal?.aborted)fail('driver-state');
   requirePermission(permission,target,'read');return value;
  }
@@ -135,7 +138,7 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
   },
   async close(){try{const readStopped=posts.close(),stopped=await composer.close();return readStopped&&stopped&&(typeof evidence.close!=='function'||await evidence.close()===true);}finally{unwatch();invalidate();}}
  };
- return createPreparedDriver({target,permission,bridge,publicationMode:evidence.publicationMode||'fixed'});
+ return createPreparedDriver({target,permission,bridge,publicationMode:evidence.publicationMode||'fixed',diagnostic:evidence.diagnostic});
 }
 // Lazily creates one per-attempt driver. The publisher gate runs BEFORE this
 // code opens a remote window. Missing production/test permission independently denies it.

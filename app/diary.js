@@ -89,10 +89,10 @@ window.createClassDiary=function({read,put}){
  $('diaryImport').onclick=()=>{const items=[];const notices=document.getElementById('notices')?.innerText.trim();if(notices)items.push({label:'안내사항 / 준비물 / 전달사항',text:notices});$('diaryCandidates').replaceChildren(...items.map(item=>{const label=document.createElement('label'),check=document.createElement('input'),span=document.createElement('span');check.type='checkbox';check.dataset.text=item.text;span.textContent=item.label+'\n'+item.text;label.append(check,span);return label;}));if(!items.length)$('diaryCandidates').textContent='불러올 안내사항이 없습니다.';$('diaryImportDialog').showModal();};
  $('diaryImportCancel').onclick=()=>$('diaryImportDialog').close();$('diaryImportApply').onclick=()=>{const texts=[...$('diaryCandidates').querySelectorAll('input:checked')].map(x=>x.dataset.text);if(texts.length){changed(key);$('diaryBody').value=[$('diaryBody').value,...texts].filter(Boolean).join('\n\n');save();}$('diaryImportDialog').close();};
  const readNote=()=>({classKey:classId(),date,title:$('diaryTitle').value,body:$('diaryBody').value,photos:photos(key).map(p=>({...p}))});
- async function publishSchoolbell(){
+ async function publishSchoolbell(verifyAttemptId){
   // createDiaryServices saves first and owns the busy guard. The main process owns the permission gate.
   const postingKey=key,postingRevision=revisions.get(key)||0,payload=readNote();
-  const result=await desktop.schoolbellPublish(payload);
+  const result=typeof verifyAttemptId==='string'?await desktop.schoolbellVerifyUncertain({target:{...target(),year:payload.classKey.split(':')[0]},note:payload,attemptId:verifyAttemptId}):await desktop.schoolbellPublish(payload);
   if(result?.status!=='success')return result;
   const retained='초안과 사진은 유지됩니다. 자동으로 재전송하지 말고 학교종이에서 게시 결과를 확인해 주세요.';
   if(result.attachmentsVerified!==true||typeof result.attemptId!=='string'||!result.attemptId||
@@ -125,7 +125,7 @@ window.createClassDiary=function({read,put}){
   if(key===postingKey&&unchanged){$('diaryTitle').value=title(payload.date);$('diaryBody').value='';renderPhotos();}
   return {...result,message:unchanged?'학교종이 등록 완료 · 새 초안을 작성할 수 있습니다.':'학교종이 등록 완료 · 등록 중 추가하거나 바꾼 내용은 유지했습니다.'};
  }
- const serviceControls=createDiaryServices({root,save,target,onHiclass:refreshLink,onAutomaticPublish:publishSchoolbell,isBusy:()=>busy||connecting||[...pendingPhotos.values()].some(n=>n>0),status:message=>$('diaryStatus').textContent=message,photoHelp:$('diaryPhotoSending'),readNote});
+ const serviceControls=createDiaryServices({root,save,target,onHiclass:refreshLink,onAutomaticPublish:publishSchoolbell,onAutomaticVerify:publishSchoolbell,isBusy:()=>busy||connecting||[...pendingPhotos.values()].some(n=>n>0),status:message=>$('diaryStatus').textContent=message,photoHelp:$('diaryPhotoSending'),readNote});
  const unfinished=()=>serviceControls.busy()||busy||unsaved||fontUnsaved||pendingFont!==null||[...pendingPhotos.values()].some(n=>n>0);
  window.addEventListener('classroom:before-data-transfer',e=>{if(unfinished())e.preventDefault();});
  window.addEventListener('beforeunload',e=>{if(unfinished()){e.preventDefault();e.returnValue='';$('diaryStatus').textContent='사진 처리·등록 또는 편집 내용 저장이 끝나지 않아 창을 유지합니다. 저장 상태를 확인해 주세요.';}});

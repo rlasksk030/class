@@ -1,5 +1,5 @@
 // Common editor owns draft snapshots/completion. Production capability remains code-gated.
-window.createDiaryServices = function({root,readNote,save,target,isBusy,status,photoHelp,onHiclass,onAutomaticPublish}) {
+window.createDiaryServices = function({root,readNote,save,target,isBusy,status,photoHelp,onHiclass,onAutomaticPublish,onAutomaticVerify}) {
  const $ = id=>root.querySelector('#'+id);
  const selector=document.createElement('label');
  selector.className='diary-service-selector';
@@ -64,7 +64,11 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
    const label=document.createElement('span');label.textContent=(post.publication?.executionMode==='development-test'?'개발 시험 · ':'')+(post.publication?.dateMode==='immediate'?'작성일 '+post.date+' · 발행일 '+post.publication.publishedDate:post.date)+' · 사진 '+post.photoCount+'장 · '+({
     'auto-pending':'자동 시도 · 결과 미확인','auto-uncertain':'자동 시도 · 결과 불확실',
     'auto-success':'자동 게시 · 결과 검증됨','auto-user-confirmed':'자동 시도 후 게시 · 사용자 확인',
-    'auto-user-not-posted':'자동 시도 후 미게시 · 사용자 확인'}[post.status]||'확인 필요');row.append(label);
+    'auto-user-not-posted':'자동 시도 후 미게시 · 사용자 확인'}[post.status]||'확인 필요')+(post.reconciliation?' · 재전송 없이 재검증':'');row.append(label);
+   if(data.developmentChecks&&post.status==='auto-uncertain'&&post.stage==='verifying'&&typeof onAutomaticVerify==='function'){
+    const verify=document.createElement('button');verify.textContent='게시 결과 재검증 (재전송 없음)';
+    verify.onclick=()=>run(()=>onAutomaticVerify(post.id));row.append(verify);
+   }
    if(['auto-pending','auto-uncertain'].includes(post.status))for(const [text,outcome] of [['실제 게시 확인','auto-user-confirmed'],['게시 안 됨 확인','auto-user-not-posted']]){
     const button=document.createElement('button');button.textContent=text;button.onclick=()=>run(()=>desktop.schoolbellResolveAutomatic({classKey:currentKey,id:post.id,outcome}));row.append(button);
    }

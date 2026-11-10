@@ -1,0 +1,13 @@
+✔ verification-only completion saves original receipt and uncertainty provenance, with no send transport (45.788834ms)
+✔ wrong draft, unposted stage, ambiguous post and incomplete original proof cannot create a receipt (211.685208ms)
+✔ native test consent is distinct from official permission; copying a record cannot authorize execution (4.627209ms)
+✔ packaged/ordinary profiles, members, account observation change, logout and expiration cannot retain test access (0.678958ms)
+✔ a separate final confirmation binds exactly one draft and ordered original hashes (0.74375ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 336.124375
