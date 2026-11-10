@@ -21,7 +21,8 @@ modeToggle.onclick=()=>modeOptions.isConnected?modeOptions.remove():modeToggle.a
 for(const e of [document.querySelector('input[placeholder="제목을 입력해 주세요."]'),document.querySelector('.fr-element')])e.addEventListener('focus',()=>modeOptions.remove());
 </script>`;
 const revisionChecks=process.argv.includes('--revision-checks'),mutationChecks=process.argv.includes('--mutation-checks');
-const developmentContract=process.argv.includes('--development-contract');
+const developmentContract=process.argv.includes('--development-contract'),operatingContract=process.argv.includes('--operating-contract');
+const {createOperatingAuthorization}=require('../app/schoolbell-operating-authorization.cjs');
 const {createTestAuthorization}=require('../app/schoolbell-test-authorization.cjs');
 let win,clicks=0,posts=[],uploads=[],reviews=[];
 async function wait(expression){for(let n=0;n<150;n++){if(await win.webContents.executeJavaScript(expression))return;await new Promise(r=>setTimeout(r,10));}throw Error('local fixture not ready');}
@@ -56,14 +57,19 @@ app.whenReady().then(async()=>{
   const ref=await images.add(png,'local.png');
   const note={classKey:target.classKey,date:'2026-11-08',title:changeAudience?'합성 변경 차단':'합성 최종 연결',body:'새 최종 검증 연결 확인',photos:[ref]};
   const testFacts={...target,...binding,actorKey:null,checks:{classPage:true,gradeClass:true,adminSettingsEditable:true,rosterEmpty:true,inviteEmpty:true,recipientTableEmpty:true},students:0,parents:0,adminCount:1,mandatoryAdministrator:true,recipientEvidence:{known:true,unfiltered:true,empty:true,mandatoryAdministrator:true,targetLabel:'합성 대상'},accountObservationDigest:'synthetic-observation',observedAt:Date.now()};
+  if(operatingContract)Object.assign(testFacts,{managementObservationDigest:'synthetic-management',adminCount:2,students:null,parents:null,
+   checks:{classPage:true,gradeClass:true,adminSettingsEditable:true,rosterEmpty:false,recipientTableEmpty:false},
+   recipientEvidence:{known:true,unfiltered:true,empty:false,selectionScope:'class-roles',visibleRows:18,targetLabel:'합성 대상',mandatoryAdministrator:true,
+    roles:{administrator:{checked:true,disabled:true},guardian1:{checked:true,disabled:false},guardian2:{checked:true,disabled:false},student:{checked:false,disabled:false}}}});
+  const opAuth=createOperatingAuthorization({canPublish:()=>operatingContract}),opGrant=operatingContract?await opAuth.issue({target,facts:testFacts,webContents:win.webContents}):null;
   const auth=createTestAuthorization({canUse:()=>developmentContract});
   const trialGrant=developmentContract?await auth.issue({target,facts:testFacts,webContents:win.webContents}):null;
-  const runBinding=trialGrant?{...binding,actorKey:null,approvalId:trialGrant.approvalId}:binding;
-  const permission=()=>trialGrant?auth.current():grant;
+  const runBinding=opGrant?{...binding,actorKey:null,authorizationId:opGrant.authorizationId}:trialGrant?{...binding,actorKey:null,approvalId:trialGrant.approvalId}:binding;
+  const permission=()=>opGrant?opAuth.current():trialGrant?auth.current():grant;
   const evidence={finalAction:'single-send',publicationMode:'immediate',diagnostic:e=>{diagnostics.push(e);if(e.step==='commit-comparison'&&e.stage==='before-readDate')duringCommitRead=true;if(e.step==='commit-comparison'&&e.stage==='after-target-ready'&&e.revisionMatch===false)refreshing=true;},
    // These missing live identity/date facts are deliberately local test ports.
    // No custom guardDOM is supplied: use the production default proof + guard.
-   readContext:async()=>developmentContract?{...target,...scope,...auth.attach({...testFacts,observedAt:Date.now()},target,win.webContents),identityVerified:false,authorityVerified:false,classApproved:false,testClassApproved:false,teacher:false,externalNotifications:null}:{...target,...scope,...binding,identityVerified:true,authorityVerified:true,classApproved:true,testClassApproved:true,
+   readContext:async()=>operatingContract?{...target,...scope,...opAuth.attach({...testFacts,observedAt:Date.now()},target,win.webContents),identityVerified:false,authorityVerified:false,classApproved:false,testClassApproved:false,teacher:false,externalNotifications:null}:developmentContract?{...target,...scope,...auth.attach({...testFacts,observedAt:Date.now()},target,win.webContents),identityVerified:false,authorityVerified:false,classApproved:false,testClassApproved:false,teacher:false,externalNotifications:null}:{...target,...scope,...binding,identityVerified:true,authorityVerified:true,classApproved:true,testClassApproved:true,
     recipientsVerified:true,students:0,parents:0,externalNotifications:false,observedAt:Date.now(),
     recipientEvidence:{known:true,unfiltered:true,empty:true,mandatoryAdministrator:false,targetLabel:'합성 대상'}},
    readDate:async()=>{
@@ -81,15 +87,17 @@ app.whenReady().then(async()=>{
    async readPublishedMetadata(){await wait('document.querySelector("main").dataset.sent==="yes"');await win.loadURL(boardURL);await wait('document.querySelector("main")?.dataset.ready==="yes"');return {complete:true,refreshed:true,boardURL,id:posts.at(-1).id,date:'2026-11-09',dateSource:'observed-service-ui',scope};}
   };
   const driver=createElectronDriver({target,getWebContents:()=>win.webContents,permission,evidence,tempRoot:profile.dir});
-  const publisher=createPublisher({profile,store,driver,readPhoto:r=>images.read(r),gate:()=>({enabled:true,...(trialGrant?{executionMode:'development-test',approvalId:trialGrant.approvalId}:{})}),timeoutMs:8000,
+  const publisher=createPublisher({profile,store,driver,readPhoto:r=>images.read(r),gate:()=>({enabled:true,...(opGrant?{executionMode:'teacher-authorized-class',authorizationId:opGrant.authorizationId}:trialGrant?{executionMode:'development-test',approvalId:trialGrant.approvalId}:{})}),timeoutMs:8000,
    review:async r=>{reviews.push(r.phase);if(r.phase==='submit'){
+    if(opGrant)await opAuth.approveFinal(r.note,r.photos,r.scope);
     if(trialGrant)await auth.approveFinal(r.note,r.photos,r.scope);
     if(changeAudience)await win.webContents.executeJavaScript('document.querySelector("app-letter-simplified-target-text").textContent="다른 대상"');
     else if(changeMode)await win.webContents.executeJavaScript('document.querySelector("#later").checked=true');
     else await win.webContents.executeJavaScript('document.querySelector("app-boards-write").append(document.createElement("div"))');
    }return true;}});
-  const result=await publisher.publish(note);auth.revoke();return {result,store,profile,ref,diagnostics};
+  const result=await publisher.publish(note);auth.revoke();opAuth.revoke();return {result,store,profile,ref,diagnostics};
  }
+ if(process.argv.includes('--operating-preflight-diagnostic')){const r=await attempt(true);console.log(JSON.stringify({result:r.result,reviews,diagnostics:r.diagnostics},null,2));return;}
  if(mutationChecks){
   const blocked=await attempt(false,false,'attribute-change-revert');assert.notEqual(blocked.result.status,'success');assert.equal(clicks,0);
   assert.equal(blocked.diagnostics.some(e=>e.step==='commit-comparison'&&e.semanticRevisionMatch===false&&e.changes.changedAttribute===true),true);
@@ -113,7 +121,7 @@ app.whenReady().then(async()=>{
   console.log('PASS cosmetic attribute revision refresh requires scoped context and original bytes, then sends once and saves verified receipt');
   console.log('5 focused revision checks PASS; no real Schoolbell connection');return;
  }
- const blocked=await attempt(true);assert.equal(blocked.result.status,'uncertain');assert.equal(clicks,0);
+ const blocked=await attempt(true);if(operatingContract)assert.equal(blocked.result.reason,'context-unverified',JSON.stringify({result:blocked.result,failures:blocked.diagnostics.filter(e=>e.state==='failed')}));assert.equal(blocked.result.status,'uncertain');assert.equal(clicks,0);
  assert.equal(Object.values(blocked.store.get(target.classKey).automaticPosts)[0].status,'auto-uncertain');
  console.log('PASS final native DOM target change blocks send; durable uncertain receipt preserves the attempt');
  const modeBlocked=await attempt(false,true);assert.equal(modeBlocked.result.status,'uncertain');assert.equal(clicks,0);
@@ -129,6 +137,7 @@ app.whenReady().then(async()=>{
  const before=await reader.readFields();await win.loadURL(boardURL);await wait('document.querySelector("main")?.dataset.ready==="yes"');
  const after=await reader.readFields();assert.notEqual(before.revision,after.revision);await reader.close();
  console.log('PASS same-URL document replacement changes the revision identity');
- console.log(developmentContract?'PASS user-confirmed test mapping with actorKey=null; official/identity/authority flags remain false':'PASS official contract unchanged');
+ if(operatingContract){assert.equal(reloaded.publication.executionMode,'teacher-authorized-class');assert.equal(reloaded.publication.identitySource,'teacher-confirmation');assert.equal(reloaded.publication.servicePermission,'unconfirmed');console.log('PASS ordinary class role-scoped contract, unknown member totals and false identity flags; explicit final confirmation and durable provenance');}
+ console.log(operatingContract?'PASS ordinary class contract separate from official permission':developmentContract?'PASS user-confirmed test mapping with actorKey=null; official/identity/authority flags remain false':'PASS official contract unchanged');
  console.log('4 focused native integration checks; live app publication and draft completion NOT RUN');
 }).catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>{if(win&&!win.isDestroyed())win.destroy();app.exit(process.exitCode||0);});

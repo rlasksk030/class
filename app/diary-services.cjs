@@ -54,8 +54,15 @@ function publication(value,count) {
       !Number.isSafeInteger(p.bytes) || p.bytes<=0))throw Error('게시물 및 사진 검증 기록을 확인해 주세요.');
  const dateProof={};
  if(value.executionMode!==undefined){
-  if(value.executionMode!=='development-test'||!/^[-a-f0-9]{36}$/.test(value.approvalId||'')||value.identitySource!=='user-confirmation'||value.servicePermission!=='unconfirmed')throw Error('시험 승인 기록을 확인해 주세요.');
-  Object.assign(dateProof,{executionMode:value.executionMode,approvalId:value.approvalId,identitySource:value.identitySource,servicePermission:value.servicePermission});
+  if(value.executionMode==='teacher-authorized-class'){
+   if(!/^[-a-f0-9]{36}$/.test(value.authorizationId||'')||value.identitySource!=='teacher-confirmation'||
+      value.servicePermission!=='unconfirmed'||value.authoritySource!=='management-controls-and-teacher-confirmation'||value.audienceScope!=='class-roles')throw Error('운영 연결 기록을 확인해 주세요.');
+   Object.assign(dateProof,{executionMode:value.executionMode,authorizationId:value.authorizationId,identitySource:value.identitySource,
+    servicePermission:value.servicePermission,authoritySource:value.authoritySource,audienceScope:value.audienceScope});
+  }else{
+   if(value.executionMode!=='development-test'||!/^[-a-f0-9]{36}$/.test(value.approvalId||'')||value.identitySource!=='user-confirmation'||value.servicePermission!=='unconfirmed')throw Error('시험 승인 기록을 확인해 주세요.');
+   Object.assign(dateProof,{executionMode:value.executionMode,approvalId:value.approvalId,identitySource:value.identitySource,servicePermission:value.servicePermission});
+  }
  }
  if(value.dateMode!==undefined||value.draftDate!==undefined||value.publishedDate!==undefined){
   const {validDate}=require('./schoolbell-date-policy.cjs');
@@ -183,7 +190,7 @@ function createStore(profile) {
    if(row.service!=='schoolbell'||!post||post.status!=='auto-uncertain'||post.stage!=='verifying'||post.hash!==hash)
     throw Error('재검증할 게시 시도를 확인해 주세요.');
    const receipt=publication(proof,post.photoCount);
-   if(receipt.executionMode!=='development-test'||receipt.draftDate!==post.date)throw Error('시험 게시 검증 기록을 확인해 주세요.');
+   if(!['development-test','teacher-authorized-class'].includes(receipt.executionMode)||receipt.draftDate!==post.date)throw Error('게시 검증 기록을 확인해 주세요.');
    post.reconciliation={previousStatus:post.status,previousStage:post.stage,verifiedAt:receipt.verifiedAt};
    post.publication=receipt;post.status='auto-success';post.updatedAt=Date.now();return {...post};
   });

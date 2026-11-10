@@ -12,7 +12,7 @@ function matches(actual,expected) {
  return actual?.service==='schoolbell' && actual.schoolId===expected.schoolId && actual.classKey===expected.classKey &&
   actual.scopeType==='class' && actual.board==='diary' && services.remoteId(actual.boardId) &&
   actual.authenticated===true && (expected.executionMode==='development-test'?
-   actual.executionMode==='development-test'&&actual.approvalId===expected.approvalId&&actual.teacher===false&&actual.identitySource==='user-confirmation':actual.teacher===true) && (!expected.boardId || actual.boardId===expected.boardId)&&
+   actual.executionMode==='development-test'&&actual.approvalId===expected.approvalId&&actual.teacher===false&&actual.identitySource==='user-confirmation':expected.executionMode==='teacher-authorized-class'?actual.executionMode==='teacher-authorized-class'&&actual.authorizationId===expected.authorizationId&&actual.teacher===false&&actual.identitySource==='teacher-confirmation':actual.teacher===true) && (!expected.boardId || actual.boardId===expected.boardId)&&
   (expected.selfNotification===undefined||(actual.selfNotification===true)===expected.selfNotification);
 }
 function contentMatches(actual,note,photos,mode='fixed',published=false) {
@@ -51,12 +51,13 @@ function createPublisher({profile,store,readPhoto,driver=null,review,gate=capabi
    for(const ref of note.photos){const bytes=Buffer.from(await step(()=>readPhoto(ref)));
     if(hash(bytes)!==ref.id.split('.')[0])throw Error('photo');files.push({id:ref.id,bytes});}
    const expectedPhotos=files.map(f=>({sha256:hash(f.bytes),bytes:f.bytes.length}));
-   const expected={schoolId:profile.id,classKey:note.classKey,...(access.executionMode==='development-test'?{executionMode:access.executionMode,approvalId:access.approvalId}:{})};
+   const expected={schoolId:profile.id,classKey:note.classKey,...(access.executionMode==='development-test'?{executionMode:access.executionMode,approvalId:access.approvalId}:access.executionMode==='teacher-authorized-class'?{executionMode:access.executionMode,authorizationId:access.authorizationId}:{})};
    const observed=await step(signal=>driver.inspect(expected,signal));
    if(!matches(observed,expected))throw Error('identity');
    expected.boardId=observed.boardId;
    expected.selfNotification=observed.selfNotification===true;
    expected.publicationMode=observed.publicationMode||'fixed';
+   if(observed.audience)expected.audience=structuredClone(observed.audience);
    if(!['fixed','immediate'].includes(expected.publicationMode))throw Error('date');
    const baseline=await step(signal=>driver.snapshot({scope:{...expected},note:structuredClone(note)},signal));
    if(!Array.isArray(baseline?.ids) || baseline.ids.some(id=>typeof id!=='string') || baseline.matching!==0)throw Error('duplicate');
@@ -84,7 +85,7 @@ function createPublisher({profile,store,readPhoto,driver=null,review,gate=capabi
       !contentMatches(result,note,expectedPhotos,expected.publicationMode,true))throw Error('unverified');
    checkLocal();
    const publication=services.publication({postId:result.id,boardId:expected.boardId,
-    ...(expected.executionMode==='development-test'?{executionMode:expected.executionMode,approvalId:expected.approvalId,identitySource:'user-confirmation',servicePermission:'unconfirmed'}:{}),
+    ...(expected.executionMode==='development-test'?{executionMode:expected.executionMode,approvalId:expected.approvalId,identitySource:'user-confirmation',servicePermission:'unconfirmed'}:expected.executionMode==='teacher-authorized-class'?{executionMode:expected.executionMode,authorizationId:expected.authorizationId,identitySource:'teacher-confirmation',servicePermission:'unconfirmed',authoritySource:'management-controls-and-teacher-confirmation',audienceScope:'class-roles'}:{}),
     ...(expected.publicationMode==='immediate'?{dateMode:'immediate',draftDate:note.date,publishedDate:result.date}:{}),
     photos:expectedPhotos,attachmentsVerified:true,verifiedAt:Date.now()},note.photos.length);
    store.automaticState(note.classKey,attempt.id,{status:'auto-success',stage,publication});

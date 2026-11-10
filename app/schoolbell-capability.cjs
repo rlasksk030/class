@@ -1,5 +1,7 @@
 // Code-owned gate. Renderer input, environment variables and saved settings cannot opt in.
-// Runtime execution stays disabled until permission and isolated-account evidence are reviewed.
-const blockers=Object.freeze(['permission-unconfirmed','live-driver-unverified','live-publish-unverified']);
+// Empty-class live publication and ordinary-class nonpublishing are evidenced.
+// Neither result replaces operating binding validation or Windows release gates.
+const blockers=Object.freeze(['operating-binding-unverified','windows-release-gates-incomplete']);
 module.exports=Object.freeze({status:()=>({enabled:false,status:'blocked',blockers:[...blockers],
- message:'학교종이 자동 등록은 허용 여부와 실제 게시 검증이 완료되지 않아 잠겨 있습니다. 수동 발행 도우미는 별도로 사용할 수 있습니다.'})});
+ servicePermission:'unconfirmed',
+ message:'학교종이 자동 입력·사진 및 테스트 게시 검증은 완료했습니다. 일반 운영 연결과 Windows 배포 검증이 끝날 때까지 정식 등록은 잠겨 있습니다.'})});

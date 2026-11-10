@@ -8,6 +8,7 @@ const {remoteId}=require('./diary-services.cjs');
 const {fail}=require('./schoolbell-driver-errors.cjs');
 const {audienceVerified}=require('./schoolbell-audience.cjs');
 const trial=require('./schoolbell-test-authorization.cjs');
+const operating=require('./schoolbell-operating-authorization.cjs');
 const {immediateEvidence,contentDateMatches}=require('./schoolbell-date-policy.cjs');
 const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
@@ -27,7 +28,7 @@ function createPreparedDriver({bridge,target,permission=()=>null,publicationMode
  const signalFor=signal=>signal?AbortSignal.any([signal,controller.signal]):controller.signal;
  function permitted(action) {
   const p=permission();
-  if(trial.validTestGrant(p,target,action,now()))return;
+  if(trial.validTestGrant(p,target,action,now())||operating.validGrant(p,target,action,now()))return;
   if(p?.official!==true||p.method!=='electron-ui'||typeof p.evidenceRef!=='string'||!p.evidenceRef.trim()||
      p.schoolId!==target.schoolId||p.classKey!==target.classKey||p.approvedTestClass!==true||
      !Array.isArray(p.actions)||!p.actions.includes(action))fail('permission-unverified');
@@ -41,14 +42,14 @@ function createPreparedDriver({bridge,target,permission=()=>null,publicationMode
   return value;
  }
  const scope=c=>({service:'schoolbell',schoolId:target.schoolId,classKey:target.classKey,boardId:c.boardId,
-  scopeType:'class',board:'diary',authenticated:true,teacher:c.trial?false:true,...(c.trial?{executionMode:'development-test',approvalId:c.trial.approvalId,identitySource:'user-confirmation',authoritySource:c.trial.authoritySource}:{}),...(publicationMode==='immediate'?{publicationMode}:{}),
+  scopeType:'class',board:'diary',authenticated:true,teacher:c.trial||c.operating?false:true,...(c.operating?{executionMode:'teacher-authorized-class',authorizationId:c.operating.authorizationId,identitySource:'teacher-confirmation',authoritySource:c.operating.authoritySource,audience:{selectionScope:'class-roles',roles:structuredClone(c.recipientEvidence.roles),administratorCount:c.adminCount,memberTotal:null}}:{}),...(c.trial?{executionMode:'development-test',approvalId:c.trial.approvalId,identitySource:'user-confirmation',authoritySource:c.trial.authoritySource}:{}),...(publicationMode==='immediate'?{publicationMode}:{}),
   selfNotification:!!c.trial||c.externalNotifications===true&&c.recipientEvidence?.mandatoryAdministrator===true&&c.notificationEvidence?.kind==='current-teacher-only'});
  async function guard(action,signal) {
   diagnostic({step:'prepared-guard',state:'started',phase,action});
   permitted(action);
   const c=await call('readContext',null,signal);permitted(action);
-  const test=trial.testContext(c,permission(),now());
-  if((!test&&(c?.identityVerified!==true||c.authorityVerified!==true||c.teacher!==true||c.classApproved!==true||typeof c.actorKey!=='string'||!c.actorKey))||c?.authenticated!==true||
+  const test=trial.testContext(c,permission(),now()),ordinary=operating.operatingContext(c,permission(),now());
+  if((!test&&!ordinary&&(c?.identityVerified!==true||c.authorityVerified!==true||c.teacher!==true||c.classApproved!==true||typeof c.actorKey!=='string'||!c.actorKey))||c?.authenticated!==true||
      c.service!=='schoolbell'||c.scopeType!=='class'||c.board!=='diary'||!remoteId(c.boardId)||
      !['schoolId','schoolName','year','grade','classroom','classKey'].every(k=>c[k]===target[k])||
      !Number.isFinite(c.observedAt)||c.observedAt>now()||now()-c.observedAt>maxAgeMs||

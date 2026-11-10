@@ -24,10 +24,10 @@ function testContext(c,p,now=Date.now()){
   Number.isFinite(c.observedAt)&&c.observedAt<=now&&now-c.observedAt<=15000;
 }
 function bindingOf(c){return {boardId:c.boardId,contextId:c.contextId,actorKey:c.actorKey,
- ...(c.trial?{approvalId:c.trial.approvalId}:{})};}
+ ...(c.trial?{approvalId:c.trial.approvalId}:{}),...(c.operating?{authorizationId:c.operating.authorizationId}:{})};}
 function sameBinding(c,b){
  return !!c&&!!b&&['boardId','contextId'].every(k=>typeof b[k]==='string'&&!!b[k]&&c[k]===b[k])&&
-  (b.approvalId?c.actorKey===null&&b.actorKey===null&&(c.approvalId||c.trial?.approvalId)===b.approvalId:
+  (b.authorizationId?c.actorKey===null&&b.actorKey===null&&(c.authorizationId||c.operating?.authorizationId)===b.authorizationId:b.approvalId?c.actorKey===null&&b.actorKey===null&&(c.approvalId||c.trial?.approvalId)===b.approvalId:
    typeof b.actorKey==='string'&&!!b.actorKey&&c.actorKey===b.actorKey);
 }
 function contentDigest(note,photos){return crypto.createHash('sha256').update(JSON.stringify({classKey:note.classKey,date:note.date,title:note.title,body:note.body,photos})).digest('hex');}

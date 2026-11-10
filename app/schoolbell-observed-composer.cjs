@@ -190,7 +190,7 @@ function encodeFiles(files){
   return {id,size:bytes.length,type:id.endsWith('.png')?'image/png':'image/jpeg',base64:bytes.toString('base64')};
  });
 }
-function createObservedComposerBridge({getWebContents,authorize,domGuard,prepareProof,refreshCommit,stop,diagnostic}={}) {
+function createObservedComposerBridge({getWebContents,authorize,domGuard,prepareProof,prepareFinalState,refreshCommit,stop,diagnostic}={}) {
  let closed=false,active=false;const jobs=new Set();
  const get=()=>{
   const wc=getWebContents?.();
@@ -222,6 +222,13 @@ function createObservedComposerBridge({getWebContents,authorize,domGuard,prepare
   if(preSend)await compare('before-focus');
   const focused=preSend?await focusForSend(wc,diagnostic):null;
   if(preSend){
+   // Restoring a background window can focus the editor and dismiss its mode
+   // dropdown. Reread the actual mode AFTER focus, before comparing/arming.
+   // Unknown/scheduled mode still fails; never substitute the prior value.
+   if(typeof prepareFinalState==='function'){
+    await prepareFinalState({request,href:url},signal);
+    await verify(action,request,signal,wc,url);
+   }
    await compare('after-focus');
    await waitForSendTarget(wc,{diagnostic,permitted:async()=>{await verify(action,request,signal,wc,url);return focused();}});
    const checked=await compare('after-target-ready');

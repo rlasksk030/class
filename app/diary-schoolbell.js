@@ -6,7 +6,7 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
  selector.innerHTML='<span>발행 서비스</span><select id="diaryService"><option value="hiclass">하이클래스</option><option value="schoolbell">학교종이</option></select>';
  $('diaryHiclass').before(selector);
  const panel=document.createElement('section'); panel.id='diarySchoolbell'; panel.hidden=true;
- panel.innerHTML='<div class="diary-hiclass-line schoolbell-connect-line"><strong>학교종이</strong><button id="schoolbellOpen" class="primary">학교종이 연결하기</button><button id="schoolbellInspect">연결 상태 확인</button></div>'+
+ panel.innerHTML='<div class="diary-hiclass-line schoolbell-connect-line"><strong>학교종이</strong><button id="schoolbellOpen" class="primary">학교종이 연결하기</button><button id="schoolbellInspect">연결 상태 확인</button><button id="schoolbellConnectOperating">담당 학급 연결 확인</button></div>'+
   '<p id="schoolbellState" role="status"></p><p id="schoolbellExpected"></p>'+
   '<p id="schoolbellAutomaticState" role="status">자동 등록 잠김 · 허용 여부 및 실제 게시 검증 대기</p>'+
   '<p>연결하기 → 앱 전용 창에서 직접 로그인 → 담당 학급의 알림장을 여세요. 외부 브라우저 로그인 정보는 가져오지 않습니다.</p>'+
@@ -38,7 +38,7 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
   $('diaryHiclass').hidden=manual;panel.hidden=!manual;
   root.querySelector('.diary-recipients').hidden=manual;$('diaryPublish').hidden=manual;
   const trial=data.developmentTrial?.enabled===true;
-  automaticEnabled=data.capability?.enabled===true||trial;
+  automaticEnabled=(data.capability?.enabled===true&&data.operatingConnection?.enabled===true)||trial;
   $('schoolbellDevelopment').hidden=data.developmentChecks!==true;
   autoButton.hidden=!manual;autoButton.disabled=!automaticEnabled||busy;
   autoButton.title=trial?data.developmentTrial.message:data.capability?.message||'자동 등록 연결 확인 필요';
@@ -65,7 +65,7 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
     'auto-pending':'자동 시도 · 결과 미확인','auto-uncertain':'자동 시도 · 결과 불확실',
     'auto-success':'자동 게시 · 결과 검증됨','auto-user-confirmed':'자동 시도 후 게시 · 사용자 확인',
     'auto-user-not-posted':'자동 시도 후 미게시 · 사용자 확인'}[post.status]||'확인 필요')+(post.reconciliation?' · 재전송 없이 재검증':'');row.append(label);
-   if(data.developmentChecks&&post.status==='auto-uncertain'&&post.stage==='verifying'&&typeof onAutomaticVerify==='function'){
+   if((data.developmentChecks||data.operatingConnection?.connected)&&post.status==='auto-uncertain'&&post.stage==='verifying'&&typeof onAutomaticVerify==='function'){
     const verify=document.createElement('button');verify.textContent='게시 결과 재검증 (재전송 없음)';
     verify.onclick=()=>run(()=>onAutomaticVerify(post.id));row.append(verify);
    }
@@ -108,6 +108,7 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
  };
  const to=()=>({...target(),year:target().classKey.split(':')[0]});
  $('schoolbellOpen').onclick=()=>run(()=>desktop.schoolbellOpen(to()));
+ $('schoolbellConnectOperating').onclick=()=>run(()=>desktop.schoolbellConnectOperating(to()));
  $('schoolbellInspect').onclick=()=>run(()=>desktop.schoolbellInspect(to()));
  $('schoolbellCheckPosts').onclick=()=>run(()=>desktop.schoolbellCheckPosts({target:to(),note:readNote()}));
  $('schoolbellCheckUploads').onclick=()=>run(()=>desktop.schoolbellCheckUploads({target:to(),note:readNote()}));

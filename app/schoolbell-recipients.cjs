@@ -49,6 +49,8 @@ function probeRecipients(document,_action,findDialogs=recipientDialogs){
  // selection, authority, or permission evidence. No names/contact values leave.
  return {known:true,...counts,unfiltered:true,empty,visibleRows:empty?0:rows.length,
   students:empty?0:null,parents:empty?0:null,roles,
+  // Only the four observed role toggles define selection. No member total is inferred.
+  selectionScope:'class-roles',
   mandatoryAdministrator:roles.administrator.checked&&roles.administrator.disabled};
 }
 function recipientControl(document,action,findDialogs=recipientDialogs){

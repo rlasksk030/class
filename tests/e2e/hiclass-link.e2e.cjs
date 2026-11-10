@@ -26,7 +26,7 @@ const waitText=async(page,sel,re,ms=8000)=>{const end=Date.now()+ms;while(Date.n
  ok('미연결 상태 표시·버튼 하나',(await page.textContent('#diaryLinkState')).includes('미연결')&&(await page.textContent('#diaryConnect'))==='하이클래스 연결하기'&&(await page.locator('#diaryLink').count())===0);
  await page.click('#diaryConnect');
  ok('① 로그인 안내와 단계 표시',/로그인/.test(await waitText(page,'#diaryLinkMessage',/로그인/))&&await page.isVisible('#diaryLinkSteps')&&(await page.textContent('#diaryLinkSteps li.current')).includes('로그인'));
- ok('연결 진행 중에도 버튼 하나',(await page.locator('.diary-hiclass-line button').count())===1);
+ ok('연결 진행 중에도 버튼 하나',(await page.locator('#diaryHiclass .diary-hiclass-line button:visible').count())===1);
  await hiclassGo(app,'/main/home');ok('② 담당 학급 선택 안내',/담당 학급을 선택/.test(await waitText(page,'#diaryLinkMessage',/담당 학급을 선택/))&&(await page.textContent('#diaryLinkSteps li.current')).includes('담당 학급 선택'));
  await hiclassGo(app,'/main/clazzes/c1');const home=await waitText(page,'#diaryLinkMessage',/학급은 확인했습니다/);
  ok('③ 학급 홈만 열면 연결하지 않고 구체적 안내',/학급은 확인했습니다\. 이제 해당 학급의 알림장 게시판을 열어 주세요/.test(home)&&(await app.evaluate(()=>globalThis.dialogs.length))===0,home);

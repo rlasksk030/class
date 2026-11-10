@@ -50,7 +50,8 @@ $actualVersion = (& $node --version | Out-String).Trim()
 if ($actualVersion -ne "v$version") { throw "Unexpected Node version $actualVersion; expected v$version" }
 Write-Output "Portable Node ready: $node"
 Write-Output "Portable npm ready: $npm"
-Write-Output 'Only this shell can opt into the PATH; no system PATH was changed.'
+$env:PATH = $destination + [IO.Path]::PathSeparator + $env:PATH
+Write-Output 'Portable Node is on this process PATH only; no user or system PATH was changed.'
 Write-Output 'For local validation, run the following commands from the repository root:'
 Write-Output ('  & "' + $npm + '" ci')
 Write-Output ('  & "' + $npm + '" run check')

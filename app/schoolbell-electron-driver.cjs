@@ -13,7 +13,7 @@ const {audienceVerified}=require('./schoolbell-audience.cjs');
 const trial=require('./schoolbell-test-authorization.cjs');
 function requirePermission(permission,target,action){
  const p=permission?.();
- if(trial.validTestGrant(p,target,action))return;
+ if(trial.validTestGrant(p,target,action)||require('./schoolbell-operating-authorization.cjs').validGrant(p,target,action))return;
  if(p?.official!==true||p.method!=='electron-ui'||!p.evidenceRef?.trim()||p.schoolId!==target.schoolId||
     p.classKey!==target.classKey||p.approvedTestClass!==true||!p.actions?.includes(action))fail('permission-unverified');
 }
@@ -82,6 +82,7 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
   return current;
  }
  const composer=createObservedComposerBridge({getWebContents,stop,diagnostic:evidence.diagnostic,refreshCommit,domGuard:evidence.guardDOM||finalDOMGuard,
+  prepareFinalState:evidence.publicationMode==='immediate'?async(_r,signal)=>{lastDate=structuredClone(await read('readDate',signal,'date-unverified'));}:undefined,
   prepareProof:typeof evidence.guardDOM==='function'?undefined:({action,request,href})=>makeGuardProof({
    action,target,binding,note:transactionNote,context:lastContext,date:lastDate,uploads:lastUploads,
    expectedNames,expectedPhotos,href,revision:request?.revision,permission:permission()}),

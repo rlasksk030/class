@@ -83,6 +83,7 @@ function summarizeContext({group,account,roster,invite,recipients},target){
   recipientEvidence:recipients?.known===true?recipients:null,
   // A display name/avatar hash is not a unique account identifier.
   actorKey:null,
+  managementObservationDigest:group?.known?crypto.createHmac('sha256',observationSalt).update(JSON.stringify(group.admins)).digest('hex'):null,
   // Equality of a displayed contact only detects changes during this short
   // app session. It is NOT a service account ID or administrator identity proof.
   // Salt is process-local; neither raw contact nor digest is persisted/exposed.
@@ -128,8 +129,8 @@ function createLiveContextProvider({getWebContents,createReader,target,showRecip
     // teacher's existing page. Opening a blank composer does not enter or send.
     at('recipient-reader');await reader.loadURL(route.base+'/boards/classnews');
     // The live service did not open the target modal reliably in a hidden
-    // window. In isolated development tests, render the blank composer without
-    // taking focus. Account/roster screens have already finished and stay hidden.
+    // window. Render the blank recipient reader without taking focus when
+    // requested by the app. Account/roster screens have finished and stay hidden.
     if(showRecipientReader)reader.showInactive();
     await openObservedComposer(reader.webContents,{groupId:route.groupId,signal,
      allowed:()=>!owner.isDestroyed()&&owner.getURL()===initialURL&&!closed});

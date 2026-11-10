@@ -6,6 +6,7 @@ const {officialPage}=require('./schoolbell-observed-composer.cjs');
 const {audienceVerified}=require('./schoolbell-audience.cjs');
 const {immediateEvidence}=require('./schoolbell-date-policy.cjs');
 const trial=require('./schoolbell-test-authorization.cjs');
+const operating=require('./schoolbell-operating-authorization.cjs');
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const isoDate=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&
  Number.isFinite(Date.parse(v))&&new Date(v).toISOString().slice(0,10)===v;
@@ -29,18 +30,18 @@ function publicationDate(evidence,{target,binding,note,now=Date.now()}){
  return evidence.value;
 }
 function makeGuardProof({action,target,binding,note,context,date,uploads,expectedNames,expectedPhotos,href,revision,permission,now=Date.now()}){
- const test=trial.testContext(context,permission,now);
+ const test=trial.testContext(context,permission,now),ordinary=operating.operatingContext(context,permission,now);
  if(!sameScope(context,target,binding)||!fresh(context.observedAt,now)||
-    (!test&&(context.identityVerified!==true||context.authorityVerified!==true||context.teacher!==true||context.classApproved!==true||context.testClassApproved!==true))||context.authenticated!==true||
+    (!test&&!ordinary&&(context.identityVerified!==true||context.authorityVerified!==true||context.teacher!==true||context.classApproved!==true||context.testClassApproved!==true))||context.authenticated!==true||
     context.service!=='schoolbell'||context.scopeType!=='class'||context.board!=='diary'||
     !audienceVerified(context,permission,now)||!officialPage(href))throw Error('context-unverified');
  const recipients=context.recipientEvidence;
- if(recipients?.known!==true||recipients.unfiltered!==true||recipients.empty!==true||
+ if(recipients?.known!==true||recipients.unfiltered!==true||(!ordinary&&recipients.empty!==true)||
     typeof recipients.targetLabel!=='string'||!recipients.targetLabel.trim())throw Error('context-unverified');
  const value=publicationDate(date,{target,binding,note,now});
  let photos=[];
  if(['commit','commit-check'].includes(action)){
-  if(action==='commit'&&test&&!trial.finalTestContent(permission,note,expectedPhotos))throw Error('permission-unverified');
+  if(action==='commit'&&((test&&!trial.finalTestContent(permission,note,expectedPhotos))||(ordinary&&!operating.finalContent(permission,note,expectedPhotos))))throw Error('permission-unverified');
   if(uploads?.complete!==true||!fresh(uploads.observedAt,now)||uploads.revision!==revision||
      !same(uploads.binding,binding)||!Array.isArray(uploads.items))throw Error('upload-unverified');
   photos=uploads.items.map(item=>{
@@ -51,7 +52,7 @@ function makeGuardProof({action,target,binding,note,context,date,uploads,expecte
  }
  return {schema:1,action,href,issuedAt:now,expiresAt:Math.min(now+15000,context.observedAt+15000,date.observedAt+15000,
   ['commit','commit-check'].includes(action)?uploads.observedAt+15000:Infinity,
-  test?permission.expiresAt:recipients.mandatoryAdministrator?context.notificationEvidence.observedAt+15000:Infinity),
+  test||ordinary?permission.expiresAt:recipients.mandatoryAdministrator?context.notificationEvidence.observedAt+15000:Infinity),
   target:structuredClone(target),binding:structuredClone(binding),date:value,
   ...(immediateEvidence(date)?{publicationMode:'immediate',draftDate:note.date}:{}),
   recipientLabel:recipients.targetLabel,revision:['commit','commit-check'].includes(action)?revision:null,
