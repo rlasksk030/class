@@ -1,0 +1,19 @@
+✔ observed class route excludes school announcements, credentials and other origins (0.891417ms)
+✔ matching display names and empty slots cannot establish school, year, actor or notification authority (0.32525ms)
+✔ cancellation while the context reader is opening destroys only that reader and prevents reads (1.318709ms)
+✔ observed post ID and tooltip date do not claim virtual list coverage (4.554916ms)
+✔ missing list-end coverage cannot establish a baseline or enable result readback (151.664458ms)
+✔ empty unfiltered send-target table verifies no student/parent targets but cannot authorize administrator notifications (0.371792ms)
+✔ an occluded recipient control cannot be clicked; a clear control opens once (2.04875ms)
+✔ missing/duplicate recipient dialogs are unknown, with a count and no target text (0.89925ms)
+✔ nonempty recipient list exposes only rendered row count, never verified recipients (0.396625ms)
+✔ recipient IPC observation preserves role toggles without identities or recipient totals (0.368083ms)
+✔ unknown or incomplete observation cannot become known audience selection (0.128042ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 234.412583

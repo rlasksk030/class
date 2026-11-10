@@ -90,7 +90,7 @@ function browserOperation(action,payload,inspect,guard,readText,readAttachments,
  if(action==='compare-commit')return comparison();
  const guarded=()=>{
   const check={...payload,action,...(['commit','commit-check'].includes(action)?{attachmentState:readAttachments(document)}:{})};
-  if(typeof guard==='function'&&guard(document,check,readMode)===true)return true;
+  if(typeof guard==='function'&&guard(document,check,readMode,readText)===true)return true;
   const error=Error('context-unverified');error.guardFailure=check.guardFailure;throw error;
  };
  if(action==='inspect')return info;

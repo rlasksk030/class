@@ -4,7 +4,7 @@
 // report exposes only booleans/counts; native consent can show the bound class.
 // Available controls are never promoted to verified service identity/authority.
 const {officialPage}=require('./schoolbell-observed-composer.cjs');
-const {inspectRecipients}=require('./schoolbell-recipients.cjs');
+const {inspectRecipients,safeRecipientObservation}=require('./schoolbell-recipients.cjs');
 const {openObservedComposer}=require('./schoolbell-composer-entry.cjs');
 const crypto=require('node:crypto'),observationSalt=crypto.randomBytes(32);
 function classRoute(value){
@@ -140,7 +140,7 @@ function createLiveContextProvider({getWebContents,createReader,target,showRecip
    at('publication-mode');const publicationMode=await require('./schoolbell-publication-mode.cjs').inspectPublicationMode(modeContents,signal);
    diagnostic({step:'context-provider',state:'complete',elapsedMs:Date.now()-started});
    return {...summarizeContext({group,account,roster,invite,recipients},target),publicationMode,
-    recipientCheck:{...(recipients.known?{known:true,empty:recipients.empty,visibleRows:recipients.visibleRows}:{known:false,reason:recipients.reason}),...require('./schoolbell-recipients.cjs').safeCounts(recipients)},boardId:route.groupId,observedAt:Date.now()};
+    recipientCheck:safeRecipientObservation(recipients),boardId:route.groupId,observedAt:Date.now()};
   }catch(error){
    diagnostic({step:'context-provider',state:'failed',stage,elapsedMs:Date.now()-started,aborted:signal.aborted,
     ownerChanged:owner.isDestroyed()||owner.getURL()!==initialURL,

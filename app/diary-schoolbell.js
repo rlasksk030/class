@@ -12,7 +12,7 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
   '<p>연결하기 → 앱 전용 창에서 직접 로그인 → 담당 학급의 알림장을 여세요. 외부 브라우저 로그인 정보는 가져오지 않습니다.</p>'+
   '<p>학교종이는 즉시발행으로 연결합니다. 앱 작성일은 초안 구분용이며 학교종이 게시 날짜를 지정하지 않습니다. 실제 발행일은 게시 후 확인합니다.</p>'+
   '<details><summary>기존 게시물 조회 확인</summary><p>현재 초안과 같은 제목의 게시물만 열어 본문과 첨부 원본을 비교합니다. 새 게시물은 만들지 않습니다.</p><button id="schoolbellCheckPosts">현재 초안으로 게시물 조회</button></details>'+
-  '<details id="schoolbellDevelopment" hidden><summary>개발 시험 · 사용자 승인</summary><p>운영 잠금과 분리된 1회 시험입니다. 실제 학급·빈 수신자 상태를 확인하고 학교 설정 연결 및 관리자 본인 여부를 사용자 확인 기록으로 남깁니다.</p><button id="schoolbellAuthorizeTest">현재 테스트 학급 연결 승인</button><p>이미 작성 화면에 올린 시험 사진만 확인하려면 아래 검사를 사용하세요.</p><button id="schoolbellCheckUploads">첨부 원본 확인 (게시 안 함)</button></details>'+
+  '<details id="schoolbellDevelopment" hidden><summary>개발 시험 · 사용자 승인</summary><p>운영 잠금과 분리된 1회 시험입니다. 실제 학급·빈 수신자 상태를 확인하고 학교 설정 연결 및 관리자 본인 여부를 사용자 확인 기록으로 남깁니다.</p><button id="schoolbellAuthorizeTest">현재 테스트 학급 연결 승인</button><p>일반 학급에서는 협조 교사의 동의를 받고 빈 작성 화면에 정해진 가상 문구·PNG 1장만 입력합니다. 보내기·예약·임시저장은 실행하지 않습니다.</p><button id="schoolbellNonpublishingCheck">일반 학급 비게시 입력·사진 검사</button><p>이미 작성 화면에 올린 시험 사진만 확인하려면 아래 검사를 사용하세요.</p><button id="schoolbellCheckUploads">첨부 원본 확인 (게시 안 함)</button></details>'+
   '<details id="schoolbellManual"><summary>수동 발행 도우미 (임시 대체 기능)</summary>'+
   '<p>이 기능은 자동 등록과 별개입니다. 로그인·학급 일치·게시 결과를 학교종이에서 직접 확인합니다.</p>'+
   '<details id="schoolbellConnection"><summary>담당 학급 직접 확인</summary>'+
@@ -111,6 +111,7 @@ window.createDiaryServices = function({root,readNote,save,target,isBusy,status,p
  $('schoolbellInspect').onclick=()=>run(()=>desktop.schoolbellInspect(to()));
  $('schoolbellCheckPosts').onclick=()=>run(()=>desktop.schoolbellCheckPosts({target:to(),note:readNote()}));
  $('schoolbellCheckUploads').onclick=()=>run(()=>desktop.schoolbellCheckUploads({target:to(),note:readNote()}));
+ $('schoolbellNonpublishingCheck').onclick=()=>run(()=>desktop.schoolbellNonpublishingCheck(to()));
  $('schoolbellAuthorizeTest').onclick=()=>run(()=>desktop.schoolbellAuthorizeTest(to()));
  $('schoolbellLink').onclick=()=>run(()=>desktop.schoolbellLink({...to(),observed:{schoolName:$('schoolbellSchool').value,year:$('schoolbellYear').value,grade:$('schoolbellGrade').value,classroom:$('schoolbellClass').value}}));
  $('schoolbellPrepare').onclick=()=>run(async()=>{

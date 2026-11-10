@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const {recipientControl,probeRecipients}=require('./schoolbell-recipients.cjs');
+const {recipientControl,probeRecipients,safeRecipientObservation}=require('./schoolbell-recipients.cjs');
 test('an occluded recipient control cannot be clicked; a clear control opens once',()=>{
  let clicks=0,blocked=true;const label={textContent:'synthetic target'};
  const button={textContent:'변경',disabled:false,matches:()=>false,scrollIntoView(){},getBoundingClientRect:()=>({left:0,top:0,width:100,height:30}),contains:e=>e===button,click:()=>clicks++};
@@ -29,4 +29,24 @@ test('nonempty recipient list exposes only rendered row count, never verified re
  assert.equal(info.students,null);
  assert.equal(info.parents,null);
  assert.equal(Object.hasOwn(info,'recipientNames'),false);
+});
+
+test('recipient IPC observation preserves role toggles without identities or recipient totals',()=>{
+ const roles={administrator:{checked:true,disabled:true,name:'PRIVATE_SENTINEL'},guardian1:{checked:true,disabled:false},
+  guardian2:{checked:false,disabled:false},student:{checked:false,disabled:false},unknown:{checked:true,disabled:false}};
+ const result=safeRecipientObservation({known:true,empty:false,unfiltered:true,visibleRows:2,roles,
+  students:99,parents:99,targetLabel:'PRIVATE_SENTINEL',names:['PRIVATE_SENTINEL'],phone:'PRIVATE_SENTINEL',recipientsVerified:true});
+ assert.deepEqual(result.roles,{administrator:{checked:true,disabled:true},guardian1:{checked:true,disabled:false},guardian2:{checked:false,disabled:false},student:{checked:false,disabled:false}});
+ assert.equal(result.roleSelectionKnown,true);assert.equal(result.observedSearchClear,true);
+ assert.equal(result.visibleRows,2);assert.equal(result.totalStudents,null);assert.equal(result.totalParents,null);
+ assert.equal(result.mandatoryAdministrator,true);assert.equal(result.recipientsVerified,false);
+ assert.equal(JSON.stringify(result).includes('PRIVATE_SENTINEL'),false);
+});
+
+test('unknown or incomplete observation cannot become known audience selection',()=>{
+ const unknown=safeRecipientObservation({known:false,reason:'PRIVATE_SENTINEL',targetLabel:'PRIVATE_SENTINEL'});
+ assert.deepEqual(unknown,{known:false,recipientsVerified:false});
+ const partial=safeRecipientObservation({known:true,roles:{student:{checked:'yes',disabled:false}},visibleRows:-1});
+ assert.equal(partial.roleSelectionKnown,false);assert.equal(partial.mandatoryAdministrator,null);
+ assert.equal(partial.empty,null);assert.equal(partial.visibleRows,null);assert.equal(partial.recipientsVerified,false);
 });

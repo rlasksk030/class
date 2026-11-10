@@ -183,16 +183,49 @@ module.exports = function setup(main) {
     blockers:result.blockers,publicationMode:result.publicationMode,recipientCheck:result.recipientCheck},null,2),{mode:0o600});
    // Never expose display names, avatar URLs, group IDs or actor hashes to the
    // renderer/log. This report is not a stored verified link or publication grant.
-   return {status:'blocked',checks:result.checks,blockers:result.blockers,
+   const rolePreview=result.recipientCheck?.roleSelectionKnown?
+    Object.entries({administrator:'관리자',guardian1:'보호자1',guardian2:'보호자2',student:'학생'}).map(([key,label])=>{
+     const role=result.recipientCheck.roles[key];return label+' '+(role.checked?'선택':'미선택')+(role.disabled?'(변경 불가)':'');
+    }).join(' / ')+' — 화면의 항목 선택 상태이며 실제 수신 인원 검증은 아닙니다. ':'';
+   return {status:'blocked',checks:result.checks,blockers:result.blockers,recipientCheck:result.recipientCheck,
     message:'실제 화면 확인: '+(result.checks.gradeClass?'학년·반 일치. ':'학년·반 확인 필요. ')+
      (result.checks.recipientTableEmpty?'발행 대상 구성원 없음 확인. ':
      result.recipientCheck?.known===true&&result.recipientCheck.empty===false?
       '발행 대상 표가 비어 있지 않습니다. 현재 표시된 '+(Number.isSafeInteger(result.recipientCheck.visibleRows)?result.recipientCheck.visibleRows+'행':'행 수 미확인')+'만 관찰했으며 총원·실제 수신자는 미검증입니다. ':
      result.checks.rosterEmpty?'명단 입력 값 0건(발행 대상은 별도 확인 필요). ':'명단 확인 필요. ')+
-     (result.publicationMode?.known?'발행 방식: '+(result.publicationMode.mode==='immediate'?'즉시발행. ':'예약발행(지원하지 않음). '):'발행 방식 확인 필요. ')+
+     rolePreview+(result.publicationMode?.known?'발행 방식: '+(result.publicationMode.mode==='immediate'?'즉시발행. ':'예약발행(지원하지 않음). '):'발행 방식 확인 필요. ')+
      result.blockers.map(code=>liveContext.blockerMessages[code]).filter(Boolean).join(' ')};
   }catch(error){return {status:'blocked',message:liveContext.blockerMessages[error.message]||'앱의 로그인 상태와 실제 학급 화면을 확인하지 못했습니다. 자동 등록 잠금과 초안은 유지됩니다.'};}
   finally{abort.abort();provider.close();}
+ });
+ handle('schoolbell:nonpublishing-check',async value=>{
+  if(!testAuthorization.available())fail('별도 개발 검증 프로필에서만 비게시 검사를 실행할 수 있습니다.');
+  const to=target(value),win=windows.get(to.classKey);
+  if(!win||win.isDestroyed())fail('현재 앱 학급의 학교종이 창에서 빈 작성 화면을 먼저 열어 주세요.');
+  // This path has no publisher and never issues a test/production send grant.
+  testAuthorization.revoke();
+  const abort=new AbortController(),context=contextProvider(win,to);
+  const uploads=require('./schoolbell-preview-originals.cjs').createPreviewOriginals({getWebContents:()=>win.isDestroyed()?null:win.webContents,tempRoot:profile.dir});
+  try{
+   const result=await bounded(()=>require('./schoolbell-nonpublishing.cjs').runNonpublishingCheck({webContents:win.webContents,target:to,
+    canUse:()=>testAuthorization.available()&&windows.get(to.classKey)===win&&!win.isDestroyed(),
+    inspectContext:context.inspect,readOriginals:uploads.readUploads,signal:abort.signal,
+    confirm:async({context:observed,note,photos})=>{
+     const answer=await dialog.showMessageBox(confirmationParent(),{type:'question',buttons:['취소','입력·사진 업로드만 검사'],defaultId:0,cancelId:0,
+      message:'협조 교사의 일반 학급에서 비게시 검사를 진행할까요?',
+      detail:expectedSchool()+' · '+to.year+'학년도 '+to.grade+'학년 '+to.classroom+'반\n'+
+       '현재 학교종이 학급 ID: '+observed.boardId+'\n'+
+       '학교·학년도 및 담당 교사 여부는 교사의 직접 확인 근거입니다. 서비스 고유 신원·게시 권한을 검증한 것으로 기록하지 않습니다.\n'+
+       '협조 교사가 이 학급의 빈 화면에 가상 자료를 입력·업로드하는 데 동의한 경우에만 진행하세요.\n\n'+
+       note.title+'\n'+note.body+'\n\n가상 PNG 1장 · '+photos[0].bytes+' bytes · SHA-256 '+photos[0].sha256+'\n'+
+       '사진은 학교종이 서버로 업로드됩니다. 보내기·예약발행·임시저장 및 수신대상 변경은 실행하지 않습니다. 결과는 게시 성공이나 게시 승인으로 사용하지 않습니다.'});
+     return answer.response===1;
+    }}),180000,()=>{abort.abort();context.close();uploads.close();});
+   await fs.writeFile(path.join(profile.dir,'schoolbell-nonpublishing-result.json'),JSON.stringify(result,null,2),{mode:0o600});
+   return {...result,message:result.status==='nonpublishing-verified'?
+    '비게시 제목·본문·사진 입력 및 원본 대조 완료. 보내기·예약발행·임시저장은 실행하지 않았습니다. 작성 화면과 앱 초안은 유지됩니다.':
+    '비게시 검사 중단 · '+result.stage+' / '+result.reason+'. 기존 내용은 유지하며 자동 재시도하지 않습니다.'};
+  }finally{abort.abort();context.close();uploads.close();testAuthorization.revoke();}
  });
  handle('schoolbell:check-posts',async value=>{
   const to=target(value.target),note=services.payload(value.note),win=windows.get(to.classKey);

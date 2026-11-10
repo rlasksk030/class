@@ -84,6 +84,29 @@ function recipientControl(document,action,findDialogs=recipientDialogs){
  return {composer:true,ready:true,opened:false,dialogOpen:dialogs.length>0,label:before,...counts};
 }
 function safeCounts(value){return Object.fromEntries(['totalCount','dialogCount','hiddenCount','unknownCount','covered'].filter(k=>typeof value?.[k]==='boolean'||Number.isSafeInteger(value?.[k])).map(k=>[k,value[k]]));}
+// A UI observation is not a membership/authority certificate. Only known role
+// toggles and aggregate rendered state may cross IPC or enter diagnostic logs.
+function safeRecipientObservation(value){
+ const result={known:value?.known===true,...safeCounts(value),recipientsVerified:false};
+ if(!result.known){
+  const reasons=['dialog-count','dialog-covered','table-or-filter','headers','roles','role-count','rows-loading','control-unavailable','control-occluded','composer-loading','not-ready'];
+  if(reasons.includes(value?.reason))result.reason=value.reason;
+  return result;
+ }
+ result.empty=typeof value.empty==='boolean'?value.empty:null;
+ result.observedSearchClear=value.unfiltered===true;
+ result.visibleRows=Number.isSafeInteger(value.visibleRows)&&value.visibleRows>=0?value.visibleRows:null;
+ result.totalStudents=null;result.totalParents=null;
+ result.roles={};
+ for(const key of ['administrator','guardian1','guardian2','student']){
+  const role=value.roles?.[key];
+  if(typeof role?.checked==='boolean'&&typeof role.disabled==='boolean')result.roles[key]={checked:role.checked,disabled:role.disabled};
+ }
+ result.roleSelectionKnown=Object.keys(result.roles).length===4;
+ result.mandatoryAdministrator=result.roles.administrator?
+  result.roles.administrator.checked&&result.roles.administrator.disabled:null;
+ return result;
+}
 async function inspectRecipients(webContents,signal,{timeoutMs=5000,diagnostic=()=>{}}={}){
  let lastDiagnostic;
  const report=(stage,r)=>{const v={step:'recipient-dialog',stage,...safeCounts(r),...(r?.reason?{reason:r.reason}:{}),...(typeof r?.ready==='boolean'?{ready:r.ready}:{}),...(typeof r?.known==='boolean'?{known:r.known}:{})};const key=JSON.stringify(v);if(key!==lastDiagnostic){diagnostic(v);lastDiagnostic=key;}};
@@ -122,4 +145,4 @@ async function inspectRecipients(webContents,signal,{timeoutMs=5000,diagnostic=(
   }
  }
 }
-module.exports={recipientDialogs,safeCounts,probeRecipients,recipientControl,inspectRecipients};
+module.exports={recipientDialogs,safeCounts,safeRecipientObservation,probeRecipients,recipientControl,inspectRecipients};
