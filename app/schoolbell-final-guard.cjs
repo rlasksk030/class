@@ -39,8 +39,8 @@ function makeGuardProof({action,target,binding,note,context,date,uploads,expecte
     typeof recipients.targetLabel!=='string'||!recipients.targetLabel.trim())throw Error('context-unverified');
  const value=publicationDate(date,{target,binding,note,now});
  let photos=[];
- if(action==='commit'){
-  if(test&&!trial.finalTestContent(permission,note,expectedPhotos))throw Error('permission-unverified');
+ if(['commit','commit-check'].includes(action)){
+  if(action==='commit'&&test&&!trial.finalTestContent(permission,note,expectedPhotos))throw Error('permission-unverified');
   if(uploads?.complete!==true||!fresh(uploads.observedAt,now)||uploads.revision!==revision||
      !same(uploads.binding,binding)||!Array.isArray(uploads.items))throw Error('upload-unverified');
   photos=uploads.items.map(item=>{
@@ -50,12 +50,12 @@ function makeGuardProof({action,target,binding,note,context,date,uploads,expecte
   if(!same(photos,expectedPhotos)||photos.length!==expectedNames.length)throw Error('upload-unverified');
  }
  return {schema:1,action,href,issuedAt:now,expiresAt:Math.min(now+15000,context.observedAt+15000,date.observedAt+15000,
-  action==='commit'?uploads.observedAt+15000:Infinity,
+  ['commit','commit-check'].includes(action)?uploads.observedAt+15000:Infinity,
   test?permission.expiresAt:recipients.mandatoryAdministrator?context.notificationEvidence.observedAt+15000:Infinity),
   target:structuredClone(target),binding:structuredClone(binding),date:value,
   ...(immediateEvidence(date)?{publicationMode:'immediate',draftDate:note.date}:{}),
-  recipientLabel:recipients.targetLabel,revision:action==='commit'?revision:null,
-  names:action==='commit'?[...expectedNames]:[],photos};
+  recipientLabel:recipients.targetLabel,revision:['commit','commit-check'].includes(action)?revision:null,
+  names:['commit','commit-check'].includes(action)?[...expectedNames]:[],photos};
 }
 // Self-contained, serialized only into Electron's isolated world. There are no
 // synthetic identity attributes or inferred school/year/date selectors here.
@@ -88,7 +88,7 @@ function finalDOMGuard(document,payload,readMode){
   if(typeof readMode!=='function')return deny('mode-reader');
   const mode=readMode(document);if(mode.known!==true||mode.mode!=='immediate'||p.date!==null)return deny('mode');
  }
- if(payload.action==='commit'){
+ if(['commit','commit-check'].includes(payload.action)){
   const a=payload.attachmentState;
   if((p.publicationMode==='immediate'?p.draftDate!==payload.note?.date:p.date!==payload.note?.date)||p.revision!==payload.revision||!same(p.photos,payload.photos)||
      a?.listKnown!==true||a.uploading||!same(a.names,p.names)||payload.finalAction!=='single-send')return deny('attachments');

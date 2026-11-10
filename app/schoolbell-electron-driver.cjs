@@ -3,7 +3,7 @@
 // providers are trusted main-process source code, NEVER renderer/settings data.
 // Observed UI evidence is installed. Production remains locked; isolated test
 // consent never promotes user-confirmed mapping to service identity evidence.
-const {createObservedComposerBridge}=require('./schoolbell-observed-composer.cjs');
+const {createObservedComposerBridge,commitCodes}=require('./schoolbell-observed-composer.cjs');
 const {createObservedPostBridge}=require('./schoolbell-observed-post.cjs');
 const {hash}=require('./media-store.cjs');
 const {createPreparedDriver}=require('./schoolbell-prepared-driver.cjs');
@@ -49,7 +49,39 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
   if(signal?.aborted)fail('driver-state');
   requirePermission(permission,target,'read');return value;
  }
- const composer=createObservedComposerBridge({getWebContents,stop,diagnostic:evidence.diagnostic,domGuard:evidence.guardDOM||finalDOMGuard,
+ const normalize=value=>String(value).replace(/\r\n?/g,'\n');
+ const audience=c=>JSON.stringify([c.students,c.parents,c.externalNotifications,c.recipientEvidence||null,
+  c.notificationEvidence?.kind||null,c.notificationEvidence?.actorKey||null,c.notificationEvidence?.otherTargets??null]);
+ // One read-only refresh before arming, never an attempted send or retry.
+ // Re-download originals and rebind only cosmetic class/style revision changes.
+ async function refreshCommit({request:r,readCurrent},signal){
+  const oldContext=lastContext,wc=getWebContents(),epoch=watch(wc);
+  if(!oldContext||!trial.sameBinding(oldContext,r.binding))fail('context-unverified');
+  const currentContext=await read('readContext',signal,'context-unverified');
+  if(!trial.sameBinding(currentContext,r.binding)||audience(currentContext)!==audience(oldContext)||
+     !audienceVerified(currentContext,permission()))fail('context-unverified');
+  const uploaded=await read('readUploads',signal,'upload-unverified',{expectedNames,expectedPhotos});
+  if(uploaded?.complete!==true||!Array.isArray(uploaded.items))fail('upload-unverified');
+  const photos=uploaded.items.map(item=>{
+   if(item.state!=='complete'||item.source!=='original-download'||!(Buffer.isBuffer(item.bytes)||item.bytes instanceof Uint8Array)||!item.bytes.length)fail('upload-unverified');
+   return {sha256:hash(item.bytes),bytes:item.bytes.length};
+  });
+  if(JSON.stringify(photos)!==JSON.stringify(expectedPhotos)||JSON.stringify(r.photos)!==JSON.stringify(expectedPhotos))fail('upload-unverified');
+  const date=await read('readDate',signal,'date-unverified');
+  const current=await readCurrent();
+  if(getWebContents()!==wc||epoch!==documentEpoch||!trial.sameBinding(binding,r.binding))fail('context-unverified');
+  if(!Number.isSafeInteger(r.semanticRevision)||current.semanticRevision!==r.semanticRevision||
+     current.revision?.split(':')[0]!==r.revision?.split(':')[0])fail('commit-semantic-change');
+  if(current.title!==r.note.title)fail('commit-title-mismatch');
+  if(current.body!==normalize(r.note.body))fail('commit-body-mismatch');
+  if(current.attachmentState?.listKnown!==true||current.attachmentState.uploading||
+     JSON.stringify(current.attachmentState.names)!==JSON.stringify(expectedNames))fail('upload-unverified');
+  lastContext=structuredClone(currentContext);lastDate=structuredClone(date);
+  lastUploads={...uploaded,binding:structuredClone(binding),revision:current.revision,observedAt:Date.now()};
+  evidence.diagnostic?.({step:'commit-revalidation',contextMatches:true,audienceMatches:true,originalsMatch:true,titleMatches:true,bodyMatches:true,semanticRevisionMatches:true});
+  return current;
+ }
+ const composer=createObservedComposerBridge({getWebContents,stop,diagnostic:evidence.diagnostic,refreshCommit,domGuard:evidence.guardDOM||finalDOMGuard,
   prepareProof:typeof evidence.guardDOM==='function'?undefined:({action,request,href})=>makeGuardProof({
    action,target,binding,note:transactionNote,context:lastContext,date:lastDate,uploads:lastUploads,
    expectedNames,expectedPhotos,href,revision:request?.revision,permission:permission()}),
@@ -72,17 +104,19 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
    // Audience inspection may close the send dropdown. Reopen/read the actual
    // choice immediately before each guarded mutation, so the atomic DOM guard
    // can inspect native checked state in the same task as that mutation.
-   if(evidence.publicationMode==='immediate'&&['writeTitle','writeBodyText','attachFiles','commitOnce'].includes(method))
-    lastDate=structuredClone(await read('readDate',signal,'date-unverified'));
+   if(evidence.publicationMode==='immediate'&&['writeTitle','writeBodyText','attachFiles','commitOnce','checkCommit'].includes(method)){
+    const trace=async stage=>{if(!['commitOnce','checkCommit'].includes(method))return;const c=await composer.compareCommit(r,signal);evidence.diagnostic?.({step:'commit-comparison',stage,...c.checks,changes:c.changes,...(c.failure?{reason:c.failure}:{})});};
+    await trace('before-readDate');lastDate=structuredClone(await read('readDate',signal,'date-unverified'));await trace('after-readDate');
+   }
    const result=await composer[method](r,signal);
    evidence.diagnostic?.({step:method,state:'complete',...(method==='readFields'?{sendTarget:result.sendTarget}:{})});return result;
   }
   catch(error){
-   evidence.diagnostic?.({step:method,state:'failed',guardFailure:error.guardFailure||null,nativeFailure:error.nativeFailure||null,proofFailure:error.stack?.includes('makeGuardProof')===true});
+   evidence.diagnostic?.({step:method,state:'failed',guardFailure:error.guardFailure||null,nativeFailure:error.nativeFailure||null,proofFailure:error.stack?.includes('makeGuardProof')===true,...(commitCodes.includes(error.message)||commitCodes.includes(error.code)?{comparisonFailure:error.code||error.message}:{}),...(error.commitChecks?{comparisons:error.commitChecks}:{})});
    if(error?.name==='SchoolbellPreparationError')throw error;
-   const code=({ 'structure-unverified':'structure-unverified','context-unverified':'context-unverified',
+   const code=commitCodes.includes(error?.message)?error.message:({ 'structure-unverified':'structure-unverified','context-unverified':'context-unverified',
     'permission-unverified':'permission-unverified','site-unverified':'context-unverified','driver-state':'driver-state','date-unverified':'date-unverified',
-    'upload-unverified':'upload-unverified','publication-unverified':'publication-unverified'})[error?.message]||'content-unverified';
+    'upload-unverified':'upload-unverified','publication-unverified':'publication-unverified','content-unverified':'content-unverified'})[error?.message]||'renderer-unclassified';
    fail(code);
   }
  }
@@ -131,6 +165,7 @@ function createElectronDriver({target,getWebContents,permission=()=>null,evidenc
    expectedNames=r.value.map((f,i)=>String(i+1).padStart(2,'0')+'-'+f.id);
    expectedPhotos=r.value.map(f=>({sha256:hash(f.bytes),bytes:f.bytes.length}));return result;
   },
+  checkCommit:(r,s)=>editor('checkCommit',{...r,finalAction:evidence.finalAction},s),
   commitOnce:(r,s)=>{
    // Observing a send button does not establish its confirmation/scheduling semantics.
    if(evidence.finalAction!=='single-send')fail('publication-unverified');

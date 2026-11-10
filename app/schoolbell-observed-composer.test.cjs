@@ -1,6 +1,6 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm');
-const {createObservedComposerBridge,officialPage}=require('./schoolbell-observed-composer.cjs');
+const {createObservedComposerBridge,officialPage,compareCommit}=require('./schoolbell-observed-composer.cjs');
 const URL='https://v4.schoolbell-e.com/ko/boards/write';
 function fixture() {
  class Input {
@@ -32,7 +32,7 @@ function fixture() {
  };
  const root={querySelectorAll:key=>table[key]||[]};
  root.addEventListener=()=>{};body.isContentEditable=true;
- const doc={querySelectorAll:key=>key==='app-boards-write'?[root]:[],
+ const doc={querySelector:()=>null,querySelectorAll:key=>key==='app-boards-write'?[root]:[],
   getSelection:()=>({removeAllRanges(){},addRange(){}}),createRange:()=>({selectNodeContents(){}}),
   execCommand:(command,_ui,value)=>{body.innerText=command==='delete'?'':body.innerText+(command==='insertLineBreak'?'\n':value);body.dispatchEvent({type:'input'});return true;}};
  const calls=[];let href=URL;
@@ -95,4 +95,25 @@ test('closed or overlapping transports never queue stale input',async()=>{
  const closing=bridge.close();release(true);await assert.rejects(()=>pending,/permission-unverified/);
  assert.equal(await closing,true);assert.equal(f.title.value,'');
  await assert.rejects(()=>bridge.writeTitle(payload),/driver-state/);
+});
+
+test('commit comparison has separate fixed codes, including title/body mismatch and cosmetic revision eligibility',()=>{
+ const current={title:'synthetic',body:'line1\nline2',revision:'document:4',semanticRevision:2};
+ const payload={note:{title:'synthetic',body:'line1\r\nline2'},revision:'document:4',semanticRevision:2,finalAction:'single-send'};
+ const state={submitted:false};assert.equal(compareCommit(current,payload,state,true).failure,null);
+ for(const [code,c,p,st,enabled] of [
+  ['commit-already-submitted',current,payload,{submitted:true},true],
+  ['commit-send-disabled',current,payload,state,false],
+  ['commit-action-mismatch',current,{...payload,finalAction:'other'},state,true],
+  ['commit-revision-mismatch',{...current,revision:'document:5'},payload,state,true],
+  ['commit-title-mismatch',{...current,title:'changed'},payload,state,true],
+  ['commit-body-mismatch',{...current,body:'changed'},payload,state,true]
+ ]){const r=compareCommit(c,p,st,enabled);assert.equal(r.failure,code);assert.ok(Object.values(r.checks).every(v=>typeof v==='boolean'));assert.equal(JSON.stringify(r).includes('synthetic'),false);}
+ const changed=compareCommit({...current,revision:'document:5',semanticRevision:3},payload,state,true);
+ assert.equal(changed.checks.semanticRevisionMatch,false);assert.equal(compareCommit({...current,revision:'replacement:4'},payload,state,true).checks.sameDocument,false);
+});
+test('unclassified renderer exception never exposes the exception text or becomes a content mismatch',async()=>{
+ const f=fixture();f.send.hasAttribute=()=>{throw Error('PRIVATE_RENDERER_VALUE');};
+ const bridge=createObservedComposerBridge({getWebContents:()=>f.wc,authorize:allow,domGuard:()=>true});
+ await assert.rejects(()=>bridge.readStructure(null),e=>e.message==='renderer-unclassified'&&!JSON.stringify(e).includes('PRIVATE_RENDERER_VALUE'));
 });

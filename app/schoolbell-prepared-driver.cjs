@@ -102,7 +102,7 @@ function createPreparedDriver({bridge,target,permission=()=>null,publicationMode
   const d=await readDate(signal),uploaded=originals(await call('readUploads',null,signal),'upload-unverified');
   const c=await call('readContent',null,signal);
   if(typeof c?.title!=='string'||typeof c.body!=='string'||typeof c.revision!=='string'||!c.revision)fail('content-unverified');
-  return {title:c.title,body:c.body,date:d.value,...(publicationMode==='immediate'?{publicationMode,draftDate:note.date}:{}),revision:c.revision,photos:uploaded};
+  return {title:c.title,body:c.body,date:d.value,...(publicationMode==='immediate'?{publicationMode,draftDate:note.date}:{}),revision:c.revision,semanticRevision:c.semanticRevision,photos:uploaded};
  }
  function post(raw) {
   if(!remoteId(raw?.id)||typeof raw.title!=='string'||typeof raw.body!=='string'||!date(raw.date)||
@@ -164,7 +164,9 @@ function createPreparedDriver({bridge,target,permission=()=>null,publicationMode
  async function readComposer(externalSignal) {
   requirePhase('attached','reviewed');const signal=signalFor(externalSignal);await guard('read',signal);await structure(signal);
   const c=await content(signal);await guard('read',signal);
-  if(!matchesContent(c,{...note,photos}))fail('content-unverified');phase='reviewed';return c;
+  if(!matchesContent(c,{...note,photos}))fail('content-unverified');
+  if(typeof bridge.checkCommit==='function')await call('checkCommit',{target:structuredClone(target),binding:{...bound},revision:c.revision,semanticRevision:c.semanticRevision,note:structuredClone(note),photos:structuredClone(photos),stillPermitted:()=>{try{permitted('read');return !signal.aborted;}catch{return false;}}},signal);
+  phase='reviewed';return c;
  }
  async function submit(expected,externalSignal) {
   requirePhase('reviewed');expectScope(expected.scope);const signal=signalFor(externalSignal);
@@ -174,7 +176,7 @@ function createPreparedDriver({bridge,target,permission=()=>null,publicationMode
   submitted=true;phase='submitted'; // Consume before awaiting: failed/unknown commits can never be retried.
   // The approved bridge must check this binding + revision + whole content and current permission
   // atomically with its single UI click, including changes occurring after the reads above.
-  const committed=await call('commitOnce',{target:structuredClone(target),binding:{...bound},revision:c.revision,
+  const committed=await call('commitOnce',{target:structuredClone(target),binding:{...bound},revision:c.revision,semanticRevision:c.semanticRevision,
    note:structuredClone(note),photos:structuredClone(photos),beforeIds:[...baseline],
    stillPermitted:()=>{try{permitted('submit');return !signal.aborted;}catch{return false;}}},signal);
   if(committed?.clicked!==true)fail('publication-unverified');

@@ -20,6 +20,7 @@ const modeOptions=document.querySelector('#mode-options'),modeToggle=document.qu
 modeToggle.onclick=()=>modeOptions.isConnected?modeOptions.remove():modeToggle.after(modeOptions);
 for(const e of [document.querySelector('input[placeholder="제목을 입력해 주세요."]'),document.querySelector('.fr-element')])e.addEventListener('focus',()=>modeOptions.remove());
 </script>`;
+const revisionChecks=process.argv.includes('--revision-checks'),mutationChecks=process.argv.includes('--mutation-checks');
 const developmentContract=process.argv.includes('--development-contract');
 const {createTestAuthorization}=require('../app/schoolbell-test-authorization.cjs');
 let win,clicks=0,posts=[],uploads=[],reviews=[];
@@ -45,9 +46,10 @@ app.whenReady().then(async()=>{
  ses.webRequest.onBeforeRequest((r,done)=>done({cancel:!r.url.startsWith(origin+'/')}));
  win=new BrowserWindow({show:false,webPreferences:{session:ses,sandbox:true,contextIsolation:true,nodeIntegration:false}});
  const grant={official:true,method:'electron-ui',schoolId:target.schoolId,classKey:target.classKey,approvedTestClass:true,evidenceRef:'LOCAL-ONLY-NOT-SERVICE-PERMISSION',actions:['read','input','attachments','submit']};
- async function attempt(changeAudience,changeMode=false){
+ async function attempt(changeAudience,changeMode=false,revisionCase=null){
+  let duringCommitRead=false,refreshing=false;const diagnostics=[];
   await win.loadURL(writeURL);await wait('document.querySelector("main")?.dataset.ready==="yes"');
-  const profile={id:target.schoolId,dir:path.join(dir,changeAudience?'blocked':changeMode?'mode-blocked':'verified')};fs.mkdirSync(profile.dir);
+  const profile={id:target.schoolId,dir:path.join(dir,revisionCase|| (changeAudience?'blocked':changeMode?'mode-blocked':'verified'))};fs.mkdirSync(profile.dir);
   const store=services.createStore(profile);store.select(target.classKey,'schoolbell');
   const images=media.createStore(profile.dir,b=>nativeImage.createFromBuffer(b).getSize());
   const png=nativeImage.createFromBitmap(Buffer.from([30,90,150,255]),{width:1,height:1}).toPNG();
@@ -58,15 +60,24 @@ app.whenReady().then(async()=>{
   const trialGrant=developmentContract?await auth.issue({target,facts:testFacts,webContents:win.webContents}):null;
   const runBinding=trialGrant?{...binding,actorKey:null,approvalId:trialGrant.approvalId}:binding;
   const permission=()=>trialGrant?auth.current():grant;
-  const evidence={finalAction:'single-send',publicationMode:'immediate',
+  const evidence={finalAction:'single-send',publicationMode:'immediate',diagnostic:e=>{diagnostics.push(e);if(e.step==='commit-comparison'&&e.stage==='before-readDate')duringCommitRead=true;if(e.step==='commit-comparison'&&e.stage==='after-target-ready'&&e.revisionMatch===false)refreshing=true;},
    // These missing live identity/date facts are deliberately local test ports.
    // No custom guardDOM is supplied: use the production default proof + guard.
    readContext:async()=>developmentContract?{...target,...scope,...auth.attach({...testFacts,observedAt:Date.now()},target,win.webContents),identityVerified:false,authorityVerified:false,classApproved:false,testClassApproved:false,teacher:false,externalNotifications:null}:{...target,...scope,...binding,identityVerified:true,authorityVerified:true,classApproved:true,testClassApproved:true,
     recipientsVerified:true,students:0,parents:0,externalNotifications:false,observedAt:Date.now(),
     recipientEvidence:{known:true,unfiltered:true,empty:true,mandatoryAdministrator:false,targetLabel:'합성 대상'}},
-   readDate:async()=>{const mode=await require('../app/schoolbell-publication-mode.cjs').inspectPublicationMode(win.webContents,null,{keepOpen:true});return {verified:mode.known,source:'observed-service-ui',meaning:'publication-mode',mode:mode.mode,value:null,writable:false,scope:{...target,...runBinding},observedAt:Date.now()};},
+   readDate:async()=>{
+    if(revisionCase&&duringCommitRead){duringCommitRead=false;
+     if(['cosmetic','corrupt-original'].includes(revisionCase))await win.webContents.executeJavaScript('document.querySelector(".fr-element").classList.toggle("read-only-highlight")');
+     if(revisionCase==='attribute-noop')await win.webContents.executeJavaScript('document.querySelector(".fr-element").setAttribute("contenteditable","true")');
+     if(revisionCase==='attribute-change-revert')await win.webContents.executeJavaScript('(()=>{const b=document.querySelector(".fr-element");b.setAttribute("contenteditable","false");b.setAttribute("contenteditable","true")})()');
+     if(revisionCase==='body-change')await win.webContents.executeJavaScript('document.querySelector(".fr-element").textContent="changed synthetic body"');
+     if(revisionCase==='change-revert')await win.webContents.executeJavaScript('(()=>{const b=document.querySelector(".fr-element"),t=b.innerHTML;b.textContent="changed synthetic body";b.innerHTML=t})()');
+     if(revisionCase==='target-change')await win.webContents.executeJavaScript('document.querySelector("app-letter-simplified-target-text").textContent="other target"');
+    }
+    const mode=await require('../app/schoolbell-publication-mode.cjs').inspectPublicationMode(win.webContents,null,{keepOpen:true});return {verified:mode.known,source:'observed-service-ui',meaning:'publication-mode',mode:mode.mode,value:null,writable:false,scope:{...target,...runBinding},observedAt:Date.now()};},
    readBaseline:async()=>({complete:true,refreshed:true,ids:posts.map(p=>p.id),filter:{title:note.title},posts:[]}),
-   readUploads:originals,
+   readUploads:async()=>{const value=await originals();if(revisionCase==='corrupt-original'&&refreshing)value.items[0].bytes=Buffer.from('corrupt original');return value;},
    async readPublishedMetadata(){await wait('document.querySelector("main").dataset.sent==="yes"');await win.loadURL(boardURL);await wait('document.querySelector("main")?.dataset.ready==="yes"');return {complete:true,refreshed:true,boardURL,id:posts.at(-1).id,date:'2026-11-09',dateSource:'observed-service-ui',scope};}
   };
   const driver=createElectronDriver({target,getWebContents:()=>win.webContents,permission,evidence,tempRoot:profile.dir});
@@ -77,7 +88,30 @@ app.whenReady().then(async()=>{
     else if(changeMode)await win.webContents.executeJavaScript('document.querySelector("#later").checked=true');
     else await win.webContents.executeJavaScript('document.querySelector("app-boards-write").append(document.createElement("div"))');
    }return true;}});
-  const result=await publisher.publish(note);auth.revoke();return {result,store,profile,ref};
+  const result=await publisher.publish(note);auth.revoke();return {result,store,profile,ref,diagnostics};
+ }
+ if(mutationChecks){
+  const blocked=await attempt(false,false,'attribute-change-revert');assert.notEqual(blocked.result.status,'success');assert.equal(clicks,0);
+  assert.equal(blocked.diagnostics.some(e=>e.step==='commit-comparison'&&e.semanticRevisionMatch===false&&e.changes.changedAttribute===true),true);
+  console.log('PASS changed attribute restored within one observer batch remains blocked; zero sends');
+  const ok=await attempt(false,false,'attribute-noop');assert.equal(ok.result.status,'success',JSON.stringify(ok.result));assert.equal(clicks,1);
+  assert.equal(ok.diagnostics.some(e=>e.step==='commit-comparison'&&e.revisionMatch===false&&e.semanticRevisionMatch===true&&e.changes.unchangedAttribute===true),true);
+  assert.equal(ok.diagnostics.some(e=>e.step==='commit-revalidation'),true);
+  console.log('PASS proven no-op attribute assignment revalidates content, audience and original bytes; sends once locally');return;
+ }
+ if(revisionChecks){
+  for(const mode of ['body-change','change-revert','target-change','corrupt-original']){
+   const before=clicks,r=await attempt(false,false,mode);assert.notEqual(r.result.status,'success',mode);assert.equal(clicks,before,mode);
+   assert.equal(r.diagnostics.some(e=>e.step==='native-send'),false,mode);
+   console.log('PASS '+mode+' blocks preflight before any native send: '+r.result.reason);
+  }
+  const before=clicks,r=await attempt(false,false,'cosmetic');assert.equal(r.result.status,'success',JSON.stringify(r.result));assert.equal(clicks,before+1);
+  assert.ok(r.diagnostics.some(e=>e.step==='commit-revalidation'&&e.originalsMatch));
+  assert.ok(r.diagnostics.some(e=>e.step==='commit-revision-refresh'&&e.revalidated));
+  assert.equal(r.result.publication.photos[0].sha256,r.ref.id.split('.')[0]);
+  assert.equal(r.store.get(target.classKey).automaticPosts[r.result.attemptId].status,'auto-success');
+  console.log('PASS cosmetic attribute revision refresh requires scoped context and original bytes, then sends once and saves verified receipt');
+  console.log('5 focused revision checks PASS; no real Schoolbell connection');return;
  }
  const blocked=await attempt(true);assert.equal(blocked.result.status,'uncertain');assert.equal(clicks,0);
  assert.equal(Object.values(blocked.store.get(target.classKey).automaticPosts)[0].status,'auto-uncertain');
