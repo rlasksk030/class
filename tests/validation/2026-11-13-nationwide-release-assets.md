@@ -1,7 +1,7 @@
 # 전국판 설치 파일을 GitHub Release로 옮기기 — 다리 버전 1.8.16 준비 (2026-11-13)
 
 - 시작점: `feature/timer-pip-nationwide` `942af9e`(1.8.15) → 브랜치 `feature/nationwide-release-assets`
-- 옥구초판, 앱 ID, 데이터 폴더, 기능 코드는 바꾸지 않았다. 버전(`app/package.json` 1.8.15)도 아직 올리지 않았다.
+- 옥구초판, 앱 ID, 데이터 폴더, 기능 코드는 바꾸지 않았다. 버전은 승인 후 1.8.16으로 올려 빌드했다(소스 `f3e446c`).
 
 ## 바꾼 것
 
@@ -56,7 +56,9 @@ releaseDate: '<빌드 시각>'
 | 전국판 단위 `npm test` | PASS 115/115 |
 | 전국판 E2E `npm run test:e2e` (21개 파일) | 모두 PASS — board-titles 24, v182-features 43, regression 36, hiclass-link 16, recovery 17, timetable-layout 8, diary-drafts 17, hiclass-recipients 38, hiclass-submit 21, timer-startup 21, diary-layout 15, hiclass-window 11, photos 22, hiclass-photos 4, photo-boundaries 6, photo-transfer 5, multischool 10, schoolbell 73(합성 사이트), dashboard-layout 71, first-run 8, update-feeds 9 |
 | `migration-v178` | **미실행** — v1.7.8 원본 앱이 필요(이번 변경과 무관) |
-| 설치 파일 속 `update-config.json` 채널 | **미실행** — 버전 올리기·빌드는 승인 후 |
+| 1.8.16 빌드 `npm run dist:win` (`f3e446c`) | PASS — 설치 파일 99,370,331바이트(94.77MiB, 100MiB 미만), SHA-256 `3d6e6be0f5bfed38b5425f7201d2dc5faf5de32830d556470e0fded62af581b6` |
+| 설치 파일 속 업데이트 채널 | PASS — 설치 파일 → `app-64.7z` → `app.asar`의 `update-config.json`과 `resources/app-update.yml` 모두 generic·`downloads/nationwide`·`nationwide2`. `app.asar` 파일 103개가 소스와 같음 |
+| `dist` 두 피드 | PASS — `nationwide.yml`(파일 이름)·`nationwide2.yml`(Release 주소)의 version·sha512·size·releaseDate가 같고 설치 파일과 일치. `nationwide2.yml`은 앱 검사 통과 |
 | Windows 설치·업데이트 | **미실행** — 아래 체크리스트 |
 
 모의 시험은 앱에 들어 있는 electron-updater(NsisUpdater, Windows 채널 이름 규칙)를 Electron 안에서 돌린다. `raw.githubusercontent.com`·`github.com`·Release 첨부 호스트는 Chromium 호스트 규칙으로 로컬 HTTPS 서버에 연결하고, 나머지 호스트는 모두 실패하게 해서 실제 인터넷에 나가지 않는다. 피드는 `make-nationwide-feeds.cjs`로 만들었다.
