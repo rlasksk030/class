@@ -84,9 +84,14 @@ function judge(before, after, expected) {
  const fresh = (after?.matches || []).filter(card => !(card.id && known.has(card.id)));
  const same = fresh.filter(card => cardMatches(card, expected));
  if (same.length === 1 && (before?.matching || 0) === 0) return {status: 'success', postId: same[0].id || null};
- if (same.length > 1) return {status: 'ambiguous'};
- if (fresh.length) return {status: 'mismatch'};
- return {status: 'missing'};
+ // Why not: counts and yes/no only, plus the attachment layout of the first new card.
+ const first = fresh[0];
+ const detail = {fresh: fresh.length, titled: (after?.matches || []).length, expected: expected.files.length,
+  ...(first ? {body: sameBody(first.body, expected.body, first.approximate === true), names: sameNames(first.files, expected.files),
+   files: Array.isArray(first.files) ? first.files.length : -1, approximate: first.approximate === true, ...(first.shape || {})} : {})};
+ if (same.length > 1) return {status: 'ambiguous', detail};
+ if (fresh.length) return {status: 'mismatch', detail};
+ return {status: 'missing', detail};
 }
 
 // A confirmation dialog that the service may show after 보내기. Only a plain "send?" question with

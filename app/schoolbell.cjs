@@ -187,9 +187,9 @@ module.exports=function setup(main){
  // ----- registration -----
  // Fixed codes and timings only: never the title, body, names, addresses or cookies.
  // Details are a fixed word or counts/booleans/element names; anything else is dropped.
- const safe=v=>typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[a-z0-9:+-]{1,48}$/.test(v));
+ const safe=v=>typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[a-z0-9:+._-]{1,64}$/i.test(v));
  const clean=v=>safe(v)?v:(v&&typeof v==='object'&&!Array.isArray(v))?
-  Object.fromEntries(Object.entries(v).filter(([,x])=>safe(x)||(Array.isArray(x)&&x.every(safe))).slice(0,12)):null;
+  Object.fromEntries(Object.entries(v).filter(([,x])=>safe(x)||(Array.isArray(x)&&x.length<=40&&x.every(safe))).slice(0,20)):null;
  async function writeTrace(trace){
   try{await fs.writeFile(path.join(profile.dir,'schoolbell-last-run.json'),JSON.stringify(trace,null,1),{mode:0o600});}catch{}
  }

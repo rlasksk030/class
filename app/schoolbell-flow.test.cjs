@@ -77,6 +77,14 @@ test('result: anything else is not a success',()=>{
  assert.notEqual(F.judge({ids:[],matching:1},{matches:[card('')]},expected).status,'success');                // an equal post was there before
  assert.equal(F.judge(null,null,expected).status,'missing');
 });
+test('a result that is not a success says why without any text of the post',()=>{
+ const shape={lists:1,items:0,unread:0,media:1,sketch:['div.media','m:img.thumb']};
+ const r=F.judge({ids:['5'],matching:0},{matches:[card('6',{files:[],shape})]},expected);
+ assert.equal(r.status,'mismatch');
+ assert.deepEqual(r.detail,{fresh:1,titled:1,expected:2,body:true,names:false,files:0,approximate:false,...shape});
+ assert.deepEqual(F.judge({ids:['5'],matching:0},{matches:[card('5')]},expected).detail,{fresh:0,titled:1,expected:2});
+ assert.ok(!JSON.stringify(r).includes('준비물'));
+});
 test('service dialog after 보내기: only a plain send question with one affirmative button is confirmed',()=>{
  assert.deepEqual(F.confirmDialog({text:'알림장을 보내시겠습니까?',buttons:['취소','확인']}),{action:'confirm',button:1});
  assert.deepEqual(F.confirmDialog({text:' 지금  발행하시겠습니까? ',buttons:['보내기','닫기']}),{action:'confirm',button:0});

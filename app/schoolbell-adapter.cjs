@@ -66,7 +66,15 @@ function page(action,arg,readText){
     const base=row.querySelectorAll('span.text-truncate'),ext=row.querySelectorAll('span.text-nowrap:not(.file-item-size)');
     return base.length===1&&ext.length===1?base[0].textContent.trim()+ext[0].textContent.trim():null;
    }):[];
-   matches.push({id:/^\d+$/.test(id)?id:'',body,approximate,files});
+   // Element and class names only (no text): shows how this card lays out its attachments
+   // when the file names cannot be read the expected way.
+   const names=root=>root?[...root.querySelectorAll('*')].slice(0,80).map(e=>e.localName+[...e.classList].slice(0,3).map(c=>'.'+c).join(''))
+    .filter(t=>/^[a-z0-9._-]{1,60}$/i.test(t)):[];
+   const media=card.querySelector('app-media-browser');
+   matches.push({id:/^\d+$/.test(id)?id:'',body,approximate,files,
+    shape:{lists:lists.length,items:files.length,unread:files.filter(f=>f===null).length,
+     media:media?media.querySelectorAll('img,video').length:-1,
+     sketch:[...new Set([...names(lists[0]),...names(media).map(t=>'m:'+t)])].slice(0,40)}});
   }
   const ended=[...boards[0].querySelectorAll('app-infinite-list-info p')].some(e=>e.textContent.trim()==='더이상 글이 없습니다.');
   return {known:true,count:cards.length,ended,ids,matches};

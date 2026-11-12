@@ -194,21 +194,23 @@ async function publish({w,cdp,link,note,files,recipients=null,onStep=()=>{},onIn
    }
    return null;
   },t.result,200);
+  onInfo('sent',{delivered:!!delivery,dialog:confirmed,arrived:!!arrived});
   if(!arrived)throw stop('no-result',true);
 
   // 7. Fresh board read: exactly one new post equal to what was sent.
   onStep(7);
   await open(link.url);
-  let status='missing',reloaded=false;
+  let status='missing',why={board:false},reloaded=false;
   const started=Date.now();
   const verdict=await until(async()=>{
    if(!reloaded&&Date.now()-started>t.verify/2){reloaded=true;await open(link.url);}
    const now=await quiet('board',{title:note.title});
    if(!now?.known)return null;
-   const result=flow.judge(baseline,now,expected);status=result.status;
+   const result=flow.judge(baseline,now,expected);status=result.status;why={board:true,cards:now.count,...result.detail};
    return result.status==='success'?result:null;
   },t.verify,500);
-  if(!verdict)throw stop('unverified-'+status,true);
+  if(!verdict)throw Object.assign(stop('unverified-'+status,true),{detail:why});
+  onInfo('verified',{postId:!!verdict.postId,files:names.length});
   return {status:'success',postId:verdict.postId};
  }catch(error){
   if(error.userMessage)throw error;
