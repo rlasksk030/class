@@ -1,455 +1,309 @@
-// Automatic UI transport requires a registered main-process class connection.
-const {app,BrowserWindow,ipcMain,dialog,clipboard,shell} = require('electron');
-const fs = require('node:fs/promises'), path = require('node:path');
-const services = require('./diary-services.cjs');
-const capability = require('./schoolbell-capability.cjs');
-const connection = require('./schoolbell-window.cjs');
-const {bounded} = require('./hiclass-navigation.cjs');
-module.exports = function setup(main) {
- const profile = require('./school-profile.cjs').get(), store = services.createStore(profile);
- const windows = new Map(); let busy = false,testTrace=[];
- const liveContext=require('./schoolbell-live-context.cjs');
- const trial=require('./schoolbell-test-authorization.cjs');
- const testAuthorization=trial.createTestAuthorization({
-  canUse:()=>!app.isPackaged&&!!process.env.CLASSROOM_TEST_PROFILE&&path.resolve(app.getPath('userData'))===path.resolve(process.env.CLASSROOM_TEST_PROFILE),
-  persist:record=>fs.appendFile(path.join(profile.dir,'schoolbell-test-approvals.jsonl'),JSON.stringify(record)+'\n',{mode:0o600})
- });
- const operating=require('./schoolbell-operating-authorization.cjs');
- const operatingAuthorization=operating.createOperatingAuthorization({canPublish:()=>capability.status().available===true,
-  persist:record=>fs.appendFile(path.join(profile.dir,'schoolbell-operating-approvals.jsonl'),JSON.stringify(record)+'\n',{mode:0o600})});
- const createReader=ses=>{
-  // Reuse only this app's session; never copy cookies from another browser.
-  const reader=new BrowserWindow({show:false,webPreferences:{session:ses,contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
-  reader.webContents.setWindowOpenHandler(()=>({action:'deny'}));
-  const guard=(event,url)=>{try{services.safeURL(url);}catch{event.preventDefault();}};
-  reader.webContents.on('will-navigate',guard);reader.webContents.on('will-redirect',guard);
-  return reader;
- };
- const contextProvider=(win,to,diagnostic)=>{
-  const events=[],provider=liveContext.createLiveContextProvider({target:to,getWebContents:()=>win.isDestroyed()?null:win.webContents,createReader,
-   showRecipientReader:true,diagnostic:entry=>{events.push(entry);diagnostic?.(entry);}});
-  const inspect=provider.inspect;provider.inspect=async signal=>{
-   events.length=0;try{return await inspect(signal);}finally{
-    if(testAuthorization.available())await fs.writeFile(path.join(profile.dir,'schoolbell-context-lifecycle.json'),JSON.stringify(events.slice(-80),null,2),{mode:0o600}).catch(()=>{});
-   }
-  };return provider;
- };
- // Mutation always needs a registered main-process class grant. Renderer
- // settings cannot create permission or claim official service approval.
- const makeDriver=(permission=()=>null)=>{
-  let trialWindowUsed=false;
-  const diagnostic=entry=>{
-   if(testAuthorization.available())testTrace.push(entry);
-   if((entry.step==='commitOnce'&&entry.state==='started')||(entry.step==='writeTitle'&&entry.state==='complete'))trialWindowUsed=true;
-  };
-  return require('./schoolbell-electron-driver.cjs').createRuntimeDriver({profile,permission,openClass:open,
-  evidenceFactory:(to,win)=>{const context=contextProvider(win,to,diagnostic);
-   const uploads=require('./schoolbell-preview-originals.cjs').createPreviewOriginals({getWebContents:()=>win.isDestroyed()?null:win.webContents,tempRoot:profile.dir});
-   const posts=require('./schoolbell-live-posts.cjs').createLivePostProvider({target:to,tempRoot:profile.dir,createReader,diagnostic,getWebContents:()=>win.isDestroyed()?null:win.webContents});return {
-   readBaseline:posts.readBaseline,readPublishedMetadata:posts.readPublishedMetadata,readUploads:uploads.readUploads,
-   diagnostic,
-   // A/B/C observed one send action, with no second service confirmation click.
-   // The independent app final confirmation and current class grant remain mandatory.
-   finalAction:'single-send',publicationMode:'immediate',
-   openComposer:(request,signal)=>require('./schoolbell-composer-entry.cjs').openObservedComposer(win.webContents,{
-    groupId:request.binding?.boardId,signal,allowed:request.stillPermitted}),
-   async readContext(_r,signal){let facts=await context.inspect(signal);
-    const p=permission(),entry={step:'context',checks:facts.checks,recipientCheck:facts.recipientCheck,grantPresent:!!p,grantMatches:trial.validTestGrant(p,to,'read'),factsReady:trial.testFacts(facts)};
-    if(testAuthorization.available())testTrace.push(entry);
-    if(entry.grantMatches){try{facts=testAuthorization.attach(facts,to,win.webContents);entry.attached=true;}catch(e){entry.attached=false;throw e;}}
-    if(operating.validGrant(p,to,'read'))facts=operatingAuthorization.attach(facts,to,win.webContents);
-    const value={...to,...facts,service:'schoolbell',scopeType:'class',board:'diary',
-    authenticated:facts.checks.classPage,teacher:facts.authorityVerified,classApproved:false,testClassApproved:false,
-    contextId:facts.boardId,students:facts.students,parents:facts.parents,externalNotifications:null};
-    entry.testContextAccepted=trial.testContext(value,p);return value;},
-   async readDate(request,signal){
-    const mode=await require('./schoolbell-publication-mode.cjs').inspectPublicationMode(win.webContents,signal,{keepOpen:true});
-    return {verified:mode.known===true&&mode.mode==='immediate',
-     source:'observed-service-ui',meaning:'publication-mode',mode:mode.mode,value:null,writable:false,
-     observedAt:Date.now(),scope:{...to,...request.binding}};
-   },
-   close(){const contextStopped=context.close(),postsStopped=posts.close(),uploadsStopped=uploads.close();return contextStopped&&postsStopped&&uploadsStopped;}
-  };},
-  closeClass:key=>{
-   const w=windows.get(key);
-   if(w&&!w.isDestroyed()){
-    // All driver jobs and grants are still stopped/revoked. In the isolated
-    // trial, retain the ordinary service UI once editing starts so
-    // a timeout cannot cancel a delayed publish or erase its validation error.
-    // This never retries, confirms success, or authorizes another send.
-    if(trialWindowUsed){w.show();w.focus();}
-    else w.destroy();
-   }
-   return true;
-  }});
- };
- const confirmationParent=()=>{const parent=main();if(parent?.isMinimized())parent.restore();parent?.show();parent?.focus();return parent;};
- const publisherOptions={profile,store,
-  readPhoto:ref=>require('./media.cjs').current().read(ref),review:async ({phase,scope,note,photos=[]})=>{
-   const final=phase==='submit';
-   if(final&&scope.executionMode==='development-test'){
-    const wc=windows.get(scope.classKey)?.webContents;
-    const inspect=async()=>wc?.executeJavaScriptInIsolatedWorld(17484,[{code:'(()=>{const e=document.querySelector("app-boards-write button.btn-with-description");if(!e)return null;const {point,...target}=('+require('./schoolbell-send-input.cjs').inspectSendTarget.toString()+')(document,e);return {target,mode:('+require('./schoolbell-publication-mode.cjs').readPublicationMode.toString()+')(document)};})()'}]);
-    const immediate=await inspect();await new Promise(resolve=>setTimeout(resolve,500));const settled=await inspect();
-    await fs.writeFile(path.join(profile.dir,'schoolbell-test-preflight.json'),JSON.stringify({
-     observedAt:Date.now(),sendTarget:testTrace.findLast(e=>e.step==='readFields'&&e.sendTarget)?.sendTarget||null,immediate,settled
-    },null,2),{mode:0o600});
-   }
-   const answer=await dialog.showMessageBox(confirmationParent(),{type:'question',buttons:['취소',final?'이 내용으로 한 번 게시':'입력 준비'],defaultId:0,cancelId:0,
-    message:final?'검증된 학교종이 알림장을 게시할까요?':'학교종이 작성 화면에 초안을 입력할까요?',
-    detail:expectedSchool()+' · '+scope.classKey+'\n'+note.date+' · 사진 '+note.photos.length+'장\n'+note.title+'\n'+note.body+'\n'+
-     (scope.executionMode==='development-test'?'개발 시험 · 실제 학급 ID '+scope.boardId+'\n학생 0명 / 학부모 0명 / 필수 관리자 1명\n학교·학년도 연결 및 관리자 본인 여부는 사용자 확인 근거입니다. 서비스의 고유 계정 ID/공식 허용을 검증한 것은 아닙니다.\n':'')+
-     (final?photos.map((p,i)=>'사진 '+(i+1)+': '+p.bytes+' bytes · SHA-256 '+p.sha256).join('\n')+'\n':'')+
-     (scope.publicationMode==='immediate'?'즉시발행입니다. 앱 작성일은 초안 구분용이며 학교종이 게시 날짜를 지정하지 않습니다. 실제 발행일은 게시 후 서버 표시로 확인해 기록합니다.\n':'')+
-     (scope.executionMode==='teacher-authorized-class'?'운영 학급 연결 · 실제 학급 ID '+scope.boardId+'\n학교·학년도·본인 교사 여부는 교사 확인, 관리 화면 접근 및 대상 선택은 서비스 UI 관찰 근거입니다. 공식 자동화 허용은 미확인입니다.\n대상: '+Object.entries(scope.audience.roles).filter(([,v])=>v.checked).map(([k])=>({administrator:'관리자(필수)',guardian1:'보호자1',guardian2:'보호자2',student:'학생'})[k]).join(', ')+'\n전체 수신 인원은 화면 행 수로 추정하지 않습니다. 필수 관리자에게도 알림이 전달됩니다.\n':'')+
-     (scope.selfNotification?'필수 관리자(현재 교사 본인)에게 알림이 전달될 수 있습니다.\n':'')+
-     (final?'학교·학급·수신대상과 본문·사진이 검증된 경우에만 게시합니다. 결과가 불확실하면 재전송하지 않습니다.':'아직 게시하지 않습니다. 입력·사진 검증 후 별도로 최종 확인합니다.')});
-   if(answer.response===1&&final&&scope.executionMode==='development-test')await testAuthorization.approveFinal(note,photos,scope);
-   if(answer.response===1&&final&&scope.executionMode==='teacher-authorized-class')await operatingAuthorization.approveFinal(note,photos,scope);
-   return answer.response===1;
-  }};
- const operatingGate=key=>{const p=operatingAuthorization.current(),ready=capability.status().available===true&&!!p&&(!key||p.target.classKey===key);return {...capability.status(),enabled:ready,
-  status:ready?'ready':'connection-required',blockers:ready?[]:['current-class-connection-required'],
-  message:ready?'현재 담당 학급에 등록할 수 있습니다. 게시 직전 대상·내용·사진 확인과 교사의 최종 승인이 필요합니다.':capability.status().message,
-  executionMode:'teacher-authorized-class',authorizationId:p?.authorizationId};};
- const publisher=require('./schoolbell-publish.cjs').createPublisher({...publisherOptions,timeoutMs:60000,
-  driver:makeDriver(()=>operatingAuthorization.current()),gate:operatingGate});
- const expectedSchool = () => profile.config.active?.school.SCHUL_NM || require('./school.js').legacy.SCHUL_NM;
- const message = '학교종이 작업을 마치지 못했습니다. 초안과 사진은 유지됩니다. 게시 여부는 학교종이에서 확인해 주세요.';
- const allowed = e => e.sender === main()?.webContents && e.senderFrame === e.sender.mainFrame;
- function handle(name, fn) {
-  ipcMain.handle(name, async (e, value) => {
-   if (!allowed(e)) throw Error('접근 불가');
-   if (busy) return {status:'busy',message:'진행 중인 확인을 마친 뒤 다시 시도해 주세요.'};
-   busy = true;
-   try { return await fn(value); }
-   catch (error) { return {status:'error',message: error.schoolbellUserMessage || message}; }
-   finally { busy = false; }
+'use strict';
+// Schoolbell (학교종이) diary publishing, modelled on hiclass.cjs:
+// connect once (the teacher logs in and opens the class notice board, the app asks once to link it),
+// then [학교종이 등록] publishes in a background window and confirms the result.
+// The teacher always logs in by hand in the app's own window. No password is read or stored, no
+// cookie is copied from another browser and no private API is called.
+const {ipcMain,dialog,clipboard,shell}=require('electron');
+const fs=require('node:fs/promises'),path=require('node:path');
+const services=require('./diary-services.cjs');
+const flow=require('./schoolbell-flow.cjs'),adapter=require('./schoolbell-adapter.cjs'),windows=require('./schoolbell-window.cjs');
+const submit=require('./schoolbell-submit.cjs'),photos=require('./schoolbell-photos.cjs'),input=require('./schoolbell-input.cjs');
+module.exports=function setup(main){
+ const profile=require('./school-profile.cjs').get(),store=services.createStore(profile);
+ const schoolName=()=>profile.config.active?.school.SCHUL_NM||require('./school.js').legacy.SCHUL_NM;
+ const partition=key=>services.partition(profile.id,'schoolbell',key);
+ const readPhoto=ref=>require('./media.cjs').current().read(ref);
+ let visible=null,visibleKey=null,busy=false,connecting=false,offering=false;
+ let pending=null,watchTimer=null,lastOffer='',lastProgress='';
+
+ const trusted=event=>event.sender===main()?.webContents&&event.senderFrame===event.sender.mainFrame;
+ const GENERIC='학교종이 작업을 마치지 못했습니다. 초안과 사진은 유지됩니다.';
+ function handle(name,fn){
+  ipcMain.handle(name,async(event,value)=>{
+   if(!trusted(event))throw Error('접근 불가');
+   try{return await fn(value);}
+   catch(error){return {status:'error',message:error.schoolbellUserMessage||GENERIC};}
   });
  }
- function fail(text) { const error = Error(text); error.schoolbellUserMessage = text; throw error; }
- const status = key => {
-  const row = store.get(key);
-  return {service:row.service,link:row.schoolbell ? {confirmation:row.schoolbell.confirmation} : null,
-   developmentChecks:testAuthorization.available(),developmentTrial:testAuthorization.status(key),operatingConnection:operatingAuthorization.status(key),
-   connection:connection.describe(windows.get(key)),
-   automatic:operatingGate(key).enabled,capability:operatingGate(key),posts:Object.entries(row.posts).map(([hash,p])=>({hash,...p})),
-   automaticPosts:Object.entries(row.automaticPosts||{}).map(([id,p])=>({id,...p}))};
- };
- async function open(key) {
-  services.classKey(key);
-  const saved=store.get(key).schoolbell?.url;
-  const destination=saved?services.safeURL(saved,true):services.HOME;
-  for (const [other,w] of windows) if (other !== key && !w.isDestroyed()) w.close();
-  let w = windows.get(key);
-  if (!w || w.isDestroyed()) {
-   w = new BrowserWindow({width:1200,height:850,title:'학교종이 · 우리 교실에서 직접 로그인',
-    webPreferences:{partition:services.partition(profile.id,'schoolbell',key),contextIsolation:true,nodeIntegration:false,sandbox:true}});
-   windows.set(key,w); w.removeMenu();
-   w.on('closed',()=>windows.delete(key));
-   const watched=connection.watch(w);
-   const loginNavigation=require('./schoolbell-login-navigation.cjs').createLoginNavigation();
-   w.webContents.session.setPermissionRequestHandler((_wc,_permission,done)=>done(false));
-   w.webContents.session.setPermissionCheckHandler(()=>false);
-   const navigate = (event,url) => {
-    if(!loginNavigation.allow(url,w.webContents.getURL())){watched.block(url);event.preventDefault();}
-   };
-   w.webContents.on('will-navigate',navigate); w.webContents.on('will-redirect',navigate);
-   w.webContents.setWindowOpenHandler(({url})=>{
-    if(loginNavigation.allow(url,w.webContents.getURL()))void connection.load(w,url,20000,()=>true).catch(()=>{});
-    else watched.block(url);
-    return {action:'deny'};
-   });
-   await connection.load(w,destination);
-  } else if(w.schoolbellLoadFailed) {
-   await connection.load(w,destination);
-  }
-  if(w.isMinimized())w.restore();w.show(); w.focus(); return w;
+ function fail(text){throw Object.assign(Error(text),{schoolbellUserMessage:text});}
+ function progress(p){
+  const key=JSON.stringify([p.phase,p.step,p.state,p.message]);if(key===lastProgress&&!p.done)return;lastProgress=key;
+  const m=main();if(m&&!m.isDestroyed())m.webContents.send('diary:progress',{...p,service:'schoolbell',classKey:p.classKey||pending?.classKey||visibleKey});
  }
- function target(value) {
-  if (!value || !/^[1-6]$/.test(value.grade) || typeof value.classroom !== 'string' ||
-      !/^[가-힣a-zA-Z0-9][가-힣a-zA-Z0-9 -]{0,23}$/.test(value.classroom) ||
-      !/^\d{4}$/.test(value.year) || value.classKey !== [value.year,value.grade,value.classroom].join(':'))
+ function target(value){
+  if(!value||typeof value.classKey!=='string'||typeof value.label!=='string'||!/^\d{4}:[1-6]:[가-힣a-zA-Z0-9][가-힣a-zA-Z0-9 -]{0,23}$/.test(value.classKey))
    fail('우리 교실의 학년·반 설정을 확인해 주세요.');
-  return {...value,schoolId:profile.id,schoolName:expectedSchool()};
+  services.classKey(value.classKey);
+  return {classKey:value.classKey,label:value.label.slice(0,40),grade:String(value.grade||''),classroom:String(value.classroom||''),relogin:value.relogin===true};
  }
- handle('diary-service:status',key=>status(key));
+ const linkOf=key=>{
+  const row=store.get(key),link=row.schoolbellLink;
+  return {linked:!!link,title:link?.title||'',needsRelink:!link&&!!row.schoolbell,recipients:row.schoolbellRecipients||null};
+ };
+ function status(key){
+  if(!busy)try{store.recoverAutomatic(key);}catch{}
+  const row=store.get(key);
+  return {service:row.service,schoolbell:linkOf(key),
+   posts:Object.entries(row.posts).map(([hash,p])=>({hash,...p})),
+   automaticPosts:Object.entries(row.automaticPosts||{}).map(([id,p])=>({id,hash:p.hash,status:p.status,date:p.date,photoCount:p.photoCount,time:p.time}))};
+ }
+
+ // ----- the visible window: login and class connection -----
+ function stopWatch(){clearInterval(watchTimer);watchTimer=null;pending=null;lastOffer='';}
+ function closeVisible(){if(visible&&!visible.isDestroyed())visible.destroy();visible=null;visibleKey=null;}
+ function openVisible(key){
+  if(visible&&!visible.isDestroyed()&&visibleKey!==key)closeVisible();
+  if(!visible||visible.isDestroyed()){
+   const created=visible=windows.visible(partition(key));visibleKey=key;
+   for(const name of ['did-navigate','did-navigate-in-page','did-finish-load'])created.webContents.on(name,()=>setTimeout(check,600));
+   created.on('closed',()=>{
+    if(visible===created){visible=null;visibleKey=null;}
+    if(pending){stopWatch();progress({step:0,state:'closed',classKey:key,message:'학교종이 창이 닫혔습니다. 연결하려면 [학교종이 연결하기]를 다시 눌러 주세요.'});}
+   });
+  }
+  return visible;
+ }
+ // The class name lives on the class settings page. Read it in a background window of the same
+ // login; when it cannot be read the teacher is told so in the confirmation instead of a guess.
+ async function className(key,board){
+  const origin=new URL(board.url).origin,w=windows.worker(partition(key));
+  try{
+   await windows.load(w,origin+'/ko/main/group/'+board.groupId+'/settings/groupinfo',15000);
+   for(let i=0;i<24;i++){
+    const info=await adapter.run(w.webContents,'group').catch(()=>null);
+    if(info?.known&&info.name)return info;
+    await windows.sleep(300);
+   }
+  }catch{}finally{if(!w.isDestroyed())w.destroy();}
+  return null;
+ }
+ async function offer(w,to,board){
+  if(offering)return board;
+  offering=true;
+  try{
+   const info=await className(to.classKey,board),name=info?.name||'';
+   const other=!!name&&!flow.titleMatches(name,to.grade,to.classroom);
+   const answer=await dialog.showMessageBox(w,{type:'question',buttons:['취소','연결하기'],defaultId:0,cancelId:0,
+    message:(name?name+' 알림장':'학교종이 학급 알림장')+'을 찾았습니다.\n이 학급에 연결할까요?',
+    detail:'우리 교실: '+schoolName()+' '+to.label+'\n학교종이 알림장: '+board.url+
+     (other?'\n\n주의: 학교종이 학급의 학년·반이 우리 교실 설정과 다릅니다.':'')+
+     (info&&info.classType===false?'\n\n주의: 학급페이지가 아닌 곳의 게시판일 수 있습니다. 담당 학급페이지의 알림장인지 확인해 주세요.':'')+
+     (name?'':'\n\n학급 이름을 읽지 못했습니다. 지금 열린 알림장이 담당 학급의 것인지 확인해 주세요.')});
+   if(answer.response!==1)return {step:3,state:'cancelled',message:'연결을 취소했습니다. 연결할 학급의 알림장을 열어 주세요.'};
+   const now=w.isDestroyed()?null:flow.classify(await adapter.inspect(w.webContents).catch(()=>({})));
+   if(now?.state!=='board'||now.url!==board.url)return {step:2,state:'changed',message:'학교종이 화면이 바뀌었습니다. 연결할 학급의 알림장을 다시 열어 주세요.'};
+   store.linkBoard(to.classKey,{url:board.url,groupId:board.groupId,title:name,schoolName:schoolName()});
+   return {step:3,state:'linked',done:true,title:name,message:'학교종이 학급 연결이 완료되었습니다.'};
+  }finally{offering=false;}
+ }
+ function finish(result){
+  stopWatch();closeVisible();
+  const m=main();if(m&&!m.isDestroyed())windows.reveal(m);
+  progress(result);
+ }
+ async function check(){
+  if(!pending||!visible||visible.isDestroyed()||busy||connecting||offering)return;
+  const w=visible;let state;
+  try{state=await windows.bounded(()=>adapter.inspect(w.webContents),8000);}catch{return;}
+  if(!pending||w!==visible)return;
+  const c=flow.classify(state);
+  if(w.schoolbellBlocked){w.schoolbellBlocked=false;progress({step:c.step,state:'blocked',message:'허용되지 않은 주소로의 이동을 막았습니다. 학교종이 화면에서 다시 진행해 주세요.'});return;}
+  // "다시 로그인": the same class board is already linked, so nothing is asked again.
+  if(pending.relogin){
+   if(c.state==='board'&&c.groupId===pending.link.groupId){finish({step:3,state:'linked',done:true,classKey:pending.classKey,title:pending.link.title,message:'학교종이에 다시 로그인했습니다.'});return;}
+   if(c.state==='login'){pending.sawLogin=true;pending.returned=false;}
+   else if(pending.sawLogin&&!pending.returned&&c.state!=='board'){pending.returned=true;windows.load(w,pending.link.url).catch(()=>{});}
+  }
+  if(c.state!=='board'){lastOffer='';progress(c);return;}
+  if(c.url===lastOffer)return;
+  lastOffer=c.url;
+  const to=pending,result=await offer(w,to,c);
+  if(result.done)finish({...result,classKey:to.classKey});else progress(result);
+ }
+ handle('schoolbell:connect',async value=>{
+  const to=target(value);
+  if(busy||connecting||offering)return {message:'학교종이 연결 또는 등록이 진행 중입니다.'};
+  connecting=true;
+  try{
+   const link=store.get(to.classKey).schoolbellLink,w=openVisible(to.classKey);
+   pending={...to,relogin:to.relogin&&!!link,link};lastOffer='';lastProgress='';
+   const current=w.webContents.getURL();
+   windows.reveal(w);
+   if(!current||current==='about:blank'||w.schoolbellLoadFailed)await windows.load(w,flow.HOME);
+   if(pending&&!watchTimer)watchTimer=setInterval(check,1500);
+   setTimeout(check,800);
+   return {step:1,state:'started',message:flow.GUIDE};
+  }catch{
+   stopWatch();closeVisible();
+   return {status:'error',message:'학교종이 화면을 불러오지 못했습니다. 인터넷 연결을 확인하고 다시 연결해 주세요. 작성 내용은 유지됩니다.'};
+  }finally{connecting=false;}
+ });
+ // Recovery: check the page that is open right now (the watcher normally does this by itself).
+ handle('schoolbell:link',async value=>{
+  const to=target(value);
+  if(busy||connecting||offering)return {message:'학교종이 연결 또는 등록이 진행 중입니다.'};
+  if(!visible||visible.isDestroyed()||visibleKey!==to.classKey)return {step:1,state:'closed',message:'[학교종이 연결하기]를 눌러 학교종이 창을 먼저 열어 주세요.'};
+  const c=flow.classify(await windows.bounded(()=>adapter.inspect(visible.webContents),8000));
+  if(c.state!=='board')return c;
+  lastOffer=c.url;
+  const result=await offer(visible,to,c);
+  if(result.done)finish({...result,classKey:to.classKey});
+  return result;
+ });
+ handle('schoolbell:status',key=>linkOf(services.classKey(key)));
+ // Session check for a saved link: loads the saved board in a background window.
+ // Only a login page means expired; anything unclear stays "unknown" and changes nothing.
+ handle('schoolbell:session',async key=>{
+  const link=store.get(services.classKey(key)).schoolbellLink;
+  if(!link)return {status:'none'};
+  if(busy||connecting||offering||pending||(visible&&!visible.isDestroyed()))return {status:'unknown'};
+  connecting=true;let w;
+  try{
+   w=windows.worker(partition(key));
+   await windows.load(w,link.url,20000);
+   for(let i=0;i<24;i++){
+    const c=flow.classify(await adapter.inspect(w.webContents));
+    if(c.state==='login')return {status:'expired'};
+    if(c.state==='board'&&c.groupId===link.groupId)return {status:'ok'};
+    await windows.sleep(500);
+   }
+   return {status:w.schoolbellBlocked?'expired':'unknown'};
+  }catch{return {status:'unknown'};}
+  finally{connecting=false;if(w&&!w.isDestroyed())w.destroy();}
+ });
+ handle('schoolbell:recipients',({classKey,recipients})=>({recipients:store.setRecipients(classKey,recipients)}));
+ handle('schoolbell:close',()=>{
+  if(busy||connecting||offering)return {closed:false,message:'학교종이 연결 또는 등록이 끝난 뒤 서비스를 바꿔 주세요.'};
+  stopWatch();closeVisible();return {closed:true};
+ });
+
+ // ----- registration -----
+ // Fixed codes and timings only: never the title, body, names, addresses or cookies.
+ async function writeTrace(trace){
+  try{await fs.writeFile(path.join(profile.dir,'schoolbell-last-run.json'),JSON.stringify(trace,null,1),{mode:0o600});}catch{}
+ }
+ handle('schoolbell:publish',async value=>{
+  if(busy||connecting||offering)return {status:'busy',message:'이미 연결 또는 등록이 진행 중입니다.'};
+  let note;
+  try{note=services.payload(value);}catch{return {status:'error',message:'제목을 입력하고 본문 또는 사진을 추가해 주세요.'};}
+  const row=store.get(note.classKey);
+  if(row.service!=='schoolbell')return {status:'blocked',message:'현재 학급의 발행 서비스가 학교종이가 아닙니다.'};
+  const link=row.schoolbellLink;
+  if(!link)return {status:'error',message:row.schoolbell?'학교종이 학급을 다시 연결해 주세요. ([학교종이 연결하기])':'현재 학년·반의 학교종이 학급을 먼저 연결해 주세요.'};
+  busy=true;stopWatch();closeVisible();
+  const started=Date.now(),trace={version:require('electron').app.getVersion(),photos:note.photos.length,recipients:row.schoolbellRecipients?'custom':'default',steps:[]};
+  let attempt,w,cdp,clicked=false;
+  try{
+   const files=await photos.load(note.photos,readPhoto);
+   attempt=store.beginAutomatic(note);
+   if(attempt.blocked)return {status:'blocked',message:attempt.reason==='duplicate'?'이미 등록한 내용입니다. 중복 등록하지 않았습니다.':
+    '이전 등록 결과가 확인되지 않았습니다. 학교종이에서 확인한 뒤 결과를 먼저 선택해 주세요.'};
+   // The protocol session needs a live page, so give the new window one before attaching.
+   w=windows.worker(partition(note.classKey));
+   await w.loadURL('about:blank');
+   cdp=await windows.bounded(()=>input.attach(w.webContents),10000);
+   const worker=w;
+   // Offline tests shorten the waits; the packaged app never sets this profile variable.
+   const timeouts=process.env.CLASSROOM_TEST_PROFILE?globalThis.schoolbellTestTimeouts:undefined;
+   const result=await windows.bounded(()=>submit.publish({w:worker,cdp,link,note,files,timeouts,recipients:row.schoolbellRecipients||null,
+    onStep:step=>{trace.steps.push({step,at:Date.now()-started});
+     progress({phase:'publish',step,total:flow.STEPS.length,classKey:note.classKey,message:'학교종이 등록 중 ('+step+'/'+flow.STEPS.length+') '+flow.STEPS[step-1]});},
+    beforeSend:()=>{store.automaticState(note.classKey,attempt.id,{status:'auto-pending',stage:'submitting'});clicked=true;}}),
+    240000+files.length*40000,()=>{if(!worker.isDestroyed())worker.destroy();});
+   const record=store.automaticState(note.classKey,attempt.id,{status:'auto-success',stage:'verifying',
+    receipt:{postId:result.postId,boardId:link.groupId,photoCount:files.length,verifiedAt:Date.now()}});
+   trace.outcome='success';trace.postId=!!result.postId;
+   return {status:'success',hash:attempt.hash,attemptId:attempt.id,attachmentsVerified:true,postId:record.receipt.postId,message:'학교종이 등록 완료'};
+  }catch(error){
+   // error.sent comes from the flow; a timeout after the click command is treated as sent.
+   const sent=error.sent===true||(error.sent===undefined&&clicked);
+   trace.outcome=sent?'uncertain':'stopped';trace.code=typeof error.code==='string'?error.code.slice(0,40):'error';
+   if(attempt?.id){
+    try{
+     if(sent)store.automaticState(note.classKey,attempt.id,{status:'auto-uncertain',stage:'verifying'});
+     else store.discardAutomatic(note.classKey,attempt.id);
+    }catch{/* the pending record stays and keeps blocking */}
+   }
+   return {status:sent?'uncertain':'error',code:trace.code,
+    message:sent?submit.MESSAGES.uncertain:(error.userMessage||(error.code==='timeout'?submit.MESSAGES.timeout:submit.MESSAGES.structure))};
+  }finally{
+   try{cdp?.detach();}catch{}
+   if(w&&!w.isDestroyed())w.destroy();
+   trace.ms=Date.now()-started;await writeTrace(trace);
+   busy=false;
+  }
+ });
+ handle('schoolbell:resolve-automatic',async({classKey,id,outcome})=>{
+  const post=store.get(classKey).automaticPosts?.[id];
+  if(!post||!['auto-pending','auto-uncertain'].includes(post.status)||!['auto-user-confirmed','auto-user-not-posted'].includes(outcome))fail('확인할 등록 시도가 없습니다.');
+  if(busy)fail('등록이 끝난 뒤 다시 선택해 주세요.');
+  const yes=outcome==='auto-user-confirmed';
+  const answer=await dialog.showMessageBox(main(),{type:'question',buttons:['취소',yes?'게시됨으로 기록':'게시 안 됨으로 기록'],defaultId:0,cancelId:0,
+   message:yes?'학교종이에서 이 알림장이 게시된 것을 확인하셨나요?':'학교종이에서 이 알림장이 게시되지 않은 것을 확인하셨나요?',
+   detail:schoolName()+' · '+post.date+' · 사진 '+post.photoCount+'장\n'+
+    (yes?'게시됨으로 기록하면 같은 내용을 다시 보내지 않습니다. 초안과 사진은 그대로 둡니다.':'게시 안 됨으로 기록하면 같은 내용을 다시 등록할 수 있습니다. 확실하지 않으면 취소해 주세요.')});
+  if(answer.response!==1)return {status:'cancelled',message:'기록을 그대로 두었습니다.'};
+  store.resolveAutomatic(classKey,id,outcome);
+  return {status:'resolved',message:yes?'게시됨으로 기록했습니다. 초안과 사진은 유지됩니다.':'게시 안 됨으로 기록했습니다. 다시 등록할 수 있습니다.'};
+ });
+
+ // ----- service selection and status -----
+ handle('diary-service:status',key=>status(services.classKey(key)));
  handle('diary-service:select',({classKey,service})=>{
-  store.select(classKey,service);
-  for (const w of windows.values()) if (!w.isDestroyed()) w.close();
+  if(busy||connecting||offering)return {status:'busy',message:'학교종이 연결 또는 등록이 끝난 뒤 서비스를 바꿔 주세요.'};
+  store.select(classKey,service);stopWatch();closeVisible();
   return status(classKey);
  });
- handle('schoolbell:open',async value=>{
-  const to=target(value),w=await open(to.classKey);
-  return {status:'opened',message:connection.describe(w).message};
- });
- handle('schoolbell:inspect',async value=>{
-  const to=target(value),win=windows.get(to.classKey);
-  if(!win||win.isDestroyed())return {status:'blocked',message:'학교종이 창에서 직접 로그인한 뒤 담당 학급의 알림장을 열어 주세요.'};
-  const provider=contextProvider(win,to),abort=new AbortController();
-  try{
-   const result=await bounded(()=>provider.inspect(abort.signal),25000,()=>{abort.abort();provider.close();});
-   if(process.env.CLASSROOM_TEST_PROFILE)await fs.writeFile(path.join(profile.dir,'schoolbell-evidence-check.json'),JSON.stringify({checks:result.checks,
-    blockers:result.blockers,publicationMode:result.publicationMode,recipientCheck:result.recipientCheck},null,2),{mode:0o600});
-   // Never expose display names, avatar URLs, group IDs or actor hashes to the
-   // renderer/log. This report is not a stored verified link or publication grant.
-   const rolePreview=result.recipientCheck?.roleSelectionKnown?
-    Object.entries({administrator:'관리자',guardian1:'보호자1',guardian2:'보호자2',student:'학생'}).map(([key,label])=>{
-     const role=result.recipientCheck.roles[key];return label+' '+(role.checked?'선택':'미선택')+(role.disabled?'(변경 불가)':'');
-    }).join(' / ')+' — 화면의 항목 선택 상태이며 실제 수신 인원 검증은 아닙니다. ':'';
-   return {status:'blocked',checks:result.checks,blockers:result.blockers,recipientCheck:result.recipientCheck,
-    message:'실제 화면 확인: '+(result.checks.gradeClass?'학년·반 일치. ':'학년·반 확인 필요. ')+
-     (result.checks.recipientTableEmpty?'발행 대상 구성원 없음 확인. ':
-     result.recipientCheck?.known===true&&result.recipientCheck.empty===false?
-      '발행 대상 표가 비어 있지 않습니다. 현재 표시된 '+(Number.isSafeInteger(result.recipientCheck.visibleRows)?result.recipientCheck.visibleRows+'행':'행 수 미확인')+'만 관찰했으며 총원·실제 수신자는 미검증입니다. ':
-     result.checks.rosterEmpty?'명단 입력 값 0건(발행 대상은 별도 확인 필요). ':'명단 확인 필요. ')+
-     rolePreview+(result.publicationMode?.known?'발행 방식: '+(result.publicationMode.mode==='immediate'?'즉시발행. ':'예약발행(지원하지 않음). '):'발행 방식 확인 필요. ')+
-     result.blockers.map(code=>liveContext.blockerMessages[code]).filter(Boolean).join(' ')};
-  }catch(error){return {status:'blocked',message:liveContext.blockerMessages[error.message]||'앱의 로그인 상태와 실제 학급 화면을 확인하지 못했습니다. 자동 등록 잠금과 초안은 유지됩니다.'};}
-  finally{abort.abort();provider.close();}
- });
- handle('schoolbell:nonpublishing-check',async value=>{
-  if(!testAuthorization.available())fail('별도 개발 검증 프로필에서만 비게시 검사를 실행할 수 있습니다.');
-  const to=target(value),win=windows.get(to.classKey);
-  if(!win||win.isDestroyed())fail('현재 앱 학급의 학교종이 창에서 빈 작성 화면을 먼저 열어 주세요.');
-  // This path has no publisher and never issues a test/production send grant.
-  testAuthorization.revoke();operatingAuthorization.revoke();
-  const abort=new AbortController(),context=contextProvider(win,to);
-  const uploads=require('./schoolbell-preview-originals.cjs').createPreviewOriginals({getWebContents:()=>win.isDestroyed()?null:win.webContents,tempRoot:profile.dir});
-  try{
-   const result=await bounded(()=>require('./schoolbell-nonpublishing.cjs').runNonpublishingCheck({webContents:win.webContents,target:to,
-    canUse:()=>testAuthorization.available()&&windows.get(to.classKey)===win&&!win.isDestroyed(),
-    inspectContext:context.inspect,readOriginals:uploads.readUploads,signal:abort.signal,
-    confirm:async({context:observed,note,photos})=>{
-     const answer=await dialog.showMessageBox(confirmationParent(),{type:'question',buttons:['취소','입력·사진 업로드만 검사'],defaultId:0,cancelId:0,
-      message:'협조 교사의 일반 학급에서 비게시 검사를 진행할까요?',
-      detail:expectedSchool()+' · '+to.year+'학년도 '+to.grade+'학년 '+to.classroom+'반\n'+
-       '현재 학교종이 학급 ID: '+observed.boardId+'\n'+
-       '학교·학년도 및 담당 교사 여부는 교사의 직접 확인 근거입니다. 서비스 고유 신원·게시 권한을 검증한 것으로 기록하지 않습니다.\n'+
-       '협조 교사가 이 학급의 빈 화면에 가상 자료를 입력·업로드하는 데 동의한 경우에만 진행하세요.\n\n'+
-       note.title+'\n'+note.body+'\n\n가상 PNG 1장 · '+photos[0].bytes+' bytes · SHA-256 '+photos[0].sha256+'\n'+
-       '사진은 학교종이 서버로 업로드됩니다. 보내기·예약발행·임시저장 및 수신대상 변경은 실행하지 않습니다. 결과는 게시 성공이나 게시 승인으로 사용하지 않습니다.'});
-     return answer.response===1;
-    }}),180000,()=>{abort.abort();context.close();uploads.close();});
-   await fs.writeFile(path.join(profile.dir,'schoolbell-nonpublishing-result.json'),JSON.stringify(result,null,2),{mode:0o600});
-   return {...result,message:result.status==='nonpublishing-verified'?
-    '비게시 제목·본문·사진 입력 및 원본 대조 완료. 보내기·예약발행·임시저장은 실행하지 않았습니다. 작성 화면과 앱 초안은 유지됩니다.':
-    '비게시 검사 중단 · '+result.stage+' / '+result.reason+'. 기존 내용은 유지하며 자동 재시도하지 않습니다.'};
-  }finally{abort.abort();context.close();uploads.close();testAuthorization.revoke();}
- });
- handle('schoolbell:check-posts',async value=>{
-  const to=target(value.target),note=services.payload(value.note),win=windows.get(to.classKey);
-  if(note.classKey!==to.classKey)fail('조회할 초안과 학급이 다릅니다.');
-  if(!win||win.isDestroyed())fail('학교종이 연결하기에서 담당 학급 알림장을 먼저 열어 주세요.');
-  // Verify local originals before comparing their hashes with downloaded files.
-  const photos=[];
-  for(const ref of note.photos){const bytes=await require('./media.cjs').current().read(ref);photos.push({sha256:require('./media-store.cjs').hash(bytes),bytes:bytes.length});}
-  const abort=new AbortController(),initialURL=win.webContents.getURL();
-  const provider=require('./schoolbell-live-posts.cjs').createLivePostProvider({target:to,tempRoot:profile.dir,createReader,
-   getWebContents:()=>win.isDestroyed()?null:win.webContents});
-  try{
-   const result=await bounded(()=>provider.readBaseline({note,
-    stillPermitted:()=>!abort.signal.aborted&&!win.isDestroyed()&&win.webContents.getURL()===initialURL},abort.signal),90000,
-    ()=>{abort.abort();provider.close();});
-   const {summarizeReadback,readbackMessage}=require('./schoolbell-readback.cjs');
-   const report={...summarizeReadback(result,{...note,photos}),draftDate:note.date};
-   // Isolated development-profile evidence only: no bodies, names, URLs, IDs,
-   // session data or originals. Production profiles never write this report.
-   if(process.env.CLASSROOM_TEST_PROFILE)await fs.writeFile(path.join(profile.dir,'schoolbell-readback-check.json'),JSON.stringify(report,null,2),{mode:0o600});
-   return {status:'read-only',message:readbackMessage(report)};
-  }catch(error){
-   if(process.env.CLASSROOM_TEST_PROFILE)await fs.writeFile(path.join(profile.dir,'schoolbell-readback-check.json'),JSON.stringify({complete:false,
-    stage:/^(publication|baseline|date|context)-unverified(?::[a-z]+)?$/.test(error.message)?error.message:'interrupted',
-    locations:(error.stack||'').split('\n').map(line=>line.match(/\/(schoolbell-[a-z-]+\.cjs:\d+:\d+)/)?.[1]).filter(Boolean),
-    ...(error.fileVisibility?{fileVisibility:error.fileVisibility}:{})},null,2),{mode:0o600});
-   const reason={'context-unverified':'담당 학급의 알림장 화면을 열어 주세요.',
-    'baseline-unverified':'검색 없는 전체 게시물 목록의 마지막까지 확인하지 못했습니다.',
-    'date-unverified':'게시물에 표시된 발행 날짜를 확인하지 못했습니다.',
-    'publication-unverified':'게시물 본문 또는 첨부 원본을 대조하지 못했습니다.'}[error.message.split(':')[0]]||'조회 중 화면 변경 또는 연결 중단이 발생했습니다.';
-   return {status:'blocked',message:'게시물 조회 미완료 · '+reason+' 초안과 사진은 유지됩니다.'};
-  }finally{abort.abort();provider.close();}
- });
- handle('schoolbell:check-uploads',async value=>{
-  if(!process.env.CLASSROOM_TEST_PROFILE)fail('개발 시험 프로필에서만 사용할 수 있는 읽기 전용 검사입니다.');
-  const to=target(value.target),note=services.payload(value.note),win=windows.get(to.classKey);
-  if(note.classKey!==to.classKey||!win||win.isDestroyed()||!liveContext.classRoute(win.webContents.getURL()))fail('시험 학급의 작성 화면을 먼저 확인해 주세요.');
-  const original=[];
-  for(const ref of note.photos){const bytes=await require('./media.cjs').current().read(ref);original.push({sha256:require('./media-store.cjs').hash(bytes),bytes:bytes.length});}
-  const expectedNames=note.photos.map((f,i)=>String(i+1).padStart(2,'0')+'-'+f.id),initial=win.webContents.getURL();
-  const abort=new AbortController(),provider=require('./schoolbell-preview-originals.cjs').createPreviewOriginals({getWebContents:()=>win.isDestroyed()?null:win.webContents,tempRoot:profile.dir});
-  let report;
-  const readSendState=async()=>{try{return await win.webContents.executeJavaScriptInIsolatedWorld(17484,[{code:'(()=>{const roots=document.querySelectorAll("app-boards-write"),buttons=roots.length===1?roots[0].querySelectorAll("button.btn-with-description"):[];if(buttons.length!==1)return {known:false};const {point,...target}=('+require('./schoolbell-send-input.cjs').inspectSendTarget.toString()+')(document,buttons[0]);return {target,mode:('+require('./schoolbell-publication-mode.cjs').readPublicationMode.toString()+')(document)};})()'}]);}catch{return {known:false};}};
-  const sendBefore=await readSendState();
-  try{
-   const proof=await bounded(()=>provider.readUploads({expectedNames,expectedPhotos:original,
-    stillPermitted:()=>!abort.signal.aborted&&!win.isDestroyed()&&win.webContents.getURL()===initial},abort.signal),45000,()=>{abort.abort();provider.close();});
-   report={complete:proof.complete===true,count:proof.items.length,photos:original};
-  }catch(error){report={complete:false,stage:/^upload-unverified(?::[a-z-]+)?$/.test(error.message)?error.message:'interrupted',...(error.previewDetails?{previewDetails:error.previewDetails}:{})};}
-  finally{abort.abort();provider.close();}
-  report.sendBefore=sendBefore;report.sendAfter=await readSendState();
-  await fs.writeFile(path.join(profile.dir,'schoolbell-upload-check.json'),JSON.stringify(report,null,2),{mode:0o600});
-  return {status:report.complete?'read-only':'blocked',message:report.complete?'게시 전 첨부 원본 '+report.count+'장 대조 완료. 아직 게시하지 않았으며 초안과 사진은 유지됩니다.':'게시 전 원본 다운로드 또는 대조를 완료하지 못했습니다. 게시와 초안 초기화는 차단됩니다.'};
- });
- handle('schoolbell:link',async value=>{
-  const to=target(value), w=windows.get(to.classKey);
-  if (!w || w.isDestroyed() || w.schoolbellLoadFailed) fail('학교종이 창을 먼저 열고 담당 학급의 알림장으로 이동해 주세요.');
-  if (!services.matchTarget({schoolName:expectedSchool(),year:to.year,grade:to.grade,classroom:to.classroom},to.observed||{}))
-   fail('학교 또는 학년도·학년·반이 우리 교실 설정과 다릅니다. 담당 학급을 다시 확인해 주세요.');
-  let url;
-  try { url=services.safeURL(w.webContents.getURL(),true); } catch(e) { fail(e.message); }
-  const answer=await dialog.showMessageBox(confirmationParent(),{type:'question',buttons:['취소','직접 확인했습니다'],defaultId:0,cancelId:0,
-   message:'학교종이 담당 학급을 직접 확인하셨나요?',
-   detail:expectedSchool()+' '+to.year+'학년도 '+to.grade+'학년 '+to.classroom+'반\n학교종이의 학교명·학급명, 담임 권한, 알림장 게시판을 직접 확인한 경우에만 진행하세요.\n앱에서 로그인·학급 일치 여부를 자동 검증하지 않습니다.'});
-  if(answer.response!==1) return {status:'cancelled',message:'학급 확인을 취소했습니다.'};
-  if(w.isDestroyed() || w.webContents.getURL()!==url) fail('학교종이 화면이 바뀌었습니다. 담당 학급을 다시 확인해 주세요.');
-  store.link(to.classKey,url);
-  return {status:'manual-linked',message:'담당 학급 직접 확인 기록을 저장했습니다. 수동 발행만 사용할 수 있습니다.',...status(to.classKey)};
- });
+
+ // ----- manual publishing (emergency fallback): copy the text, save the photos, post by hand -----
  handle('schoolbell:prepare',async value=>{
   const note=services.payload(value);
-  for(const ref of note.photos) await require('./media.cjs').current().read(ref);
-  const row=store.get(note.classKey);
-  if(!row.schoolbell) fail('학교종이 창에서 담당 학급을 먼저 확인해 주세요.');
-  const answer=await dialog.showMessageBox(confirmationParent(),{type:'question',buttons:['취소','수동 발행 준비'],defaultId:0,cancelId:0,
+  if(busy)fail('등록이 끝난 뒤 다시 시도해 주세요.');
+  for(const ref of note.photos)await readPhoto(ref);
+  const answer=await dialog.showMessageBox(main(),{type:'question',buttons:['취소','직접 발행 준비'],defaultId:0,cancelId:0,
    message:'학교종이에서 직접 작성하고 발행합니다.',
-   detail:expectedSchool()+' · '+note.classKey+'\n'+note.date+' · 사진 '+note.photos.length+'장\n학교·학급과 기존 게시물을 먼저 확인하세요. 앱은 자동 전송하지 않습니다. 중단되면 게시 여부를 확인하기 전까지 다시 준비하지 않습니다.'});
-  if(answer.response!==1) return {status:'cancelled',message:'수동 발행 준비를 취소했습니다. 초안은 유지됩니다.'};
+   detail:schoolName()+' · '+note.date+' · 사진 '+note.photos.length+'장\n앱은 자동으로 보내지 않습니다. 제목과 본문을 복사해 붙여넣고 사진을 직접 첨부한 뒤, 게시 결과를 여기에 기록해 주세요.'});
+  if(answer.response!==1)return {status:'cancelled',message:'직접 발행 준비를 취소했습니다. 초안은 유지됩니다.'};
   const result=store.prepare(note);
-  if(result.blocked) return {...result,message:'같은 내용의 기록 또는 결과 미확인 건이 있습니다. 학교종이에서 확인한 뒤 아래에서 결과를 기록해 주세요.'};
-  // Persist before opening the remote page: a closed window/network error never loses the pending marker.
-  await open(note.classKey);
-  return {...result,message:'수동 발행 준비됨 · 제목/본문을 복사하고 사진을 직접 첨부하세요. 실제 발행 후 결과를 기록해 주세요.'};
+  if(result.blocked)return {...result,message:'같은 내용의 기록 또는 결과 미확인 건이 있습니다. 학교종이에서 확인한 뒤 결과를 먼저 기록해 주세요.'};
+  // The pending marker is saved first: a closed window or network error never loses it.
+  try{const w=openVisible(note.classKey);if(!w.webContents.getURL()||w.schoolbellLoadFailed)await windows.load(w,store.get(note.classKey).schoolbellLink?.url||flow.HOME);windows.reveal(w);}catch{}
+  return {...result,message:'직접 발행 준비됨 · 제목/본문을 복사하고 사진을 직접 첨부하세요. 발행 후 결과를 기록해 주세요.'};
  });
- handle('schoolbell:copy',({note,part})=>{
+ const manualPending=note=>{
   const p=services.payload(note),hash=services.fingerprint(profile.id,'schoolbell',p),row=store.get(p.classKey);
-  if(row.service!=='schoolbell'||row.posts[hash]?.status!=='manual-pending') fail('현재 초안으로 수동 발행 준비를 먼저 해 주세요. 내용을 바꿨다면 이전 건의 결과부터 확인해 주세요.');
-  if(!['title','body'].includes(part)) fail('복사할 항목을 확인해 주세요.');
+  if(row.service!=='schoolbell'||row.posts[hash]?.status!=='manual-pending')fail('현재 초안으로 [직접 발행 준비]를 먼저 해 주세요. 내용을 바꿨다면 이전 건의 결과부터 기록해 주세요.');
+  return p;
+ };
+ handle('schoolbell:copy',({note,part})=>{
+  const p=manualPending(note);
+  if(!['title','body'].includes(part))fail('복사할 항목을 확인해 주세요.');
   clipboard.writeText(p[part]);
-  return {status:'copied',message:(part==='title'?'제목':'본문')+' 복사됨 · 앱은 게시 결과를 확인하지 않습니다.'};
+  return {status:'copied',message:(part==='title'?'제목':'본문')+' 복사됨'};
  });
  handle('schoolbell:photos',async note=>{
-  const p=services.payload(note),hash=services.fingerprint(profile.id,'schoolbell',p),row=store.get(p.classKey);
-  if(row.service!=='schoolbell'||row.posts[hash]?.status!=='manual-pending') fail('현재 초안으로 수동 발행 준비를 먼저 해 주세요.');
-  if(!p.photos.length) fail('첨부할 사진이 없습니다.');
-  const bytes=await Promise.all(p.photos.map(ref=>require('./media.cjs').current().read(ref)));
+  const p=manualPending(note);
+  if(!p.photos.length)fail('첨부할 사진이 없습니다.');
+  const bytes=await Promise.all(p.photos.map(readPhoto));
   const choice=await dialog.showOpenDialog(main(),{title:'학교종이에 직접 첨부할 사진 저장 위치',properties:['openDirectory','createDirectory']});
-  if(choice.canceled||!choice.filePaths[0]) return {status:'cancelled',message:'사진 내보내기를 취소했습니다. 원본 사진은 유지됩니다.'};
+  if(choice.canceled||!choice.filePaths[0])return {status:'cancelled',message:'사진 내보내기를 취소했습니다. 원본 사진은 유지됩니다.'};
   // Dedicated new directory, generated filenames and exclusive writes: never overwrite a user's file.
   const dir=await fs.mkdtemp(path.join(choice.filePaths[0],'schoolbell-photos-'));
-  for(let i=0;i<bytes.length;i++) await fs.writeFile(path.join(dir,String(i+1).padStart(2,'0')+'.'+p.photos[i].id.split('.').at(-1)),bytes[i],{flag:'wx',mode:0o600});
+  for(let i=0;i<bytes.length;i++)await fs.writeFile(path.join(dir,String(i+1).padStart(2,'0')+'.'+p.photos[i].id.split('.').at(-1)),bytes[i],{flag:'wx',mode:0o600});
   const error=await shell.openPath(dir);
   return {status:'exported',message:'사진 '+bytes.length+'장을 01번부터 순서대로 저장했습니다. 학교종이에 직접 첨부하고 개수와 순서를 확인하세요.'+(error?' 선택한 저장 위치에서 폴더를 열어 주세요.':'')};
  });
- handle('schoolbell:resolve',async ({classKey,hash,outcome})=>{
-  const row=store.get(classKey),post=row.posts[hash];
-  if(!post||post.status!=='manual-pending') fail('확인할 수동 발행 기록이 없습니다.');
-  if(!['manual-confirmed','manual-not-posted'].includes(outcome)) fail('실제 게시 결과를 확인해 주세요.');
+ handle('schoolbell:resolve',async({classKey,hash,outcome})=>{
+  const post=store.get(classKey).posts[hash];
+  if(!post||post.status!=='manual-pending'||!['manual-confirmed','manual-not-posted'].includes(outcome))fail('확인할 직접 발행 기록이 없습니다.');
   const yes=outcome==='manual-confirmed';
-  const answer=await dialog.showMessageBox(confirmationParent(),{type:'question',buttons:['취소',yes?'게시 확인 기록':'미게시 확인 기록'],defaultId:0,cancelId:0,
+  const answer=await dialog.showMessageBox(main(),{type:'question',buttons:['취소',yes?'게시됨으로 기록':'게시 안 됨으로 기록'],defaultId:0,cancelId:0,
    message:yes?'학교종이에서 실제 게시물을 확인하셨나요?':'학교종이에서 게시되지 않은 것을 확인하셨나요?',
-   detail:expectedSchool()+' · '+classKey+'\n'+post.date+' · 사진 '+post.photoCount+'장\n'+(yes?'대상 학급, 본문, 사진 개수·순서까지 확인하세요. 사용자 확인 기록으로 저장되며 서버 검증 성공이 아닙니다.':'이미 게시되었는지 불확실하면 취소하세요. 미게시 확인 후에만 다시 준비할 수 있습니다.')});
-  if(answer.response!==1)return {status:'cancelled',message:'결과 확인을 취소했습니다. 재발행은 계속 차단됩니다.'};
-  const result=store.resolve(classKey,hash,outcome);
-  return {...result,message:yes?'수동 게시 · 사용자 확인 기록을 저장했습니다. 초안과 사진은 보존됩니다.':'미게시 확인을 기록했습니다. 초안으로 다시 준비할 수 있습니다.'};
+   detail:schoolName()+' · '+post.date+' · 사진 '+post.photoCount+'장\n'+(yes?'대상 학급, 본문, 사진 개수·순서를 확인하세요.':'이미 게시되었는지 불확실하면 취소하세요.')});
+  if(answer.response!==1)return {status:'cancelled',message:'기록을 그대로 두었습니다.'};
+  store.resolve(classKey,hash,outcome);
+  return {status:'resolved',message:yes?'게시됨으로 기록했습니다. 초안과 사진은 유지됩니다.':'게시 안 됨으로 기록했습니다. 다시 준비할 수 있습니다.'};
  });
- // Explicit IPC guard as well as disabled UI; no settings flag can enable unverified automatic posting.
- handle('schoolbell:authorize-test',async value=>{
-  if(!testAuthorization.available())fail('분리된 개발 시험 앱에서만 승인할 수 있습니다. 운영 등록 잠금은 유지됩니다.');
-  operatingAuthorization.revoke();
-  const to=target(value),win=windows.get(to.classKey);
-  if(!win||win.isDestroyed()||!liveContext.classRoute(win.webContents.getURL()))fail('현재 앱 창에서 담당 테스트 학급의 알림장을 먼저 열어 주세요.');
-  const reader=contextProvider(win,to),controller=new AbortController();
-  try{
-   await require('./schoolbell-composer-entry.cjs').openObservedComposer(win.webContents,{groupId:liveContext.classRoute(win.webContents.getURL()).groupId,
-    signal:controller.signal,allowed:()=>testAuthorization.available()&&!win.isDestroyed()});
-   const href=win.webContents.getURL();
-   const inspect=()=>bounded(()=>reader.inspect(controller.signal),30000,()=>{controller.abort();reader.close();});
-   const facts=await inspect();if(!trial.testFacts(facts)||!facts.accountObservationDigest)fail('빈 학생·학부모 대상, 관리자 1명, 관리 화면 편집 권한 및 현재 계정 표시를 모두 확인해야 합니다.');
-   const answer=await dialog.showMessageBox(confirmationParent(),{type:'question',buttons:['취소','이 테스트 학급으로 1회 시험 승인'],defaultId:0,cancelId:0,
-    message:'현재 앱 세션의 테스트 학급을 연결할까요?',
-    detail:'앱 설정: '+expectedSchool()+' · '+to.classKey+'\n실제 학교종이 학급: '+facts.classDisplayName+' · ID '+facts.boardId+'\n'+
-     '실제 확인: 관리 화면 편집 가능, 학생 0명·학부모 0명, 필수 관리자 1명.\n'+
-     '사용자 확인: 이 학급을 위 앱 설정에 연결하며, 현재 로그인은 본인 계정이고 유일한 관리자는 본인입니다. 가상 문구·사진만 사용하며 본인 관리자 알림을 허용합니다.\n'+
-     '학교·학년도와 관리자 본인 연결은 사용자 확인 기록입니다. 서비스가 고유 신원이나 공식 자동화를 승인했다고 기록하지 않습니다.\n'+
-     '승인은 현재 창에서 30분·1회 시험에만 적용됩니다. 입력·첨부 후 게시 직전 다시 확인하며 운영 잠금은 유지됩니다.'});
-   if(answer.response!==1)return {status:'cancelled',message:'시험 승인을 취소했습니다.'};
-   if(win.isDestroyed()||win.webContents.getURL()!==href)fail('학급 화면이 변경됐습니다.');
-   const after=await inspect();if(after.boardId!==facts.boardId||after.accountObservationDigest!==facts.accountObservationDigest)fail('계정 또는 학급이 변경됐습니다.');
-   await testAuthorization.issue({target:to,facts:after,webContents:win.webContents});
-   return {status:'test-approved',message:'현재 시험 학급에 한해 등록 버튼을 사용할 수 있습니다. 입력·원본 확인 후 최종 게시 승인을 다시 받습니다. 운영 잠금 유지.'};
-  }finally{controller.abort();reader.close();}
- });
- handle('schoolbell:connect-operating',async value=>{
-  const to=target(value),win=windows.get(to.classKey);
-  if(!win||win.isDestroyed())fail('앱 학교종이 창에서 담당 학급 알림장을 먼저 열어 주세요.');
-  testAuthorization.revoke();operatingAuthorization.revoke();
-  const controller=new AbortController(),reader=contextProvider(win,to);
-  try{
-   const inspect=()=>bounded(()=>reader.inspect(controller.signal),30000,()=>controller.abort());
-   const facts=await inspect();
-   if(!operating.factsReady(facts))fail('실제 학급, 관리 설정 접근 및 검색 없는 역할별 수신대상 표시를 모두 확인하지 못했습니다.');
-   const answer=await dialog.showMessageBox(confirmationParent(),{type:'question',buttons:['취소','현재 학급 연결 확인'],defaultId:0,cancelId:0,
-    message:'현재 로그인과 담당 학급을 연결할까요?',
-    detail:expectedSchool()+' · '+to.year+'학년도 '+to.grade+'학년 '+to.classroom+'반\n학교종이 학급 ID: '+facts.boardId+'\n'+
-     '이 로그인은 담당 교사 본인 계정이고 위 학교·학년도를 이 학급에 연결하는 것이 맞는지 확인하세요.\n'+
-     '실제 UI: 학급·학년·반 일치, 관리 설정 접근, 관리자 필수 선택 및 보호자/학생 역할 선택 확인. 전체 수신 인원을 표 행 수로 추정하지 않습니다.\n'+
-     '학교·학년도·본인 신원은 교사 확인 근거이며 서비스 고유 신원 검증이나 공식 자동화 허용을 의미하지 않습니다.\n'+
-     '필수 관리자에게도 알림이 전달됩니다. 연결만 하며 게시하지 않습니다. 등록 시 매번 내용·대상을 재확인합니다. 연결 후 이 학급에만 등록할 수 있습니다.'});
-   if(answer.response!==1)return {status:'cancelled',message:'학급 연결을 취소했습니다.'};
-   const after=await inspect();
-   if(operating.observedBinding(facts)!==operating.observedBinding(after))fail('계정·학급·관리자 또는 대상 선택이 변경됐습니다. 다시 확인해 주세요.');
-   await operatingAuthorization.issue({target:to,facts:after,webContents:win.webContents});
-   const route=liveContext.classRoute(win.webContents.getURL());store.link(to.classKey,route.base+'/boards/classnews');
-   return {status:'connected',message:'현재 앱 세션과 담당 학급 연결을 확인했습니다. 교사 확인과 서비스 관찰 근거를 구분해 기록했습니다. 등록할 때마다 최종 게시 확인이 필요합니다.'};
-  }finally{controller.abort();reader.close();}
- });
- handle('schoolbell:publish',async value=>{
-  const p=testAuthorization.current();
-  if(!p||value?.classKey!==p.target.classKey){try{return await publisher.publish(value);}finally{operatingAuthorization.finishAttempt();}}
-  testTrace=[];
-  const testPublisher=require('./schoolbell-publish.cjs').createPublisher({...publisherOptions,timeoutMs:60000,
-   driver:makeDriver(()=>testAuthorization.current()),gate:()=>({enabled:testAuthorization.current()===p,executionMode:'development-test',approvalId:p.approvalId})});
-  try{
-   const result=await testPublisher.publish(value);
-   await fs.writeFile(path.join(profile.dir,'schoolbell-test-result.json'),JSON.stringify({status:result.status,reason:result.reason||null,
-    attachmentsVerified:result.attachmentsVerified===true,publication:result.publication||null,trace:testTrace.slice(-40)},null,2),{mode:0o600});
-   return result;
-  }finally{testAuthorization.revoke();}
- });
- handle('schoolbell:verify-uncertain',async value=>{
-  const to=target(value.target),note=services.payload(value.note),win=windows.get(to.classKey);
-  if(note.classKey!==to.classKey||!win||win.isDestroyed())fail('같은 앱 초안과 담당 학급 화면을 확인해 주세요.');
-  const grant=testAuthorization.current()||operatingAuthorization.current(),ordinary=operating.validGrant(grant,to,'read');
-  if(!ordinary&&!trial.validTestGrant(grant,to,'read'))fail('현재 담당 학급 연결을 먼저 확인해 주세요.');
-  const controller=new AbortController(),href=win.webContents.getURL(),context=contextProvider(win,to);
-  const posts=require('./schoolbell-live-posts.cjs').createLivePostProvider({target:to,tempRoot:profile.dir,createReader,
-   getWebContents:()=>win.isDestroyed()?null:win.webContents});
-  try{
-   const result=await bounded(()=>require('./schoolbell-reconcile.cjs').reconcile({profile,store,target:to,note,attemptId:value.attemptId,
-    permission:()=>!win.isDestroyed()&&win.webContents.getURL()===href?(ordinary?operatingAuthorization.current():testAuthorization.current()):null,
-    readContext:async signal=>{
-     const facts=(ordinary?operatingAuthorization:testAuthorization).attach(await context.inspect(signal),to,win.webContents);
-     return {...to,...facts,service:'schoolbell',scopeType:'class',board:'diary',authenticated:facts.checks.classPage,contextId:facts.boardId};
-    },readBaseline:posts.readBaseline,readPhoto:ref=>require('./media.cjs').current().read(ref),
-    readSubmissionRecords:async()=>(await fs.readFile(path.join(profile.dir,ordinary?'schoolbell-operating-approvals.jsonl':'schoolbell-test-approvals.jsonl'),'utf8')).trim().split('\n').map(line=>JSON.parse(line)),
-    signal:controller.signal}),90000,
-    ()=>{controller.abort();context.close();posts.close();});
-   return result;
-  }catch(error){return {status:'uncertain',...(require('./schoolbell-driver-errors.cjs').publicFailure(error)||{}),
-   message:'기존 게시물 재검증을 마치지 못했습니다. 새 게시물은 보내지 않았으며 초안과 사진을 유지합니다.'};}
-  finally{controller.abort();context.close();posts.close();testAuthorization.revoke();operatingAuthorization.revoke();}
- });
- handle('schoolbell:resolve-automatic',async ({classKey,id,outcome})=>{
-  const post=store.get(classKey).automaticPosts?.[id];
-  if(!post||!['auto-pending','auto-uncertain'].includes(post.status)||
-     !['auto-user-confirmed','auto-user-not-posted'].includes(outcome))fail('확인할 자동 등록 시도가 없습니다.');
-  const answer=await dialog.showMessageBox(confirmationParent(),{type:'question',buttons:['취소','직접 확인 기록'],defaultId:0,cancelId:0,
-   message:'학교종이에서 실제 게시물을 확인하셨나요?',
-   detail:expectedSchool()+' · '+classKey+'\n'+post.date+' · 사진 '+post.photoCount+'장\n'+
-    (outcome==='auto-user-confirmed'?'게시물·본문·사진을 모두 확인한 경우에만 기록하세요. 자동 검증 성공으로 변경하지 않습니다.':
-    '게시되지 않은 것이 확실할 때만 기록하세요. 불확실하면 취소하세요. 기존 시도 기록은 보존됩니다.')});
-  if(answer.response!==1)return {status:'cancelled',message:'기록을 유지했습니다. 자동 재전송하지 않습니다.'};
-  return {...store.resolveAutomatic(classKey,id,outcome),message:'사용자 확인을 별도로 기록했습니다. 초안과 사진은 유지됩니다.'};
- });
- return () => !busy && [...windows.values()].every(w=>w.isDestroyed());
+ return ()=>!busy&&!connecting&&!offering&&!pending;
 };
