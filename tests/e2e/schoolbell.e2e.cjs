@@ -112,7 +112,7 @@ const watched=()=>main(()=>{clearInterval(globalThis.sampler);return globalThis.
  let record=records();
  ok('성공 기록에 게시물 ID 저장',record.length===1&&record[0].status==='auto-success'&&record[0].receipt.postId==='601'&&record[0].receipt.boardId==='100'&&record[0].receipt.photoCount===0,JSON.stringify(record));
  const trace=fs.readFileSync(path.join(PROFILE,'schoolbell-last-run.json'),'utf8');
- ok('진단 기록에 본문·제목 없음',JSON.parse(trace).outcome==='success'&&!trace.includes('사진 없는')&&!trace.includes('첫 줄'));
+ ok('진단 기록에 본문·제목 없음 (작업 창 방식은 기록)',JSON.parse(trace).outcome==='success'&&JSON.parse(trace).window==='offscreen'&&!trace.includes('사진 없는')&&!trace.includes('첫 줄'));
 
  await write('사진 한 장','사진 1장 본문');await addPhotos(1,10);
  let ids=await draftPhotos();

@@ -205,7 +205,7 @@ module.exports=function setup(main){
   const link=row.schoolbellLink;
   if(!link)return {status:'error',message:row.schoolbell?'학교종이 학급을 다시 연결해 주세요. ([학교종이 연결하기])':'현재 학년·반의 학교종이 학급을 먼저 연결해 주세요.'};
   busy=true;stopWatch();closeVisible();
-  const started=Date.now(),trace={version:require('electron').app.getVersion(),photos:note.photos.length,recipients:row.schoolbellRecipients?'custom':'default',steps:[]};
+  const started=Date.now(),trace={version:require('electron').app.getVersion(),window:process.env.CLASSROOM_SCHOOLBELL_VISIBLE==='1'?'visible':'offscreen',photos:note.photos.length,recipients:row.schoolbellRecipients?'custom':'default',steps:[]};
   let attempt,w,cdp,clicked=false;
   try{
    const files=await photos.load(note.photos,readPhoto);
