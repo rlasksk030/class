@@ -15,7 +15,7 @@ module.exports=function setup(main){
  const partition=key=>services.partition(profile.id,'schoolbell',key);
  const readPhoto=ref=>require('./media.cjs').current().read(ref);
  let visible=null,visibleKey=null,busy=false,connecting=false,offering=false;
- let pending=null,watchTimer=null,lastOffer='',lastProgress='';
+ let pending=null,watchTimer=null,lastOffer='',lastProgress='',checking=null;
 
  const trusted=event=>event.sender===main()?.webContents&&event.senderFrame===event.sender.mainFrame;
  const GENERIC='학교종이 작업을 마치지 못했습니다. 초안과 사진은 유지됩니다.';
@@ -126,6 +126,7 @@ module.exports=function setup(main){
   if(busy||connecting||offering)return {message:'학교종이 연결 또는 등록이 진행 중입니다.'};
   connecting=true;
   try{
+   if(checking)await checking;
    const link=store.get(to.classKey).schoolbellLink,w=openVisible(to.classKey);
    pending={...to,relogin:to.relogin&&!!link,link};lastOffer='';lastProgress='';
    const current=w.webContents.getURL();
@@ -154,23 +155,28 @@ module.exports=function setup(main){
  handle('schoolbell:status',key=>linkOf(services.classKey(key)));
  // Session check for a saved link: loads the saved board in a background window.
  // Only a login page means expired; anything unclear stays "unknown" and changes nothing.
- handle('schoolbell:session',async key=>{
+ handle('schoolbell:session',key=>{
   const link=store.get(services.classKey(key)).schoolbellLink;
   if(!link)return {status:'none'};
+  if(checking)return checking;
   if(busy||connecting||offering||pending||(visible&&!visible.isDestroyed()))return {status:'unknown'};
-  connecting=true;let w;
-  try{
-   w=windows.worker(partition(key));
-   await windows.load(w,link.url,20000);
-   for(let i=0;i<24;i++){
-    const c=flow.classify(await adapter.inspect(w.webContents));
-    if(c.state==='login')return {status:'expired'};
-    if(c.state==='board'&&c.groupId===link.groupId)return {status:'ok'};
-    await windows.sleep(500);
-   }
-   return {status:w.schoolbellBlocked?'expired':'unknown'};
-  }catch{return {status:'unknown'};}
-  finally{connecting=false;if(w&&!w.isDestroyed())w.destroy();}
+  // A registration started meanwhile waits for this short check instead of being refused.
+  checking=(async()=>{
+   let w;
+   try{
+    w=windows.worker(partition(key));
+    await windows.load(w,link.url,20000);
+    for(let i=0;i<24;i++){
+     const c=flow.classify(await adapter.inspect(w.webContents));
+     if(c.state==='login')return {status:'expired'};
+     if(c.state==='board'&&c.groupId===link.groupId)return {status:'ok'};
+     await windows.sleep(500);
+    }
+    return {status:w.schoolbellBlocked?'expired':'unknown'};
+   }catch{return {status:'unknown'};}
+   finally{checking=null;if(w&&!w.isDestroyed())w.destroy();}
+  })();
+  return checking;
  });
  handle('schoolbell:recipients',({classKey,recipients})=>({recipients:store.setRecipients(classKey,recipients)}));
  handle('schoolbell:close',()=>{
@@ -185,6 +191,9 @@ module.exports=function setup(main){
  }
  handle('schoolbell:publish',async value=>{
   if(busy||connecting||offering)return {status:'busy',message:'이미 연결 또는 등록이 진행 중입니다.'};
+  busy=true;
+  try{if(checking)await checking;}catch{}finally{busy=false;}
+  if(connecting||offering)return {status:'busy',message:'이미 연결 또는 등록이 진행 중입니다.'};
   let note;
   try{note=services.payload(value);}catch{return {status:'error',message:'제목을 입력하고 본문 또는 사진을 추가해 주세요.'};}
   const row=store.get(note.classKey);
@@ -305,5 +314,5 @@ module.exports=function setup(main){
   store.resolve(classKey,hash,outcome);
   return {status:'resolved',message:yes?'게시됨으로 기록했습니다. 초안과 사진은 유지됩니다.':'게시 안 됨으로 기록했습니다. 다시 준비할 수 있습니다.'};
  });
- return ()=>!busy&&!connecting&&!offering&&!pending;
+ return ()=>!busy&&!connecting&&!offering&&!pending&&!checking;
 };
