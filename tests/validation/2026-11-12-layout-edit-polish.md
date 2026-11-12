@@ -45,6 +45,21 @@
 - 크기 손잡이·도구 막대 버튼의 잡는 영역 44×44 이상, 버튼 글씨 16px 이상
 - 그 밖에 안내 한 줄, 옮기기 표시, [?] 안내, 급식을 숨긴 상태, 1100에서 네 칸 나란히(가장 좁은 칸)
 
+## 빌드 1.8.15 (이 Mac, `npm run dist:win`)
+
+`app/package.json`만 1.8.14에서 1.8.15로 바꿨다(소스 `09d27b4`).
+
+| 항목 | 결과 |
+|---|---|
+| 1.8.15에서 다시 실행 | PASS: `check` 79/79, `npm test` 67/67, 버전을 읽는 E2E(v182-features 43/43, 배치 편집 71/71, 첫 실행 5/5) |
+| 설치 파일 | PASS: `classroom-dashboard-setup-1.8.15.exe` 99,325,096바이트, SHA-256 `c0d84caf79be5b570d4eb60fcc99288fb79e87bd668670c1e72f4475506747f7` |
+| blockmap | `classroom-dashboard-setup-1.8.15.exe.blockmap` SHA-256 `4d64d1112de901db68ce6730db455ca343d38b103dad1250cd6be567551912f3` |
+| 업데이트 피드 | `latest.yml` SHA-256 `34eb51d8425949f2eca020cd0bc682dbae1ee469c6e4a29ef398b89d21da52cf`. version 1.8.15, sha512·크기가 설치 파일과 일치 |
+| 설치 파일 속 업데이트 채널 | PASS: `update-config.json`(소스와 같음)과 `app-update.yml` 모두 github `rlasksk030/class` |
+| 설치 파일 속 앱 | PASS: 버전 1.8.15, `app.asar` 파일 80/80 소스 `app/`와 같음 |
+| 배포 | 미실행(승인 대기). 할 일: 태그 `v1.8.15` → Latest Release(`latest.yml` 포함) |
+| Windows 설치·업데이트·실행 | 미실행 |
+
 ## 스크린샷 (고치기 전 → 고친 뒤)
 
 `tests/validation/screenshots/`
