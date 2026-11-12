@@ -1,21 +1,25 @@
 # 우리 교실 전국용 Windows 설치파일
 
-[전국용 v1.8.12 다운로드](https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/classroom-dashboard-nationwide-setup-1.8.12-x64.exe)
+[전국용 v1.8.13 다운로드](https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/classroom-dashboard-nationwide-setup-1.8.13-x64.exe)
 
 타이머 창에서 **PIP**를 누르면 작은 창을 항상 위에 표시할 수 있습니다. PIP에서 시작·일시정지·계속하기·다시 시작·초기화·완료 확인을 할 수 있고, 창을 닫아도 진행 중인 타이머는 유지됩니다. **시간 설정**을 누르면 본창으로 돌아갑니다.
 
 - 전국용 v1.8.9 이상 사용자는 **설정 → 업데이트**에서 새 버전을 확인하세요.
 - 전국용 v1.8.8 사용자는 앱과 PIP 창을 닫고 위 설치 파일을 기존 폴더에 한 번 설치하세요. 이후 설정 → 업데이트에서 전국용 새 버전만 받습니다.
 - 선택한 학교를 바꿔도 전국용 업데이트 경로는 유지됩니다.
+- 업데이트 전에 **설정 → 백업**을 한 번 해 두시면 안전합니다.
 
 옥구초 전용판은 별도 GitHub Release에서 업데이트됩니다. [옥구초 전용판 다운로드](https://github.com/rlasksk030/class/releases/latest)
 
-이전 v1.8.11은 v1.8.10과 기능이 같은 재배포본입니다.
+## v1.8.13 학교종이 알림장 — 버튼 한 번으로 등록
 
-## v1.8.12 학교종이 자동 등록
+알림장에서 발행 서비스로 **학교종이**를 고르고 **[학교종이 연결하기]** 로 한 번만 연결하세요(앱 창에서 직접 로그인 → 담당 학급페이지의 알림장 → "이 학급에 연결할까요?"에서 [연결하기]). 그다음부터는 알림장을 쓰고 **[학교종이 등록]** 만 누르면 제목·본문·사진이 게시되고 결과까지 확인합니다. 등록하는 동안 학교종이 창은 화면에 나타나지 않습니다.
 
-알림장에서 학교종이를 선택하고 앱 전용 창에 직접 로그인한 뒤 담당 학급 연결을 확인하세요. 대상·내용·사진 확인과 교사 최종 승인 후 한 번 게시하며 서버 원본 대조 후에만 이력 저장과 변경 없는 초안 정리를 합니다.
+- v1.8.12에서 학교종이를 쓰던 학급은 **[학교종이 연결하기]** 로 한 번 더 연결해 주세요. 기존 로그인과 등록 기록은 그대로입니다.
+- 수신대상은 "학교종이 기본 선택" 또는 "직접 선택(보호자1·보호자2·학생)" 중에서 고릅니다. 즉시발행만 사용합니다.
+- 실패하거나 결과가 불확실하면 초안과 사진을 보존하고 자동으로 다시 보내지 않습니다.
+- 하이클래스 사용 방법은 달라지지 않았습니다.
 
-[정식 Release 및 SHA-256](https://github.com/rlasksk030/class/releases/tag/timer-pip-nationwide-v1.8.12) · [검증 범위](v1.8.12-release-validation.json)
+[Release 및 SHA-256](https://github.com/rlasksk030/class/releases/tag/nationwide-v1.8.13) · [검증 범위](v1.8.13-release-validation.json) · [사용 안내](https://github.com/rlasksk030/class/blob/feature/timer-pip-nationwide/%ED%95%99%EA%B5%90%EC%A2%85%EC%9D%B4_%EC%95%8C%EB%A6%BC%EC%9E%A5_%EC%82%AC%EC%9A%A9%EC%95%88%EB%82%B4.md)
 
-이번 버전의 Windows 실행·설치·업데이트·재부팅 검사는 사용자 요청으로 반복하지 않았으며 NOT RUN입니다. 기존 v1.8.11 설치 근거를 새 버전 실행 PASS로 표시하지 않습니다. 새 운영 연결은 로컬 Electron에서 확인했으며 실제 학생·학부모 대상 시험 발송은 하지 않았습니다.
+테스트 학급에서 실제 게시(사진 없음 / 1장 / 2장)를 확인했습니다. 이 버전의 Windows 실행·설치·업데이트 검사는 아직 하지 않았습니다(NOT RUN).

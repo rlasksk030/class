@@ -1,0 +1,48 @@
+{
+  "source": "79ac870c1a5ff81ddcf409fff2f49e879b6e9db4",
+  "mergeCommit": "cac41020ab9c1d8548e13fbb241fa66b4945d7ba",
+  "version": "1.8.13",
+  "appId": "org.school.classroomdashboard",
+  "validationBuild": false,
+  "builtOn": "teacher's Mac, npm run dist:win (electron-builder 26.15.3, Electron 40.10.6)",
+  "updateChannel": {
+    "provider": "generic",
+    "url": "https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/",
+    "channel": "nationwide"
+  },
+  "windowsExecution": "NOT RUN",
+  "artifacts": [
+    {
+      "name": "classroom-dashboard-nationwide-setup-1.8.13-x64.exe",
+      "bytes": 99356260,
+      "sha256": "e19eb00de149409a676cc5568b9fc38bd96664470ff358a958bac8d9d5222249"
+    },
+    {
+      "name": "classroom-dashboard-nationwide-setup-1.8.13-x64.exe.blockmap",
+      "bytes": 104855,
+      "sha256": "2830ef44be1d5ba86972c416a18863fb6aef59c1be8c4521c25a1d5e3817b026"
+    },
+    {
+      "name": "nationwide.yml",
+      "bytes": 399,
+      "sha256": "8825fee0dddcb5f55e3f1cee6c03a2a325fe5e5248212407c592441dcef83568"
+    }
+  ],
+  "checks": {
+    "syntax": "PASS (102/102)",
+    "unit": "PASS (89/89)",
+    "schoolbellE2E": "PASS (73/73, synthetic site; not the live service)",
+    "hiClassE2E": "PASS (unchanged tests; link 16, recipients 38, submit 21, window 11, photos 4)",
+    "otherE2E": "PASS (drafts, layout, multischool, photos, recovery, regression); v182-features and timer-startup stop at the same point on the unmodified base in the Linux container",
+    "liveTestClass": "PASS (teacher's Mac dev app; connect, 0/1/2 photos; 2 photos with the offscreen window)",
+    "liveRecipientsCustomSelection": "NOT RUN (default selection only)",
+    "windowsCurrentVersionExecution": "NOT RUN",
+    "windowsCurrentVersionInstallUpdateReboot": "NOT RUN",
+    "artifactSizeAndFeed": "PASS (installer under 100 MB; nationwide.yml version, path and size match the installer)"
+  },
+  "actionsNewRuns": 0,
+  "additionalCost": 0,
+  "channel": "nationwide",
+  "okguChanged": false,
+  "releaseTag": "nationwide-v1.8.13"
+}
