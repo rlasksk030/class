@@ -2,7 +2,7 @@
 // no renderer errors, no NEIS lookups, the school prompt and the default board layout.
 const path=require('node:path'),fs=require('node:fs'),os=require('node:os'),assert=require('node:assert/strict');
 const {_electron}=require('playwright-core');
-const ROOT=path.resolve(__dirname,'../..'),L=require('../../app/layout-core.js');
+const ROOT=path.resolve(__dirname,'../..'),L=require('../../app/layout-core.js'),Schools=require('../../app/school.js');
 const PROFILE=fs.mkdtempSync(path.join(os.tmpdir(),'class-first-run-'));
 let app,page,count=0;const pageErrors=[];
 const ok=(label,result,detail='')=>{assert.ok(result,label+(detail?' — '+detail:''));console.log('PASS '+label);count++;};
@@ -22,6 +22,12 @@ const neisCalls=async()=>(await app.evaluate(()=>globalThis.fetched)).filter(u=>
  ok('새 프로필: 학교 선택 안내와 NEIS 도우미가 열림',await page.locator('#settingsDialog[open] #neisGuide[open]').count()===1&&await page.locator('#grade').isDisabled());
  ok('학교 선택 전 시간표·급식 칸은 안내만 표시',(await page.innerText('#timetable'))==='설정에서 학교를 선택해 주세요.'&&(await page.innerText('#meal'))==='설정에서 학교를 선택해 주세요.');
  ok('학교 선택 전 NEIS 조회 0회',(await neisCalls()).length===0,JSON.stringify(await neisCalls()));
+ const title=await page.textContent('#classTitle');
+ ok('학교·학년·반 없이 처음 실행: 제목은 "우리 교실"(undefined 없음)',title==='우리 교실'&&!title.includes('undefined'),title);
+ // A school without a class yet (the 옥구초 app always has its school) shows the school name only.
+ await page.evaluate(()=>{settings={...settings,school:{...Schools.legacy},grade:undefined,classroom:undefined};render();});
+ const schoolOnly=await page.textContent('#classTitle');
+ ok('학교만 있고 학년·반이 없으면 학교 이름만 표시',schoolOnly===Schools.legacy.SCHUL_NM&&!schoolOnly.includes('undefined'),schoolOnly);
  ok('기본 배치로 네 칸이 표시되고 배치가 저장됨',await page.evaluate(()=>['timetable','morning','notices','meal'].every(id=>getComputedStyle(document.querySelector('main>.'+id)).display!=='none'))&&L.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('boardLayout'))),L.defaults()));
  ok('첫 실행 동안 페이지 오류 0회',pageErrors.length===0,[...new Set(pageErrors)].join(' | '));
  // Closing the setup dialog without choosing a school and starting again must stay quiet too.
