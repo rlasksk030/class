@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const {readEditorText}=require('./schoolbell-editor-text.cjs');
+const {readEditorText,editorLines}=require('./schoolbell-editor-text.cjs');
 const t=value=>({nodeType:3,textContent:value}),e=(tag,...children)=>({nodeType:1,nodeName:tag,childNodes:children});
 test('observed Froala P/P-BR/P represents exactly two newlines, independent of layout',()=>{
  assert.equal(readEditorText(e('DIV',e('P',t('학교종이 자동 등록 테스트입니다.')),e('P',e('BR')),e('P',t('한글과 줄바꿈 확인입니다.')))),
@@ -17,4 +17,17 @@ test('retains text, empty paragraphs, inline markup, literal HTML and exact whit
 });
 test('unknown/non-text editor content is not silently removed from the comparison',()=>{
  for(const tag of ['IMG','VIDEO','TABLE','OL','LI','SCRIPT'])assert.throws(()=>readEditorText(e('DIV',e(tag))),/content-unverified/);
+});
+// Draft text -> typed lines -> editor DOM -> text again, for both paragraph shapes the editor produces.
+const paragraphs=lines=>e('DIV',...lines.map(line=>e('P',line?t(line):e('BR'))));
+const breaks=lines=>e('DIV',e('P',...lines.flatMap((line,i)=>[...(i?[e('BR')]:[]),...(line?[t(line)]:[])])));
+test('draft text becomes editor lines and reads back the same: Hangul, blank lines, line breaks',()=>{
+ assert.deepEqual(editorLines('준비물: 실내화\r\n\r\n내일 만나요'),['준비물: 실내화','','내일 만나요']);
+ assert.deepEqual(editorLines('한 줄'),['한 줄']);assert.deepEqual(editorLines(''),['']);assert.deepEqual(editorLines(null),['']);
+ assert.deepEqual(editorLines('  들여쓰기 \n\n\n끝\n'),['  들여쓰기 ','','','끝','']);
+ for(const text of ['가나다','첫 줄\n둘째 줄','첫 줄\n\n셋째 줄','한글 English 123 !?\n\n\n  공백  유지','줄\r\n바꿈\r혼합']){
+  const lines=editorLines(text),plain=text.replace(/\r\n?/g,'\n');
+  assert.equal(readEditorText(paragraphs(lines)),plain,text);
+  assert.equal(readEditorText(breaks(lines)),plain,text);
+ }
 });
