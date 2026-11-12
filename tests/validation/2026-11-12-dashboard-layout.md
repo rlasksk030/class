@@ -16,6 +16,8 @@
 | `app/screen-lock.js` | 잠금 중 [배치 편집] 비활성. 편집 중 잠그면 지금까지 배치를 저장하고 종료 |
 | `app/backup-core.js` | `boardLayout`을 백업·복원하고 형식 검증. 배치가 없는 예전 백업·예전 프로필은 그 안의 숨김·크기 설정으로 배치를 만들어 함께 복원 |
 | `app/index.html` | 스크립트 2개, 스타일 1개 추가(인라인 스크립트 없음) |
+| `app/desktop-ui.js`, `app/app.js` (전국판만) | 학교를 고르기 전 새 프로필에서 PIP 상태 계산(`snapshot()`, 120ms마다)이 학교 키를 만들다 `core.js` `schoolKey`에서 오류가 나던 문제 수정. 별도 세션 수정 `66bbc16`을 가져옴. `neis()`도 학교 없이는 조회하지 않음 |
+| `tests/e2e/first-run.e2e.cjs` (전국판, 새) | 새 프로필을 학교 선택 없이 처음 열고 다시 열기: 안내 화면, NEIS 조회 0회, 기본 배치 저장, 페이지 오류 0회 |
 
 ### 결정한 것
 
@@ -32,15 +34,15 @@
 
 | 범위 | 전국판 | 옥구초판 |
 |---|---|---|
-| 구문 `npm run check` | **PASS** 106/106 | **PASS** 78/78 |
-| 단위 `npm test` (layout-core 13개, 백업 4개 추가) | **PASS** 106/106 | **PASS** 67/67 |
+| 구문 `npm run check` | **PASS** 107/107 | **PASS** 78/78 |
+| 단위 `npm test` (layout-core 13개, 백업 4개 추가, 전국판 PIP 학교 미설정 1개 추가) | **PASS** 107/107 | **PASS** 67/67 |
 | 배치 편집 E2E `dashboard-layout.e2e.cjs` | **PASS** 55/55 | **PASS** 55/55 |
 | 기존 E2E, 수정 없이 실행 | **PASS** board-titles 24, v182-features 43, hiclass-link 16, recovery 17, diary-drafts 17, hiclass-recipients 38, hiclass-submit 21, timer-startup 21, diary-layout 15, hiclass-window 11, photos 22, hiclass-photos 4, photo-boundaries 6, photo-transfer 5 | **PASS** (같은 14개, 같은 개수) |
 | 기존 E2E, [크기 조절] → [배치 편집]으로 바꿔 실행 | **PASS** regression 36/36, timetable-layout 8/8 | **PASS** regression 36/36, timetable-layout 8/8 |
-| 판 고유 E2E | **PASS** multischool 7/7, schoolbell 73/73(합성 사이트) | 해당 없음 |
+| 판 고유 E2E | **PASS** multischool 10/10(학교 미설정 검사 3개 추가), schoolbell 73/73(합성 사이트), first-run 6/6(새 파일) | 해당 없음 |
 | migration-v178 | **NOT RUN** — v1.7.8 원본 앱(`CLASSROOM_V178_APP`) 필요. 기대값만 새 방식으로 바꿈 | **NOT RUN** |
 | 업데이트 채널 | 소스 `update-config.json`·`electron-builder.json` 변경 없음(diff 0), `update-channel.test` PASS. 설치 파일 속 `update-config.json`·`app-update.yml` = generic `downloads/nationwide`, channel `nationwide` **PASS** | 소스 변경 없음(diff 0). 설치 파일 속 `update-config.json`·`app-update.yml` = github `rlasksk030/class` **PASS** |
-| 빌드 1.8.14 (이 Mac, `npm run dist:win`) | **PASS** `classroom-dashboard-nationwide-setup-1.8.14-x64.exe` 99,367,638바이트, SHA-256 `b45119a01ce1b58d6376095f30d2fd2f9202db15f15abab2a3d20f3d019f5af8`, app.asar 101/101 소스 일치. 소스 `3185a0d` | **PASS** `classroom-dashboard-setup-1.8.14.exe` 99,324,282바이트, SHA-256 `6fafd50f640a82d1ccdca0b0af89c08c4f2a837d312bcaa3aba141ce13bd0d0c`, app.asar 80/80 소스 일치. 소스 `2dfcfa4` |
+| 빌드 1.8.14 (이 Mac, `npm run dist:win`) | **PASS** `classroom-dashboard-nationwide-setup-1.8.14-x64.exe` 99,368,071바이트, SHA-256 `c752da72b3ff166e4455ed9b5612039482b15e8a69d39840107b07bf82e34edc`, app.asar 101/101 소스 일치. 소스 `9752dd5` | **PASS** `classroom-dashboard-setup-1.8.14.exe` 99,324,284바이트, SHA-256 `fb08960d2017b04627a4702cfd528b6132134e2e393c72318948a439617f7b49`, app.asar 80/80 소스 일치. 소스 `27ecbfb` |
 | 배포 | **NOT RUN** — 승인 후 `downloads/nationwide`, 태그 `nationwide-v1.8.14`(Latest 아님) | **NOT RUN** — 승인 후 태그 `v1.8.14` Release(Latest) |
 | Windows 설치·업데이트·실행 | **NOT RUN** | **NOT RUN** |
 
@@ -61,7 +63,7 @@
 
 기존 regression이 실제 결함 하나를 잡았다. 편집 모드의 크기 손잡이가 오른쪽 칸 밖으로 8px 나와 제목 최소 폭이 풀렸다(급식 245 → 211px). 칸 자체의 경계로 판단하도록 고쳤고, 배치 편집 E2E에 "편집 모드 진입 시 칸 크기 불변" 검사를 넣었다.
 
-참고(이번 변경과 무관, 수정하지 않음): 전국판을 학교를 고르지 않은 새 프로필로 처음 열면 `core.js`의 `schoolKey`가 `null` 학교로 오류를 반복해서 낸다. 수정 전 v1.8.13(`b9968d8`)에서도 같다. 그래서 배치 편집 E2E는 학급 설정 이후의 페이지 오류만 센다.
+전국판 새 프로필 첫 실행 오류: 학교를 고르지 않은 새 프로필로 처음 열면 `core.js`의 `schoolKey`가 `null` 학교로 오류를 초당 약 12회 냈다(v1.8.13에도 있던 문제, 원인은 `desktop-ui.js`의 PIP `snapshot()`). 1.8.14 전국판에서 고쳤다. `first-run.e2e.cjs`는 수정 직전 `a110851`에서 "페이지 오류 0회"로 실패하고 수정 후 통과한다. 배치 편집 E2E도 이제 첫 화면부터 페이지 오류를 센다(두 판 모두 0회).
 
 스크린샷(1440×960): `screenshots/dashboard-layout-default.jpg`(기본 배치), `dashboard-layout-edit.jpg`(편집 모드), `dashboard-layout-meal-hidden-wide.jpg`(급식 숨기고 넓힌 화면). 각 판 브랜치에 그 판 화면을 넣었다.
 
