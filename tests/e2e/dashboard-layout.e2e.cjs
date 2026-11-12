@@ -55,9 +55,6 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
  await page.evaluate(()=>{localStorage.setItem('settings',JSON.stringify({grade:'6',classroom:'1'}));localStorage.setItem('dashboardLocked','false');
   localStorage.setItem('morningDefault',JSON.stringify(['독서 기록장에 어제 읽은 책의 줄거리와 느낀 점을 세 줄 이상 쓰기','수학 익힘책 34쪽부터 36쪽까지 풀고 틀린 문제는 다시 확인하기','오늘의 한 문장을 공책에 바르게 따라 쓰고 소리 내어 읽기','알림장을 확인하고 가방 속 준비물과 숙제를 정리하기','교실 뒤 게시판의 모둠 역할표를 보고 오늘 맡은 일 확인하기','우유 당번은 1교시 전에 우유를 가져와 나누어 주기'].map((t,i)=>`${i+1}. ${t}`).join('\n')));});
  await reload();
- // A fresh nationwide profile with no school chosen throws in core.js schoolKey (same on v1.8.13
- // without this change); count page errors only once the class is set up.
- errors.length=0;
 
  // ---------- Default board ----------
  ok('기본 배치 = 시간표 1-3열 · 아침활동/안내사항 4-10열(4:2행) · 급식 11-12열',L.equal(await current(),L.defaults())&&L.equal(await saved(),L.defaults()));
