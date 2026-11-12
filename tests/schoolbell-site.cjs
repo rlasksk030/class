@@ -76,8 +76,12 @@ const html = String.raw`<!doctype html><html lang="ko"><head><meta charset="utf-
    const roles={administrator:true,guardian1:true,guardian2:true,student:config.studentOffByDefault?false:true},uploaded=[];
    const paintLabel=()=>{label.textContent=Object.keys(NAMES).filter(k=>roles[k]).map(k=>NAMES[k]).join(', ');};
    setTimeout(paintLabel,250);
-   title.oninput=()=>{send.disabled=!title.value.trim();};
-   if(config.existingDraft){title.value='작성 중이던 글';send.disabled=false;}
+   // As on the service: a new notice starts with today's date as its title, and 보내기 stays
+   // disabled until both the title and the body are filled.
+   title.value='2026년 11월 12일 목요일';
+   if(config.existingDraft)body.innerHTML='<p>쓰다 만 글</p>';
+   const validate=()=>{send.disabled=!(title.value.trim()&&body.textContent.trim());};
+   title.oninput=validate;body.addEventListener('input',validate);validate();
    // Loading cover: removed by an animation, as on the service.
    const cover=el('<div class="ng-busy-backdrop"></div>');document.body.append(cover);setTimeout(()=>fade(cover,1,0,()=>cover.remove()),300);
    if(config.restoreDialog)setTimeout(()=>{const d=el('<mat-dialog-container><p>임시저장된 글이 있습니다. 불러오시겠습니까?</p><button>취소</button><button>확인</button></mat-dialog-container>');document.body.append(d);fade(d,0,1);},350);

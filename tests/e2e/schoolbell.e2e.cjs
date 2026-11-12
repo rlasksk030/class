@@ -102,7 +102,7 @@ const watched=()=>main(()=>{clearInterval(globalThis.sampler);return globalThis.
  await write('사진 없는 알림장','첫 줄 한글\n\n  들여쓴 셋째 줄\n넷째 줄');
  await watch();
  let message=await register(),server=await sb(),seen=await watched();
- ok('사진 0장: 등록 성공',/학교종이 등록 완료 · 새 초안/.test(message)&&server.publishes===1&&server.posts[0].title==='사진 없는 알림장',message);
+ ok('사진 0장: 등록 성공 (날짜가 미리 채워진 제목을 내 제목으로 교체)',/학교종이 등록 완료 · 새 초안/.test(message)&&server.publishes===1&&server.posts[0].title==='사진 없는 알림장',message);
  ok('본문 한글·빈 줄·공백 그대로 입력',server.posts[0].html==='<p>첫 줄 한글<br><br>&nbsp; 들여쓴 셋째 줄<br>넷째 줄</p>'||server.posts[0].html==='<p>첫 줄 한글<br><br>  들여쓴 셋째 줄<br>넷째 줄</p>',server.posts[0].html);
  ok('보내기는 trusted 클릭 한 번',server.clicks.length===1&&server.clicks[0].trusted===true,JSON.stringify(server.clicks));
  ok('등록 중 학교종이 창은 보이지도 포커스를 갖지도 않음',seen.length===0&&(await windows()).length===0,JSON.stringify(seen.slice(0,5)));
@@ -130,7 +130,7 @@ const watched=()=>main(()=>{clearInterval(globalThis.sampler);return globalThis.
  await write('진행 표시가 늘 있는 화면','빈 작성 화면에도 진행 표시 요소가 있음');await addPhotos(1,110);
  message=await register();
  const info=JSON.parse(fs.readFileSync(path.join(PROFILE,'schoolbell-last-run.json'),'utf8')).info;
- ok('빈 작성 화면의 진행 표시 요소는 작성 중인 글로 보지 않음',/학교종이 등록 완료/.test(message)&&(await sb()).posts[0].files.join()==='사진01.png'&&info.blank.progressBar===true&&info.blank.title===0&&info.attached.rows===1,message+JSON.stringify(info));
+ ok('빈 작성 화면의 진행 표시 요소는 작성 중인 글로 보지 않음',/학교종이 등록 완료/.test(message)&&(await sb()).posts[0].files.join()==='사진01.png'&&info.blank.progressBar===true&&info.blank.body===0&&info.blank.rows===0&&info.attached.rows===1,message+JSON.stringify(info));
  await config({});
 
  // ----- edits made during a registration are kept -----
@@ -159,10 +159,12 @@ const watched=()=>main(()=>{clearInterval(globalThis.sampler);return globalThis.
  const missing=JSON.parse(fs.readFileSync(path.join(PROFILE,'schoolbell-last-run.json'),'utf8'));
  ok('못 찾은 요소 이름을 기록',missing.code==='structure'&&missing.detail==='composer:title-0',JSON.stringify(missing));
  await stopped('작성하기 버튼 없음: 중단',{noWriteButton:true},/학교종이 화면이 바뀌어 등록하지 못했습니다/);
- await stopped('학교종이에 작성 중인 글: 덮어쓰지 않고 중단',{existingDraft:true},/작성 중인 글이 있어 등록하지 않았습니다/);
+ await stopped('학교종이에 쓰다 만 본문: 덮어쓰지 않고 중단',{existingDraft:true},/작성 중인 글이 있어 등록하지 않았습니다/);
+ const leftover=JSON.parse(fs.readFileSync(path.join(PROFILE,'schoolbell-last-run.json'),'utf8'));
+ ok('자동으로 채워진 날짜 제목은 작성 중인 글이 아님 (본문이 사유)',leftover.detail.reason==='body'&&leftover.detail.title>0&&leftover.detail.body>0,JSON.stringify(leftover.detail));
  await stopped('임시저장 복원 안내창: 중단',{restoreDialog:true},/안내창이 열려 있어 등록하지 않았습니다/);
  const why=JSON.parse(fs.readFileSync(path.join(PROFILE,'schoolbell-last-run.json'),'utf8'));
- ok('중단 사유를 내용 없이 기록',why.code==='composer-dialog'&&why.detail.reason==='dialog'&&why.detail.dialogs.join()==='mat-dialog-container'&&why.detail.title===0&&why.detail.body===0,JSON.stringify(why));
+ ok('중단 사유를 내용 없이 기록',why.code==='composer-dialog'&&why.detail.reason==='dialog'&&why.detail.dialogs.join()==='mat-dialog-container'&&why.detail.body===0&&why.detail.rows===0,JSON.stringify(why));
  await addPhotos(1,150);
  await stopped('사진 업로드 실패: 중단, 사진 보존',{uploadFail:true},/사진 업로드를 확인하지 못해 등록하지 않았습니다/,1);
  await page.click('#diaryPhotos button[aria-label="사진 1 삭제"]');

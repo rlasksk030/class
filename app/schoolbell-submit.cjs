@@ -91,10 +91,11 @@ async function publish({w,cdp,link,note,files,recipients=null,onStep=()=>{},onIn
   },t.settle,250);
   if(!snapshot)throw Object.assign(stop(readError?.code||'structure'),{detail:readError?.detail});
   onInfo('blank',snapshot.probe);
-  // Something is already there (text, files or an open notice such as "restore a saved draft"):
-  // never type over it. The reason is recorded as a fixed word with counts only.
-  const occupied=snapshot.dialogs?'dialog':snapshot.title!==''?'title':!['','\n'].includes(snapshot.body)?'body':
-   snapshot.files.names.length?'files':null;
+  // Something is already there (body text, files or an open notice such as "restore a saved
+  // draft"): never type over it. The reason is recorded as a fixed word with counts only.
+  // The title is not part of this: the service fills the title of every new notice with today's
+  // date (seen on the real composer), and the teacher's title simply replaces it.
+  const occupied=snapshot.dialogs?'dialog':!['','\n'].includes(snapshot.body)?'body':snapshot.files.names.length?'files':null;
   if(occupied)throw Object.assign(stop(occupied==='dialog'?'composer-dialog':'draft-exists'),{detail:{reason:occupied,...snapshot.probe}});
   if(!snapshot.label)throw stop('recipients');
   // An upload/progress element that is already on the empty composer is part of the page,
