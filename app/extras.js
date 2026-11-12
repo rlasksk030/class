@@ -18,7 +18,8 @@
  const ddayBadge=make('div',{id:'ddayBadge'},dateLine);
  const timerBanner=make('div',{id:'timerFinished',hidden:true},document.body);timerBanner.setAttribute('role','alert');make('strong',{textContent:'시간이 다 되었습니다!'},timerBanner);const acknowledge=make('button',{textContent:'확인'},timerBanner);acknowledge.onclick=()=>dismissTimer();
 
- // Board visibility keeps the grid slot reserved so other cards never move.
+ // Board visibility for the four grid boards lives in the saved layout (layout-ui.js): a hidden
+ // board leaves an empty slot other boards can use. Only the weather card's flag stays here.
  let preferences=read('boardPreferences',{});
  if(!preferences||typeof preferences!=='object'||Array.isArray(preferences))preferences={};
  window.boardFontScales={};
@@ -26,19 +27,29 @@
  const weatherBox=card('weather').getBoundingClientRect();
  card('weather').style.setProperty('--weather-font-width',weatherBox.width+'px');
  card('weather').style.setProperty('--weather-font-height',weatherBox.height+'px');
+ const layoutBoard=id=>id!=='weather';
  function applyPreferences(){
-  ids.forEach(id=>{card(id).classList.toggle('board-concealed',!preferences[id].visible);card(id).setAttribute('aria-hidden',String(!preferences[id].visible));window.boardFontScales[id]=preferences[id].scale;});
+  const weatherShown=preferences.weather.visible;
+  card('weather').classList.toggle('board-concealed',!weatherShown);card('weather').setAttribute('aria-hidden',String(!weatherShown));
+  ids.forEach(id=>{window.boardFontScales[id]=preferences[id].scale;});
   card('weather').classList.toggle('weather-font-custom',preferences.weather.scale!==1);
   fitContents();document.dispatchEvent(new Event('board-font-change'));
  }
- const panel=modal('screenDialog','화면 설정',`<p>숨긴 보드의 자리는 유지됩니다. 글씨는 선택한 크기를 기준으로 카드 안에 맞춰집니다.</p><div id="boardPreferences"></div><div class="extras-links"><button id="openPeriodSettings">교시 시간 설정</button><button id="openDdaySettings">D-Day 관리</button></div>`);
- for(const id of ids){const row=make('div',{className:'preference-row'},$('boardPreferences'));const label=make('label',{},row);const check=make('input',{type:'checkbox',checked:preferences[id].visible},label);check.dataset.boardVisible=id;label.append(document.createTextNode(names[id]+' 표시'));const minus=make('button',{textContent:'A−'},row),out=make('output',{textContent:Math.round(preferences[id].scale*100)+'%'},row),plus=make('button',{textContent:'A+'},row);
+ const panel=modal('screenDialog','화면 설정',`<p>숨긴 칸의 자리는 비워지며, [배치 편집]에서 다른 칸으로 채울 수 있습니다. 글씨는 선택한 크기를 기준으로 카드 안에 맞춰집니다.</p><div id="boardPreferences"></div><p id="boardVisibilityStatus" class="extras-message" role="status"></p><div class="extras-links"><button id="openPeriodSettings">교시 시간 설정</button><button id="openDdaySettings">D-Day 관리</button></div>`);
+ for(const id of ids){const row=make('div',{className:'preference-row'},$('boardPreferences'));const label=make('label',{},row);const check=make('input',{type:'checkbox',checked:layoutBoard(id)?window.boardLayout.isVisible(id):preferences[id].visible},label);check.dataset.boardVisible=id;label.append(document.createTextNode(names[id]+' 표시'));const minus=make('button',{textContent:'A−'},row),out=make('output',{textContent:Math.round(preferences[id].scale*100)+'%'},row),plus=make('button',{textContent:'A+'},row);
   minus.setAttribute('aria-label',names[id]+' 글자 작게');plus.setAttribute('aria-label',names[id]+' 글자 크게');
-  check.onchange=()=>{preferences[id].visible=check.checked;put('boardPreferences',preferences);applyPreferences();};
+  check.onchange=()=>{
+   $('boardVisibilityStatus').textContent='';
+   if(!layoutBoard(id)){preferences[id].visible=check.checked;put('boardPreferences',preferences);applyPreferences();return;}
+   const result=window.boardLayout.setVisible(id,check.checked);
+   if(!result.ok){check.checked=!check.checked;$('boardVisibilityStatus').textContent=result.message;}
+  };
   const change=delta=>{preferences[id].scale=Math.max(.5,Math.min(2,Math.round((preferences[id].scale+delta)*10)/10));out.textContent=Math.round(preferences[id].scale*100)+'%';minus.disabled=preferences[id].scale<=.5;plus.disabled=preferences[id].scale>=2;put('boardPreferences',preferences);applyPreferences();};
   minus.onclick=()=>change(-.1);plus.onclick=()=>change(.1);
  }
  panelButton.onclick=()=>panel.showModal();
+ // [배치 편집] can hide or show boards too; keep the checks in step with the layout.
+ document.addEventListener('board-layout-change',()=>{for(const box of panel.querySelectorAll('[data-board-visible]'))if(layoutBoard(box.dataset.boardVisible))box.checked=window.boardLayout.isVisible(box.dataset.boardVisible);});
 
  // Periods are matched to the rendered timetable, which already includes teacher overrides.
  let schedule=read('periodSchedule',[]);if(!X.validSchedule(schedule))schedule=[];
@@ -116,7 +127,7 @@
  const activityTool=createActivityCompletion({read,put});const activityTab=make('button',{id:'activityTab',textContent:'활동완료'},tabs);activityTab.setAttribute('role','tab');activityTab.setAttribute('aria-controls','activityScreen');
  const diaryTool=createClassDiary({read,put});const diaryTab=make('button',{id:'diaryTab',textContent:'알림장'},tabs);diaryTab.setAttribute('role','tab');diaryTab.setAttribute('aria-controls','diaryScreen');
  const allTabs=[dashboardTab,whiteboardTab,randomTab,activityTab,diaryTab];let activeScreen=0;
- function screen(index){activeScreen=index;diaryTool.activate(index===4);document.body.classList.toggle('diary-active',index===4);whiteboardTool.activate(index===1);randomTool.activate(index===2);activityTool.activate(index===3);document.body.classList.toggle('whiteboard-active',index===1);document.body.classList.toggle('random-active',index===2);document.body.classList.toggle('activity-active',index===3);allTabs.forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));b.tabIndex=i===index?0:-1;});for(const el of [document.querySelector('header'),document.querySelector('main'),document.querySelector('footer'),document.querySelector('.size-controls')])el.inert=index!==0;}
+ function screen(index){if(index!==0&&window.boardLayout?.editing())window.boardLayout.finish();activeScreen=index;diaryTool.activate(index===4);document.body.classList.toggle('diary-active',index===4);whiteboardTool.activate(index===1);randomTool.activate(index===2);activityTool.activate(index===3);document.body.classList.toggle('whiteboard-active',index===1);document.body.classList.toggle('random-active',index===2);document.body.classList.toggle('activity-active',index===3);allTabs.forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));b.tabIndex=i===index?0:-1;});for(const el of [document.querySelector('header'),document.querySelector('main'),document.querySelector('footer'),document.querySelector('.size-controls')])el.inert=index!==0;}
  allTabs.forEach((b,i)=>b.onclick=()=>screen(i));tabs.onkeydown=e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();const next=(activeScreen+(e.key==='ArrowRight'?1:allTabs.length-1))%allTabs.length;screen(next);allTabs[next].focus();}};
  dashboardTab.setAttribute('aria-controls','dashboardMain');document.querySelector('main').id='dashboardMain';document.querySelector('main').setAttribute('role','tabpanel');document.querySelector('main').setAttribute('aria-labelledby','dashboardTab');whiteboardTab.setAttribute('aria-controls','whiteboardScreen');
  window.classroomTools={whiteboard:whiteboardTool,random:randomTool,activity:activityTool,screen,schedule:()=>schedule,timer:()=>timer,controlTimer};

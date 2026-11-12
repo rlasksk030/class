@@ -30,6 +30,12 @@
  const doneButton=make('button',{id:'layoutDone',type:'button',className:'primary',textContent:'완료'},actions);
  const message=make('p',{id:'layoutMessage',className:'layout-message'},bar);message.setAttribute('role','status');
  const say=text=>{message.textContent=text||HELP;};
+ // Keep the weather card (and its size handles) uncovered when there is room beside it.
+ function positionBar(){
+  const weather=document.querySelector('header>.weather'),box=weather?.getBoundingClientRect();
+  const room=box&&box.width?box.left-16-12:0;
+  bar.style.maxWidth=room>=460?room+'px':'';
+ }
 
  // Grid lines, empty-slot marks and the drop preview are grid items, so they line up with
  // the real tracks; they are only displayed while editing.
@@ -127,7 +133,7 @@
   document.body.classList.add('layout-editing');bar.hidden=false;toggle.hidden=true;toggle.setAttribute('aria-pressed','true');
   for(const id of L.IDS){cards[id].tabIndex=0;cards[id].setAttribute('aria-roledescription','옮길 수 있는 칸');cards[id].setAttribute('aria-label',names[id]+' 칸');}
   window.weatherSize?.enable(true);
-  say();render();
+  say();render();positionBar();
  }
  function end(commit){
   if(!editing)return;
@@ -260,7 +266,7 @@
  // Boards are re-measured whenever their own size changes (track changes do not resize <main>).
  const observer=new ResizeObserver(fitContents);
  Object.values(cards).forEach(card=>observer.observe(card));
- window.addEventListener('resize',scheduleTitles);
+ window.addEventListener('resize',()=>{scheduleTitles();if(editing)positionBar();});
  // Title text, the title editor and lock state change header widths; watch only the headers so
  // this code's own class and style changes never trigger it again.
  const titleWatcher=new MutationObserver(scheduleTitles);
