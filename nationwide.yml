@@ -1,8 +1,8 @@
-version: 1.8.12
+version: 1.8.13
 files:
-  - url: classroom-dashboard-nationwide-setup-1.8.12-x64.exe
-    sha512: mDS5TFrFsbknYz0eAkEL97AE5hZe1Qc2SXPedh4/lDt3pno2ViyZZGQDyhKSFmByZXsXAA8uB3j+va4xQKqRXw==
-    size: 99404360
-path: classroom-dashboard-nationwide-setup-1.8.12-x64.exe
-sha512: mDS5TFrFsbknYz0eAkEL97AE5hZe1Qc2SXPedh4/lDt3pno2ViyZZGQDyhKSFmByZXsXAA8uB3j+va4xQKqRXw==
-releaseDate: '2026-11-10T14:21:09.871Z'
+  - url: classroom-dashboard-nationwide-setup-1.8.13-x64.exe
+    sha512: +i3IzlgMgU3PyZoc/KBPSBZBBVsEZeqpobOGbRySxQNO/EwqqEoKzMS7/tUDTFXKGVke38mH/9hvVQ7GpuL8gw==
+    size: 99356260
+path: classroom-dashboard-nationwide-setup-1.8.13-x64.exe
+sha512: +i3IzlgMgU3PyZoc/KBPSBZBBVsEZeqpobOGbRySxQNO/EwqqEoKzMS7/tUDTFXKGVke38mH/9hvVQ7GpuL8gw==
+releaseDate: '2026-11-12T10:30:02.770Z'
