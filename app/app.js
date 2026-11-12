@@ -41,7 +41,9 @@ new ResizeObserver(fitContents).observe(document.querySelector('main'));
 document.fonts.ready.then(fitContents);
 function render(){
  fitContents();
- $('classTitle').textContent=settings.school?`${settings.school.SCHUL_NM} ${settings.grade}학년 ${settings.classroom}반`:'우리 교실';
+ // "학교 ○학년 ○반" only when all three are set (the 옥구초 app always has a school, even before
+ // the class is chosen on first run); a school alone shows its name, nothing shows '우리 교실'.
+ $('classTitle').textContent=!settings.school?'우리 교실':settings.grade&&settings.classroom?`${settings.school.SCHUL_NM} ${settings.grade}학년 ${settings.classroom}반`:settings.school.SCHUL_NM;
  $('morning').textContent=morningText||'아침활동을 저장하면 매일 자동으로 표시됩니다.';
  $('notices').textContent=notes[day]?.notices||'';
  for(const kind of ['timetable','meal']){const el=$(kind);el.replaceChildren();if(!settings.school){textLine(el,'설정에서 학교를 선택해 주세요.','empty');continue;}const key=Core.dataKey(settings,day,kind),entry=cache[key],value=Core.display(overrides[key],entry);
