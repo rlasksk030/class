@@ -1,0 +1,4 @@
+3d6e6be0f5bfed38b5425f7201d2dc5faf5de32830d556470e0fded62af581b6  classroom-dashboard-nationwide-setup-1.8.16-x64.exe
+c7e1531278a45c04bd11ac3e40baf9420bc9394cee98aae50c54b5c5d5ed7543  classroom-dashboard-nationwide-setup-1.8.16-x64.exe.blockmap
+0df073b64ab204f7d8e575bdc7d1236f9d14bd8c2065df30da9df7657f5ed248  nationwide.yml
+13d39d7c98f248227e3500258d22d6e9a038e5d331333a6714f03d63d048f5cd  nationwide2.yml

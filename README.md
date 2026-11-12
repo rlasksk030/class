@@ -1,15 +1,27 @@
 # 우리 교실 전국용 Windows 설치파일
 
-[전국용 v1.8.15 다운로드](https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/classroom-dashboard-nationwide-setup-1.8.15-x64.exe)
+[전국용 v1.8.16 다운로드](https://github.com/rlasksk030/class/releases/download/nationwide-v1.8.16/classroom-dashboard-nationwide-setup-1.8.16-x64.exe)
 
 타이머 창에서 **PIP**를 누르면 작은 창을 항상 위에 표시할 수 있습니다. PIP에서 시작·일시정지·계속하기·다시 시작·초기화·완료 확인을 할 수 있고, 창을 닫아도 진행 중인 타이머는 유지됩니다. **시간 설정**을 누르면 본창으로 돌아갑니다.
 
 - 전국용 v1.8.9 이상 사용자는 **설정 → 업데이트**에서 새 버전을 확인하세요.
-- 전국용 v1.8.8 사용자는 앱과 PIP 창을 닫고 위 설치 파일을 기존 폴더에 한 번 설치하세요. 이후 설정 → 업데이트에서 전국용 새 버전만 받습니다.
+- **전국용 v1.8.8을 설치했다면 앱 안 업데이트 대신 이 페이지에서 최신 전국판을 직접 설치하세요.** 앱과 PIP 창을 닫고 위 설치 파일을 기존 폴더에 설치하면 됩니다.
 - 선택한 학교를 바꿔도 전국용 업데이트 경로는 유지됩니다.
 - 업데이트 전에 **설정 → 백업**을 한 번 해 두시면 안전합니다.
 
 옥구초 전용판은 별도 GitHub Release에서 업데이트됩니다. [옥구초 전용판 다운로드](https://github.com/rlasksk030/class/releases/latest)
+
+## v1.8.16 업데이트 경로 정리 (기능은 v1.8.15와 같음)
+
+전국판 설치 파일을 이제 **GitHub Release 첨부 파일**로 받습니다. 화면과 기능은 바뀌지 않았습니다.
+
+- v1.8.9~v1.8.15는 **설정 → 업데이트**에서 v1.8.16을 받습니다. 다음 버전부터는 v1.8.16이 Release에서 새 버전을 받습니다.
+- 오래 업데이트하지 않았어도 v1.8.16을 한 번 거치면 최신 버전까지 이어서 받을 수 있습니다.
+- 예전 버전의 설치 파일과 링크는 그대로 둡니다.
+
+[Release 및 SHA-256](https://github.com/rlasksk030/class/releases/tag/nationwide-v1.8.16) · [검증 범위](v1.8.16-release-validation.json) · [배포 절차](https://github.com/rlasksk030/class/blob/feature/timer-pip-nationwide/docs/%EC%A0%84%EA%B5%AD%ED%8C%90_%EB%B0%B0%ED%8F%AC_%EC%A0%88%EC%B0%A8.md)
+
+이 버전의 Windows 실행·설치·업데이트 검사는 아직 하지 않았습니다(NOT RUN).
 
 ## v1.8.15 배치 편집 화면 다듬기
 

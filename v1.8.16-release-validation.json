@@ -1,0 +1,44 @@
+{
+  "source": "f3e446c204c493334830cd35fe180b51bcc8de72",
+  "base": "942af9e07cb7",
+  "branch": "feature/nationwide-release-assets",
+  "version": "1.8.16",
+  "edition": "nationwide",
+  "role": "bridge: last installer committed to downloads/nationwide; nationwide.yml is frozen at this version",
+  "appId": "org.school.classroomdashboard",
+  "validationBuild": false,
+  "builtOn": "teacher's Mac, npm run dist:win (electron-builder 26.15.3, Electron 40.10.6) + scripts/make-nationwide-feeds.cjs",
+  "updateChannel": {
+    "provider": "generic",
+    "url": "https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/",
+    "channel": "nationwide2"
+  },
+  "feeds": {
+    "nationwide.yml": "v1.8.9–v1.8.15; url/path = classroom-dashboard-nationwide-setup-1.8.16-x64.exe",
+    "nationwide2.yml": "v1.8.16 and later; url/path = https://github.com/rlasksk030/class/releases/download/nationwide-v1.8.16/classroom-dashboard-nationwide-setup-1.8.16-x64.exe"
+  },
+  "artifacts": [
+    {"name": "classroom-dashboard-nationwide-setup-1.8.16-x64.exe", "bytes": 99370331, "sha256": "3d6e6be0f5bfed38b5425f7201d2dc5faf5de32830d556470e0fded62af581b6", "sha512": "755b5FBOzG46iA3ThzBRhaRWwIpPxnbcy52aUdJo4z0YcQ5NVzBhWg4E0Wm5BlhGNxyOOUWCV8O74Hnk+OtLNg=="},
+    {"name": "classroom-dashboard-nationwide-setup-1.8.16-x64.exe.blockmap", "bytes": 104886, "sha256": "c7e1531278a45c04bd11ac3e40baf9420bc9394cee98aae50c54b5c5d5ed7543"},
+    {"name": "nationwide.yml", "bytes": 399, "sha256": "0df073b64ab204f7d8e575bdc7d1236f9d14bd8c2065df30da9df7657f5ed248"},
+    {"name": "nationwide2.yml", "bytes": 545, "sha256": "13d39d7c98f248227e3500258d22d6e9a038e5d331333a6714f03d63d048f5cd"}
+  ],
+  "checks": {
+    "syntax": "PASS (112/112)",
+    "unit": "PASS (115/115; feed rule and feed generator included)",
+    "updateFeedsMock": "PASS (9/9; bundled electron-updater against a local HTTPS server for raw.githubusercontent.com, github.com and the Release asset host; 1.8.15 -> 1.8.16 by file name, 1.8.16 current on nationwide2.yml, 1.8.16 -> 1.8.17 via Release URL and redirect, sha512 verified)",
+    "existingE2E": "PASS (board-titles 24, v182-features 43, regression 36, hiclass-link 16, recovery 17, timetable-layout 8, diary-drafts 17, hiclass-recipients 38, hiclass-submit 21, timer-startup 21, diary-layout 15, hiclass-window 11, photos 22, hiclass-photos 4, photo-boundaries 6, photo-transfer 5, multischool 10, schoolbell 73 synthetic site, dashboard-layout 71, first-run 8)",
+    "migrationV178": "NOT RUN (needs the v1.7.8 app)",
+    "installerUnder100MiB": "PASS (99,370,331 bytes = 94.77 MiB < 104,857,600)",
+    "packagedUpdateChannel": "PASS (installer -> app-64.7z -> app.asar update-config.json and resources/app-update.yml: generic, downloads/nationwide, channel nationwide2)",
+    "packagedFilesMatchSource": "PASS (103/103 files in app.asar identical to app/ at the source commit)",
+    "feedsMatch": "PASS (nationwide.yml and nationwide2.yml: same version, sha512, size and releaseDate, equal to the installer; only url/path differ)",
+    "windowsExecution": "NOT RUN",
+    "windowsInstallUpdateReboot": "NOT RUN"
+  },
+  "testedOn": "macOS (Apple Silicon), Electron 40.10.6, isolated profiles, offline NEIS/weather",
+  "actionsNewRuns": 0,
+  "additionalCost": 0,
+  "releaseTag": "nationwide-v1.8.16",
+  "releaseLatest": false
+}
