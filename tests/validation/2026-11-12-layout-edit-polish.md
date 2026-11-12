@@ -44,6 +44,21 @@
 - 크기 손잡이·도구 막대 버튼의 잡는 영역 44×44 이상, 버튼 글씨 16px 이상
 - 그 밖에 안내 한 줄, 옮기기 표시, [?] 안내, 급식을 숨긴 상태, 1100에서 네 칸 나란히(가장 좁은 칸)
 
+## 빌드 1.8.15 (이 Mac, `npm run dist:win`)
+
+`app/package.json`만 1.8.14에서 1.8.15로 바꿨다(소스 `c1024a7`).
+
+| 항목 | 결과 |
+|---|---|
+| 1.8.15에서 다시 실행 | PASS: `check` 107/107, `npm test` 107/107, 버전을 읽는 E2E(v182-features 43/43, 배치 편집 71/71, 첫 실행 8/8) |
+| 설치 파일 | PASS: `classroom-dashboard-nationwide-setup-1.8.15-x64.exe` 99,369,330바이트, SHA-256 `1d080905d6c0b920ca5091b15d91e0629b5446226bfaf916e3e50d1b1dd1a63d` |
+| blockmap | `classroom-dashboard-nationwide-setup-1.8.15-x64.exe.blockmap` SHA-256 `ca4c56e22879fc4a00c36aa923671d77eedc4720b8c89188f728f197235abfcd` |
+| 업데이트 피드 | `nationwide.yml` SHA-256 `4db24f92f7d3638c13bca53287801d9dbaac054d8f422aab8aa8d2c7b23c89b8`. version 1.8.15, sha512·크기가 설치 파일과 일치 |
+| 설치 파일 속 업데이트 채널 | PASS: `update-config.json`(소스와 같음)과 `app-update.yml` 모두 generic `https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/`, channel `nationwide` |
+| 설치 파일 속 앱 | PASS: 버전 1.8.15, `app.asar` 파일 101/101 소스 `app/`와 같음 |
+| 배포 | 미실행(승인 대기). 할 일: `downloads/nationwide`(설치 파일·blockmap·`nationwide.yml`·README) → 태그 `nationwide-v1.8.15` → Latest가 아닌 Release |
+| Windows 설치·업데이트·실행 | 미실행 |
+
 ## 스크린샷 (고치기 전 → 고친 뒤)
 
 `tests/validation/screenshots/`
