@@ -112,6 +112,20 @@ test('main renderer publishes the same timer to both PIPs and routes expand to t
  onCommand({type:'expand',kind:'dashboard'});assert.deepEqual(screenCalls,[0]);
 });
 
+test('main renderer publishes PIP state before a nationwide school is selected',()=>{
+ const forms=new Element(),actions=Object.assign(new Element(),{className:'actions'});forms.append(actions);
+ const targets=Object.fromEntries(['header nav','.random-heading','.whiteboard-toolbar','.activity-heading','#timerDialog .extras-heading'].map(q=>[q,new Element()]));
+ const document={createElement:t=>new Element(t),createTextNode:s=>s,querySelector:q=>targets[q]};
+ const published=[];let keyCalls=0;
+ const tools={schedule:()=>[{period:'1',start:'09:00',end:'09:40'}],timer:()=>X.timerAction({},'preset',0,60000),activity:{snapshot:()=>({})},random:{snapshot:()=>({})},whiteboard:{snapshot:()=>({})}};
+ const window={classroomTools:tools,desktop:{settings:async()=>({startupEnabled:false}),openPip:async()=>{},publishPip:s=>published.push(s),onPipCommand(){}}};
+ // Core.schoolKey reads school codes, so a missing school must never reach it.
+ const Core={dataKey:s=>{keyCalls++;return s.school.ATPT_OFCDC_SC_CODE;},display:()=>[]};
+ vm.runInNewContext(source('desktop-ui.js'),{document,window,$:()=>forms,settings:{school:null},read:()=>({}),put(){},overrides:{},cache:{},day:'2026-11-05',Core,ExtrasCore:X,ClassRoster:{key:()=>''},setInterval(){},Intl,Date});
+ assert.equal(keyCalls,0);assert.equal(published.length,1);
+ assert.equal(published[0].dashboard.scheduleSet,false);assert.equal(published[0].dashboard.current,null);assert.equal(published[0].timer.seconds,60);
+});
+
 test('timer bounds recover from removed monitors and clamp to the available work area',()=>{
  const {safeBounds}=require('./window-bounds.cjs'),area={x:0,y:0,width:800,height:600};
  const b=safeBounds({x:5000,y:2000,width:900,height:700},[area],area,'timer');

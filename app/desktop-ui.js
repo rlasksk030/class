@@ -20,7 +20,9 @@
  const tools=window.classroomTools;
  function snapshot(){
   const now=new Date(),time=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(now),minutes=ExtrasCore.minute(time);
-  const lessons=Core.display(overrides[Core.dataKey(settings,day,'timetable')],cache[Core.dataKey(settings,day,'timetable')])||[];
+  // A new nationwide install has no school yet; there is no timetable key to look up.
+  const key=settings.school?Core.dataKey(settings,day,'timetable'):null;
+  const lessons=key?Core.display(overrides[key],cache[key])||[]:[];
   const rows=tools.schedule().filter(r=>lessons.some(l=>String(l.period)===String(r.period)));
   const current=rows.find(r=>ExtrasCore.minute(r.start)<=minutes&&minutes<ExtrasCore.minute(r.end));
   const next=rows.find(r=>ExtrasCore.minute(r.start)>minutes);

@@ -18,6 +18,7 @@ put('morningDefault',morningText);
 const errors={};
 const request=url=>window.desktop?window.desktop.fetch(url):fetch(url,{signal:AbortSignal.timeout(15000)}).then(r=>{if(!r.ok)throw Error('연결 실패');return r.json();});
 async function neis(endpoint,params,s=settings){
+ if(!s?.school)throw Error('설정에서 학교를 선택해 주세요.');
  const get=async extra=>{const url=new URL('https://open.neis.go.kr/hub/'+endpoint);url.search=new URLSearchParams({Type:'json',pIndex:'1',pSize:'1000',...params,...extra,ATPT_OFCDC_SC_CODE:s.school.ATPT_OFCDC_SC_CODE,SD_SCHUL_CODE:s.school.SD_SCHUL_CODE});const json=await request(url.href);return {data:Core.schoolRows(json,endpoint,s.school),total:json[endpoint]?.find(x=>x.head)?.head?.find(x=>x.list_total_count!==undefined)?.list_total_count||0};};
  const first=await get({});
  if(endpoint==='classInfo'&&first.total>first.data.length)throw Error('학급 목록 일부만 조회되었습니다');
