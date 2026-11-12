@@ -66,7 +66,7 @@ const html = String.raw`<!doctype html><html lang="ko"><head><meta charset="utf-
     '<input placeholder="'+(config.changedStructure?'제목':'제목을 입력해 주세요.')+'">'+
     '<div class="fr-box"><div class="fr-element fr-view" contenteditable="true"><p><br></p></div></div>'+
     '<input type="file" multiple accept=".jpg,.jpeg,.png,.heic">'+
-    '<app-letter-write-file-list></app-letter-write-file-list>'+
+    '<app-letter-write-file-list></app-letter-write-file-list>'+(config.idleProgress?'<app-progress-bar></app-progress-bar>':'')+
     '<button id="save">임시저장</button>'+
     '<div class="btn-group"><button id="send" class="btn-with-description" disabled>보내기 <small>즉시발행</small></button><button id="toggle" aria-label="드롭다운 토글">▾</button></div>'+
     '<app-mobile-preview style="display:none"></app-mobile-preview></app-boards-write>');

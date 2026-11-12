@@ -83,12 +83,13 @@ function page(action,arg,readText){
 
  // ----- composer -----
  const composer=()=>{
-  const roots=document.querySelectorAll('app-boards-write');if(roots.length!==1)fail('structure');
-  const root=roots[0],one=s=>{const n=root.querySelectorAll(s);if(n.length!==1)fail('structure');return n[0];};
+  // The suffix names the control that was not found exactly once; it is a fixed word, never page text.
+  const roots=document.querySelectorAll('app-boards-write');if(roots.length!==1)fail('structure:composer-'+roots.length);
+  const root=roots[0],one=(s,name)=>{const n=root.querySelectorAll(s);if(n.length!==1)fail('structure:'+name+'-'+n.length);return n[0];};
   const sends=[...root.querySelectorAll('button.btn-with-description')].filter(b=>compact(b).startsWith('보내기'));
-  if(sends.length!==1)fail('structure');
-  return {root,title:one('input[placeholder="제목을 입력해 주세요."]'),body:one('div.fr-element.fr-view[contenteditable="true"]'),
-   file:one('input[type="file"]'),label:one('app-letter-simplified-target-text'),send:sends[0]};
+  if(sends.length!==1)fail('structure:send-'+sends.length);
+  return {root,title:one('input[placeholder="제목을 입력해 주세요."]','title'),body:one('div.fr-element.fr-view[contenteditable="true"]','body'),
+   file:one('input[type="file"]','file'),label:one('app-letter-simplified-target-text','label'),send:sends[0]};
  };
  // Uploaded files shown in the composer. The size label next to a name is not part of the name.
  const attachments=root=>{
@@ -116,7 +117,11 @@ function page(action,arg,readText){
   const files=attachments(c.root),m=mode();
   return {title:c.title.value,body:bodyText(c),files:{known:files.known,uploading:files.uploading,names:files.names},
    label:text(c.label),sendEnabled:usable(c.send),sendHit:!!point(c.send),dialogs:dialogs().length,
-   mode:m.known?(m.immediate?'immediate':'scheduled'):'unknown'};
+   mode:m.known?(m.immediate?'immediate':'scheduled'):'unknown',
+   // Lengths, counts and element names only (never text): tells why a composer is not blank.
+   probe:{title:c.title.value.length,body:bodyText(c)===null?-1:bodyText(c).length,rows:files.names.length,
+    uploadList:!!document.querySelector('app-file-upload-list'),progressBar:!!document.querySelector('app-progress-bar'),
+    dialogs:dialogs().map(d=>d.localName+(d.querySelector('app-select-letter-targets')?'+targets':'')).slice(0,4)}};
  };
  if(action==='composer')return snapshot(composer());
 
@@ -259,7 +264,7 @@ function page(action,arg,readText){
  if(action==='arm-send'){
   // Last comparison in the same task as arming: content, files, recipient label, mode and overlays.
   const c=composer(),now=snapshot(c);
-  if(now.title!==arg.title||now.body!==arg.body||!now.files.known||now.files.uploading||
+  if(now.title!==arg.title||now.body!==arg.body||!now.files.known||(now.files.uploading&&!arg.idleIndicator)||
      JSON.stringify(now.files.names)!==JSON.stringify(arg.names)||now.label!==arg.label)fail('changed');
   if(now.dialogs||now.mode==='scheduled')fail('changed');
   if(!now.sendEnabled)return {ready:false};
@@ -288,6 +293,7 @@ function page(action,arg,readText){
 }
 
 // Fixed codes only cross back to the main process; page text never appears in an error.
+// "code:word-2" carries a fixed detail word (which control, how many were found).
 const CODES=['structure','changed','upload','mode','recipients','dialog','action'];
 async function run(wc,action,arg={}){
  if(!wc||wc.isDestroyed())throw Object.assign(Error('closed'),{code:'closed'});
@@ -295,8 +301,9 @@ async function run(wc,action,arg={}){
   'catch(e){return {ok:false,code:String(e&&e.message)};}})()';
  const result=await wc.executeJavaScriptInIsolatedWorld(WORLD,[{code}]);
  if(result?.ok===true)return result.value;
- const known=CODES.includes(result?.code)?result.code:'structure';
- throw Object.assign(Error(known),{code:known});
+ const [base,detail='']=String(result?.code||'').split(':');
+ const known=CODES.includes(base)?base:'structure';
+ throw Object.assign(Error(known),{code:known,detail:/^[a-z0-9-]{1,32}$/.test(detail)?action+':'+detail:action});
 }
 const inspect=wc=>run(wc,'inspect');
 module.exports={WORLD,page,run,inspect,CODES};

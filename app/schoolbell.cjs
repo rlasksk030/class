@@ -186,6 +186,10 @@ module.exports=function setup(main){
 
  // ----- registration -----
  // Fixed codes and timings only: never the title, body, names, addresses or cookies.
+ // Details are a fixed word or counts/booleans/element names; anything else is dropped.
+ const safe=v=>typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[a-z0-9:+-]{1,48}$/.test(v));
+ const clean=v=>safe(v)?v:(v&&typeof v==='object'&&!Array.isArray(v))?
+  Object.fromEntries(Object.entries(v).filter(([,x])=>safe(x)||(Array.isArray(x)&&x.every(safe))).slice(0,12)):null;
  async function writeTrace(trace){
   try{await fs.writeFile(path.join(profile.dir,'schoolbell-last-run.json'),JSON.stringify(trace,null,1),{mode:0o600});}catch{}
  }
@@ -216,6 +220,7 @@ module.exports=function setup(main){
    // Offline tests shorten the waits; the packaged app never sets this profile variable.
    const timeouts=process.env.CLASSROOM_TEST_PROFILE?globalThis.schoolbellTestTimeouts:undefined;
    const result=await windows.bounded(()=>submit.publish({w:worker,cdp,link,note,files,timeouts,recipients:row.schoolbellRecipients||null,
+    onInfo:(name,value)=>{(trace.info||(trace.info={}))[name]=clean(value);},
     onStep:step=>{trace.steps.push({step,at:Date.now()-started});
      progress({phase:'publish',step,total:flow.STEPS.length,classKey:note.classKey,message:'학교종이 등록 중 ('+step+'/'+flow.STEPS.length+') '+flow.STEPS[step-1]});},
     beforeSend:()=>{store.automaticState(note.classKey,attempt.id,{status:'auto-pending',stage:'submitting'});clicked=true;}}),
@@ -228,6 +233,7 @@ module.exports=function setup(main){
    // error.sent comes from the flow; a timeout after the click command is treated as sent.
    const sent=error.sent===true||(error.sent===undefined&&clicked);
    trace.outcome=sent?'uncertain':'stopped';trace.code=typeof error.code==='string'?error.code.slice(0,40):'error';
+   if(error.detail!==undefined)trace.detail=clean(error.detail);
    if(attempt?.id){
     try{
      if(sent)store.automaticState(note.classKey,attempt.id,{status:'auto-uncertain',stage:'verifying'});
@@ -238,7 +244,9 @@ module.exports=function setup(main){
     message:sent?submit.MESSAGES.uncertain:(error.userMessage||(error.code==='timeout'?submit.MESSAGES.timeout:submit.MESSAGES.structure))};
   }finally{
    try{cdp?.detach();}catch{}
-   if(w&&!w.isDestroyed())w.destroy();
+   // Development watch mode keeps a failed run's window open so the stopped screen can be seen.
+   const keep=process.env.CLASSROOM_SCHOOLBELL_VISIBLE==='1'&&trace.outcome!=='success';
+   if(w&&!w.isDestroyed()&&!keep)w.destroy();
    trace.ms=Date.now()-started;await writeTrace(trace);
    busy=false;
   }

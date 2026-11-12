@@ -126,6 +126,11 @@ const watched=()=>main(()=>{clearInterval(globalThis.sampler);return globalThis.
  message=await register();server=await sb();
  ok('사진 2장: 순서 유지 (게시 후 schoolnews로 이동해도 확인)',/학교종이 등록 완료/.test(message)&&server.posts[0].files.join()==='사진01.png,사진02.png'&&
   server.posts[0].hashes.join()===ids.map(id=>id.split('.')[0]).join(),message+' '+JSON.stringify(server.posts[0]));
+ await config({idleProgress:true});
+ await write('진행 표시가 늘 있는 화면','빈 작성 화면에도 진행 표시 요소가 있음');await addPhotos(1,110);
+ message=await register();
+ const info=JSON.parse(fs.readFileSync(path.join(PROFILE,'schoolbell-last-run.json'),'utf8')).info;
+ ok('빈 작성 화면의 진행 표시 요소는 작성 중인 글로 보지 않음',/학교종이 등록 완료/.test(message)&&(await sb()).posts[0].files.join()==='사진01.png'&&info.blank.progressBar===true&&info.blank.title===0&&info.attached.rows===1,message+JSON.stringify(info));
  await config({});
 
  // ----- edits made during a registration are kept -----
@@ -151,9 +156,13 @@ const watched=()=>main(()=>{clearInterval(globalThis.sampler);return globalThis.
  };
  await write('중단 시험','초안은 남아야 합니다');
  await stopped('구조 변경(제목 입력란): 고정 문구로 중단',{changedStructure:true},/학교종이 화면이 바뀌어 등록하지 못했습니다/);
+ const missing=JSON.parse(fs.readFileSync(path.join(PROFILE,'schoolbell-last-run.json'),'utf8'));
+ ok('못 찾은 요소 이름을 기록',missing.code==='structure'&&missing.detail==='composer:title-0',JSON.stringify(missing));
  await stopped('작성하기 버튼 없음: 중단',{noWriteButton:true},/학교종이 화면이 바뀌어 등록하지 못했습니다/);
  await stopped('학교종이에 작성 중인 글: 덮어쓰지 않고 중단',{existingDraft:true},/작성 중인 글이 있어 등록하지 않았습니다/);
- await stopped('임시저장 복원 안내창: 중단',{restoreDialog:true},/작성 중인 글이 있어 등록하지 않았습니다/);
+ await stopped('임시저장 복원 안내창: 중단',{restoreDialog:true},/안내창이 열려 있어 등록하지 않았습니다/);
+ const why=JSON.parse(fs.readFileSync(path.join(PROFILE,'schoolbell-last-run.json'),'utf8'));
+ ok('중단 사유를 내용 없이 기록',why.code==='composer-dialog'&&why.detail.reason==='dialog'&&why.detail.dialogs.join()==='mat-dialog-container'&&why.detail.title===0&&why.detail.body===0,JSON.stringify(why));
  await addPhotos(1,150);
  await stopped('사진 업로드 실패: 중단, 사진 보존',{uploadFail:true},/사진 업로드를 확인하지 못해 등록하지 않았습니다/,1);
  await page.click('#diaryPhotos button[aria-label="사진 1 삭제"]');

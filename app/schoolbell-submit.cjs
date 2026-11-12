@@ -13,6 +13,7 @@ const MESSAGES={
  structure:'학교종이 화면이 바뀌어 등록하지 못했습니다.'+KEEP,
  duplicate:'같은 제목과 내용의 글이 학교종이에 이미 있습니다. 중복 등록하지 않았습니다.',
  'draft-exists':'학교종이에 작성 중인 글이 있어 등록하지 않았습니다. 학교종이에서 그 글을 먼저 정리해 주세요.'+KEEP,
+ 'composer-dialog':'학교종이 작성 화면에 안내창이 열려 있어 등록하지 않았습니다. 학교종이에서 [작성하기]를 눌러 그 안내창을 먼저 정리해 주세요.'+KEEP,
  upload:'사진 업로드를 확인하지 못해 등록하지 않았습니다.'+KEEP,
  recipients:'수신대상을 학교종이에 적용하지 못해 등록하지 않았습니다.'+KEEP,
  mode:'즉시발행 상태를 확인하지 못해 등록하지 않았습니다.'+KEEP,
@@ -35,7 +36,7 @@ async function until(fn,ms,interval=200){
 const ROLES=['guardian1','guardian2','student'];
 const sameRoles=(state,want)=>ROLES.every(key=>state[key]===want[key]);
 
-async function publish({w,cdp,link,note,files,recipients=null,onStep=()=>{},beforeSend=()=>{},timeouts={}}){
+async function publish({w,cdp,link,note,files,recipients=null,onStep=()=>{},onInfo=()=>{},beforeSend=()=>{},timeouts={}}){
  const t={load:25000,board:20000,composer:20000,settle:8000,dialog:8000,result:40000,verify:30000,...timeouts};
  const wc=w.webContents,names=files.map(f=>f.name),body=editorLines(note.body).join('\n').replace(/\u00a0/g,' ');
  const expected={title:note.title,body:note.body,files:names};
@@ -80,15 +81,25 @@ async function publish({w,cdp,link,note,files,recipients=null,onStep=()=>{},befo
   const where=flow.route(wc.getURL());
   if(where.kind!=='composer'||where.groupId!==link.groupId)throw stop('board');
   // Settled: three identical reads in a row, with the recipient text loaded.
-  let stable=0,previous='',snapshot=null;
+  let stable=0,previous='',snapshot=null,readError=null;
   await until(async()=>{
-   const now=await quiet('composer'),key=JSON.stringify(now);
+   let now=null;
+   try{now=await run('composer');}catch(error){readError=error;}
+   const key=JSON.stringify(now);
    if(now&&now.label&&key===previous)stable++;else stable=0;
    previous=key;snapshot=now;return stable>=2;
   },t.settle,250);
-  if(!snapshot)throw stop('structure');
-  if(snapshot.title!==''||!['','\n'].includes(snapshot.body)||snapshot.files.names.length||snapshot.files.uploading||snapshot.dialogs)throw stop('draft-exists');
+  if(!snapshot)throw Object.assign(stop(readError?.code||'structure'),{detail:readError?.detail});
+  onInfo('blank',snapshot.probe);
+  // Something is already there (text, files or an open notice such as "restore a saved draft"):
+  // never type over it. The reason is recorded as a fixed word with counts only.
+  const occupied=snapshot.dialogs?'dialog':snapshot.title!==''?'title':!['','\n'].includes(snapshot.body)?'body':
+   snapshot.files.names.length?'files':null;
+  if(occupied)throw Object.assign(stop(occupied==='dialog'?'composer-dialog':'draft-exists'),{detail:{reason:occupied,...snapshot.probe}});
   if(!snapshot.label)throw stop('recipients');
+  // An upload/progress element that is already on the empty composer is part of the page,
+  // not a running upload; only one that appears later is waited for.
+  const idleIndicator=snapshot.files.uploading===true;
 
   // 3. Title and body.
   onStep(3);
@@ -99,7 +110,8 @@ async function publish({w,cdp,link,note,files,recipients=null,onStep=()=>{},befo
 
   // 4. Photos in draft order; wait until every upload is listed.
   onStep(4);
-  try{await photos.attach(wc,files);}catch(error){throw stop(error.code==='upload'?'upload':error.code||'upload');}
+  try{await photos.attach(wc,files,{idleIndicator});}catch(error){throw Object.assign(stop(error.code==='upload'?'upload':error.code||'upload'),{detail:error.detail});}
+  if(files.length)onInfo('attached',(await run('composer')).probe);
 
   // 5. Recipients (only when the teacher chose them in the app) and immediate publication.
   onStep(5);
@@ -152,7 +164,8 @@ async function publish({w,cdp,link,note,files,recipients=null,onStep=()=>{},befo
 
   // 6. One trusted click on 보내기, armed in the same task as the last content comparison.
   onStep(6);
-  const armed=await until(async()=>{const a=await run('arm-send',{title:note.title,body,names,label});return a.ready?a:null;},t.settle,250);
+  onInfo('ready',{mode:snapshot.mode,sendEnabled:snapshot.sendEnabled,sendHit:snapshot.sendHit});
+  const armed=await until(async()=>{const a=await run('arm-send',{title:note.title,body,names,label,idleIndicator});return a.ready?a:null;},t.settle,250);
   if(!armed)throw stop('click');
   await beforeSend();
   try{await cdp.click(armed.x,armed.y);}
@@ -198,7 +211,7 @@ async function publish({w,cdp,link,note,files,recipients=null,onStep=()=>{},befo
   return {status:'success',postId:verdict.postId};
  }catch(error){
   if(error.userMessage)throw error;
-  throw stop(error.code||'structure',sent);
+  throw Object.assign(stop(error.code||'structure',sent),{detail:error.detail});
  }
 }
 module.exports={publish,stop,MESSAGES};

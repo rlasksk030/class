@@ -20,18 +20,24 @@ async function load(photos,read){
  return files;
 }
 // Hand the files over once and wait until the composer lists exactly these names with no upload running.
-async function attach(wc,files,{timeoutMs=60000+files.length*30000}={}){
+// idleIndicator: the empty composer already showed an upload/progress element, so its presence
+// says nothing; then the list must simply show the right names on two reads in a row.
+async function attach(wc,files,{timeoutMs=60000+files.length*30000,idleIndicator=false}={}){
  if(!files.length)return;
  for(const [index,f] of files.entries())await adapter.run(wc,'file-add',{index,name:f.name,type:f.type,size:f.size,base64:f.base64});
  await adapter.run(wc,'files',{names:files.map(f=>f.name)});
  const names=files.map(f=>f.name),end=Date.now()+timeoutMs;
+ let steady=0,last=null;
  while(Date.now()<end){
-  const snapshot=await adapter.run(wc,'composer'),state=snapshot.files;
+  const snapshot=await adapter.run(wc,'composer'),state=snapshot.files;last=snapshot.probe;
   // An error dialog during the upload ends the wait; nothing has been sent yet.
   if(snapshot.dialogs)break;
-  if(state.known&&!state.uploading&&flow.sameNames(state.names,names))return;
+  const listed=state.known&&flow.sameNames(state.names,names);
+  if(listed&&!state.uploading)return;
+  steady=listed&&idleIndicator?steady+1:0;
+  if(steady>=4)return;
   await sleep(250);
  }
- throw Object.assign(Error('upload'),{code:'upload'});
+ throw Object.assign(Error('upload'),{code:'upload',detail:last?{reason:'upload',...last}:undefined});
 }
 module.exports={refs,load,attach};
