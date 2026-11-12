@@ -224,7 +224,7 @@ module.exports=function setup(main){
     onStep:step=>{trace.steps.push({step,at:Date.now()-started});
      progress({phase:'publish',step,total:flow.STEPS.length,classKey:note.classKey,message:'학교종이 등록 중 ('+step+'/'+flow.STEPS.length+') '+flow.STEPS[step-1]});},
     beforeSend:()=>{store.automaticState(note.classKey,attempt.id,{status:'auto-pending',stage:'submitting'});clicked=true;}}),
-    240000+files.length*40000,()=>{if(!worker.isDestroyed())worker.destroy();});
+    300000+files.length*90000,()=>{if(!worker.isDestroyed())worker.destroy();});
    const record=store.automaticState(note.classKey,attempt.id,{status:'auto-success',stage:'verifying',
     receipt:{postId:result.postId,boardId:link.groupId,photoCount:files.length,verifiedAt:Date.now()}});
    trace.outcome='success';trace.postId=!!result.postId;

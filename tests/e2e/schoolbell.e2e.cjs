@@ -126,6 +126,12 @@ const watched=()=>main(()=>{clearInterval(globalThis.sampler);return globalThis.
  message=await register();server=await sb();
  ok('사진 2장: 순서 유지 (게시 후 schoolnews로 이동해도 확인)',/학교종이 등록 완료/.test(message)&&server.posts[0].files.join()==='사진01.png,사진02.png'&&
   server.posts[0].hashes.join()===ids.map(id=>id.split('.')[0]).join(),message+' '+JSON.stringify(server.posts[0]));
+ await config({uploadDialog:true});
+ await write('보내는 중 업로드 창','보내기 뒤 업로드 진행 창이 뜨는 경우');await addPhotos(1,90);
+ message=await register();
+ const sentInfo=JSON.parse(fs.readFileSync(path.join(PROFILE,'schoolbell-last-run.json'),'utf8')).info.sent;
+ ok('보내기 뒤 업로드 진행 창은 기다렸다가 성공 처리',/학교종이 등록 완료/.test(message)&&(await sb()).posts[0].files.join()==='사진01.png'&&sentInfo.arrived===true&&sentInfo.confirmed===false&&
+  sentInfo.dialogTags.includes('app-file-upload-list')&&sentInfo.dialogWords.includes('upload'),message+JSON.stringify(sentInfo));
  await config({idleProgress:true});
  await write('진행 표시가 늘 있는 화면','빈 작성 화면에도 진행 표시 요소가 있음');await addPhotos(1,110);
  message=await register();

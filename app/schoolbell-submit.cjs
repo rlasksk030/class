@@ -37,7 +37,8 @@ const ROLES=['guardian1','guardian2','student'];
 const sameRoles=(state,want)=>ROLES.every(key=>state[key]===want[key]);
 
 async function publish({w,cdp,link,note,files,recipients=null,onStep=()=>{},onInfo=()=>{},beforeSend=()=>{},timeouts={}}){
- const t={load:25000,board:20000,composer:20000,settle:8000,dialog:8000,result:40000,verify:30000,...timeouts};
+ // With photos the service uploads and publishes after 보내기, which can take a while on a slow line.
+ const t={load:25000,board:20000,composer:20000,settle:8000,dialog:8000,result:60000+files.length*45000,verify:30000,...timeouts};
  const wc=w.webContents,names=files.map(f=>f.name),body=editorLines(note.body).join('\n').replace(/\u00a0/g,' ');
  const expected={title:note.title,body:note.body,files:names};
  let sent=false;
@@ -178,24 +179,27 @@ async function publish({w,cdp,link,note,files,recipients=null,onStep=()=>{},onIn
   sent=true;
 
   // The service's own confirmation (if any), then its result screen.
-  let confirmed=false;
+  // Only a plain "send?" question is answered. Any other dialog (for example the service's own
+  // upload progress) is left alone and waited out: closing the window on it would cut the send off.
+  let confirmed=false,seen=null;
   const arrived=await until(async()=>{
    if(cdp.nativeDialog())throw stop('native-dialog',true);
    const now=await quiet('outcome');if(!now)return null;
    const r=flow.route(now.url);
    if(['board','result'].includes(r.kind)&&r.groupId===link.groupId&&now.board&&!now.composer)return true;
    if(now.dialogs.length){
+    const shape=now.dialogs[0].shape||{};
+    seen={dialogs:now.dialogs.length,dialogTags:shape.tags||[],dialogButtons:shape.buttons??-1,dialogLength:shape.length??-1,dialogWords:shape.words||[]};
     const decision=now.dialogs.length===1?flow.confirmDialog(now.dialogs[0]):{action:'unknown'};
-    if(decision.action!=='confirm')throw stop('dialog',true);
-    if(!confirmed){
+    if(decision.action==='confirm'&&!confirmed){
      const a=await quiet('arm-dialog',{button:decision.button,label:now.dialogs[0].buttons[decision.button]});
      if(a?.ready){await cdp.click(a.x,a.y);confirmed=true;}
     }
    }
    return null;
   },t.result,200);
-  onInfo('sent',{delivered:!!delivery,dialog:confirmed,arrived:!!arrived});
-  if(!arrived)throw stop('no-result',true);
+  onInfo('sent',{delivered:!!delivery,confirmed,arrived:!!arrived,...(seen||{})});
+  if(!arrived)throw Object.assign(stop(seen?'dialog':'no-result',true),{detail:seen||undefined});
 
   // 7. Fresh board read: exactly one new post equal to what was sent.
   onStep(7);

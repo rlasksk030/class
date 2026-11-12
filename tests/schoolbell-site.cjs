@@ -126,6 +126,11 @@ const html = String.raw`<!doctype html><html lang="ko"><head><meta charset="utf-
     if(!e.isTrusted||sending)return;
     const proceed=async()=>{
      sending=true;
+     // With files the service shows its own upload progress in a dialog while it sends.
+     if(config.uploadDialog&&uploaded.length){
+      const d=el('<mat-dialog-container><app-file-upload-list><p>파일 업로드 중입니다.</p><app-progress-bar></app-progress-bar></app-file-upload-list></mat-dialog-container>');
+      document.body.append(d);fade(d,0,1);await new Promise(r=>setTimeout(r,900));d.remove();
+     }
      await api('/api/publish',{groupId:m[1],title:title.value,html:body.innerHTML,files:uploaded,roles,mode});
      if(config.swallow)return;
      go('/ko/main/group/'+m[1]+'/boards/'+(config.landSchoolnews?'schoolnews':'classnews'));

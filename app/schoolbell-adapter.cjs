@@ -295,7 +295,13 @@ function page(action,arg,readText){
  if(action==='outcome'){
   return {url:location.href,board:document.querySelectorAll('app-group-board').length===1,
    composer:document.querySelectorAll('app-boards-write').length===1,
-   dialogs:dialogs().map(d=>({text:text(d).slice(0,300),buttons:[...d.querySelectorAll('button,[role="button"]')].filter(shown).map(compact)}))};
+   dialogs:dialogs().map(d=>{
+    const words={'업로드':'upload','전송':'transfer','보내':'send','발행':'publish','발송':'dispatch','실패':'fail','오류':'error','완료':'done','확인':'ok','취소':'cancel','닫기':'close'};
+    const all=text(d),buttons=[...d.querySelectorAll('button,[role="button"]')].filter(shown).map(compact);
+    // shape: component names, counts and which known words occur; never the text itself.
+    return {text:all.slice(0,300),buttons,shape:{tags:[...new Set([...d.querySelectorAll('*')].map(e=>e.localName).filter(n=>n.includes('-')))].slice(0,12),
+     buttons:buttons.length,length:all.length,words:Object.keys(words).filter(w=>all.includes(w)).map(w=>words[w])}};
+   })};
  }
  fail('action');
 }
