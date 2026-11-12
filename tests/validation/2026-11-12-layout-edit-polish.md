@@ -57,7 +57,7 @@
 | 업데이트 피드 | `latest.yml` SHA-256 `34eb51d8425949f2eca020cd0bc682dbae1ee469c6e4a29ef398b89d21da52cf`. version 1.8.15, sha512·크기가 설치 파일과 일치 |
 | 설치 파일 속 업데이트 채널 | PASS: `update-config.json`(소스와 같음)과 `app-update.yml` 모두 github `rlasksk030/class` |
 | 설치 파일 속 앱 | PASS: 버전 1.8.15, `app.asar` 파일 80/80 소스 `app/`와 같음 |
-| 배포 | 미실행(승인 대기). 할 일: 태그 `v1.8.15` → Latest Release(`latest.yml` 포함) |
+| 배포 | 완료(2026-11-12). 태그 `v1.8.15`→`09d27b4`, Release를 **Latest**로 만들고 자산 5개(설치 파일·blockmap·`latest.yml`·검증 JSON·SHA-256) 첨부. `releases/latest/download`의 설치 파일·blockmap·`latest.yml`(version 1.8.15)과 Release 자산 5개의 SHA-256이 모두 일치. v1.8.14 Release는 그대로, 전국판 v1.8.15는 Latest가 아님. 새 Actions 실행 0회 |
 | Windows 설치·업데이트·실행 | 미실행 |
 
 ## 스크린샷 (고치기 전 → 고친 뒤)
