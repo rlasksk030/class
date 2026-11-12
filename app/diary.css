@@ -75,7 +75,7 @@ body.diary-active>.size-controls{visibility:hidden}
 #schoolbellSteps li.current{color:#fff;background:#354d74;border-color:#354d74;font-weight:700}
 #diarySchoolbell #schoolbellMessage{margin:6px 0 0;font-size:17px;line-height:1.4;color:#303640;overflow-wrap:anywhere}
 #schoolbellUnresolved{margin-top:8px;padding:6px 10px;border:1px solid #e3b3a6;border-radius:8px;background:#fcf3f0}
-#schoolbellRecipients select{font-size:17px;padding:4px 6px}
+#schoolbellRecipients select{font-size:17px;padding:4px 6px;width:auto;max-width:100%;margin:0;flex:0 0 auto}
 #schoolbellRecipients input{width:22px;height:22px;margin:0}
 #schoolbellRecipients small{font-size:14px;color:#555}
 .schoolbell-history-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;border-top:1px solid #dce1e8}
