@@ -47,9 +47,8 @@ module.exports=function setupUpdates(getMain){
  updater.setFeedURL(config);
  updater.on('update-not-available',()=>emit({phase:'current',version:null}));
  updater.on('update-available',info=>{
-  const expected=`classroom-dashboard-nationwide-setup-${info.version}-x64.exe`;
-  const files=info.files;
-  if(!/^\d+\.\d+\.\d+$/.test(info.version)||files?.length!==1||files[0].url!==expected||(info.path&&info.path!==expected)||info.packages){
+  // nationwide2.yml must point at the version's own GitHub Release asset (update-feed-check.cjs).
+  if(!require('./update-feed-check.cjs').nationwideFeedOk(info)){
    emit({phase:'check-error',version:null,message:'전국용 설치파일을 확인하지 못했습니다. 나중에 다시 확인해 주세요.'});return;
   }
   emit({phase:'available',version:info.version});
