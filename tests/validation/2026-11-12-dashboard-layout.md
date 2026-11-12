@@ -1,8 +1,8 @@
 # 대시보드 배치 편집 (2026-11-12)
 
-두 판 모두 같은 코드로 고쳤다. 전국판 `feature/dashboard-layout-nationwide`(시작 `b9968d8`, v1.8.13), 옥구초판 `feature/dashboard-layout-okgu`(시작 `63428a7`, v1.8.11). 버전, appId, 데이터 폴더, 업데이트 채널(`app/update-config.json`)은 바꾸지 않았다.
+두 판 모두 같은 코드로 고쳤다. 전국판 `feature/dashboard-layout-nationwide`(시작 `b9968d8`, v1.8.13), 옥구초판 `feature/dashboard-layout-okgu`(시작 `63428a7`, v1.8.11). appId, 데이터 폴더, 업데이트 채널(`app/update-config.json`)은 바꾸지 않았다. 버전은 마지막 release 커밋에서 두 판 모두 1.8.14로 올렸다.
 
-**요약: 두 판 모두 단위·E2E PASS(아래 표). Windows 확인, 빌드, 배포는 NOT RUN.**
+**요약: 두 판 모두 단위·E2E PASS, 1.8.14 빌드와 설치 파일 속 채널 확인 PASS(아래 표). Windows 확인과 배포는 NOT RUN.**
 
 ## 1. 바꾼 것
 
@@ -39,7 +39,9 @@
 | 기존 E2E, [크기 조절] → [배치 편집]으로 바꿔 실행 | **PASS** regression 36/36, timetable-layout 8/8 | **PASS** regression 36/36, timetable-layout 8/8 |
 | 판 고유 E2E | **PASS** multischool 7/7, schoolbell 73/73(합성 사이트) | 해당 없음 |
 | migration-v178 | **NOT RUN** — v1.7.8 원본 앱(`CLASSROOM_V178_APP`) 필요. 기대값만 새 방식으로 바꿈 | **NOT RUN** |
-| 업데이트 채널 | 소스 `update-config.json`·`electron-builder.json`·버전 변경 없음(diff 0), `update-channel.test` PASS. 설치 파일 안 확인은 **NOT RUN**(빌드 전) | 소스 변경 없음(diff 0). 설치 파일 안 확인 **NOT RUN** |
+| 업데이트 채널 | 소스 `update-config.json`·`electron-builder.json` 변경 없음(diff 0), `update-channel.test` PASS. 설치 파일 속 `update-config.json`·`app-update.yml` = generic `downloads/nationwide`, channel `nationwide` **PASS** | 소스 변경 없음(diff 0). 설치 파일 속 `update-config.json`·`app-update.yml` = github `rlasksk030/class` **PASS** |
+| 빌드 1.8.14 (이 Mac, `npm run dist:win`) | **PASS** `classroom-dashboard-nationwide-setup-1.8.14-x64.exe` 99,367,638바이트, SHA-256 `b45119a01ce1b58d6376095f30d2fd2f9202db15f15abab2a3d20f3d019f5af8`, app.asar 101/101 소스 일치. 소스 `3185a0d` | **PASS** `classroom-dashboard-setup-1.8.14.exe` 99,324,282바이트, SHA-256 `6fafd50f640a82d1ccdca0b0af89c08c4f2a837d312bcaa3aba141ce13bd0d0c`, app.asar 80/80 소스 일치. 소스 `2dfcfa4` |
+| 배포 | **NOT RUN** — 승인 후 `downloads/nationwide`, 태그 `nationwide-v1.8.14`(Latest 아님) | **NOT RUN** — 승인 후 태그 `v1.8.14` Release(Latest) |
 | Windows 설치·업데이트·실행 | **NOT RUN** | **NOT RUN** |
 
 배치 편집 E2E가 확인한 것:
