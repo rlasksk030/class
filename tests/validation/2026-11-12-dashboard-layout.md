@@ -2,7 +2,7 @@
 
 두 판 모두 같은 코드로 고쳤다. 전국판 `feature/dashboard-layout-nationwide`(시작 `b9968d8`, v1.8.13), 옥구초판 `feature/dashboard-layout-okgu`(시작 `63428a7`, v1.8.11). appId, 데이터 폴더, 업데이트 채널(`app/update-config.json`)은 바꾸지 않았다. 버전은 마지막 release 커밋에서 두 판 모두 1.8.14로 올렸다.
 
-**요약: 두 판 모두 단위·E2E PASS, 1.8.14 빌드와 설치 파일 속 채널 확인 PASS(아래 표). Windows 확인과 배포는 NOT RUN.**
+**요약: 두 판 모두 단위·E2E PASS, 1.8.14 빌드와 설치 파일 속 채널 확인 PASS, 두 판 배포 완료(아래 표). Windows 확인은 NOT RUN.**
 
 ## 1. 바꾼 것
 
@@ -43,7 +43,7 @@
 | migration-v178 | **NOT RUN** — v1.7.8 원본 앱(`CLASSROOM_V178_APP`) 필요. 기대값만 새 방식으로 바꿈 | **NOT RUN** |
 | 업데이트 채널 | 소스 `update-config.json`·`electron-builder.json` 변경 없음(diff 0), `update-channel.test` PASS. 설치 파일 속 `update-config.json`·`app-update.yml` = generic `downloads/nationwide`, channel `nationwide` **PASS** | 소스 변경 없음(diff 0). 설치 파일 속 `update-config.json`·`app-update.yml` = github `rlasksk030/class` **PASS** |
 | 빌드 1.8.14 (이 Mac, `npm run dist:win`) | **PASS** `classroom-dashboard-nationwide-setup-1.8.14-x64.exe` 99,368,071바이트, SHA-256 `c752da72b3ff166e4455ed9b5612039482b15e8a69d39840107b07bf82e34edc`, app.asar 101/101 소스 일치. 소스 `9752dd5` | **PASS** `classroom-dashboard-setup-1.8.14.exe` 99,324,284바이트, SHA-256 `fb08960d2017b04627a4702cfd528b6132134e2e393c72318948a439617f7b49`, app.asar 80/80 소스 일치. 소스 `27ecbfb` |
-| 배포 | **NOT RUN** — 승인 후 `downloads/nationwide`, 태그 `nationwide-v1.8.14`(Latest 아님) | **NOT RUN** — 승인 후 태그 `v1.8.14` Release(Latest) |
+| 배포 | **완료** 2026-11-12 — `downloads/nationwide` `70a75a6`(설치 파일·blockmap·`nationwide.yml`·안내문·SHA-256·검증 JSON, 예전 설치 파일 유지), 태그 `nationwide-v1.8.14` → `9752dd5`, Release 게시(Latest 아님). 공개 raw 주소의 설치 파일·blockmap·피드 SHA-256 일치, Release 자산 5개 해시 일치. Actions 신규 0회 | **완료** 2026-11-12 — 태그 `v1.8.14` → `27ecbfb`, Release 게시(**Latest**). `releases/latest/download`의 설치 파일·blockmap·`latest.yml` SHA-256 일치, Release 자산 5개 해시 일치. v1.8.11 Release는 그대로. Actions 신규 0회 |
 | Windows 설치·업데이트·실행 | **NOT RUN** | **NOT RUN** |
 
 배치 편집 E2E가 확인한 것:
