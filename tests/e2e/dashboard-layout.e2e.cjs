@@ -224,7 +224,8 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
   cache[Core.dataKey(settings,day,'timetable')]={time,data:['국어','수학','사회','과학','체육'].map((subject,i)=>({period:String(i+1),subject}))};
   cache[Core.dataKey(settings,day,'meal')]={time,data:['흑미밥','미역국','닭갈비','배추김치','사과']};
   localStorage.setItem('cache',JSON.stringify(cache));});
- // Rectangles of what is actually painted; grid cells are made hit-testable only for the centre probe.
+ // Rectangles of what is actually painted. For the centre probe the grid cells are made hit-testable
+ // through each element's style (the page's CSP blocks an added <style> element).
  const inspect=()=>page.evaluate(()=>{
   const R=el=>{if(!el||getComputedStyle(el).visibility==='hidden')return null;const b=el.getBoundingClientRect();return b.width>0&&b.height>0?b:null;};
   const hit=(a,b)=>!!(a&&b&&a.left<b.right-.5&&b.left<a.right-.5&&a.top<b.bottom-.5&&b.top<a.bottom-.5);
@@ -236,7 +237,7 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
    for(const el of all('#clock,header nav button'))if(hit(b,R(el)))cover.push('날씨 손잡이×'+(el.id||el.textContent.trim()));
    for(const el of all('#weather>*'))if(hit(mark,R(el)))cover.push('날씨 손잡이 표시×날씨 글자');
   }
-  const probe=document.createElement('style');probe.textContent='main>.layout-cell{pointer-events:auto!important}';document.head.append(probe);
+  const cells=all('main>.layout-cell');cells.forEach(c=>c.style.setProperty('pointer-events','auto','important'));
   for(const c of all('main>.card')){
    if(getComputedStyle(c).display==='none')continue;const id=c.classList[1],hide=R(c.querySelector('.layout-hide'));
    if(!hide){cover.push('숨기기 없음:'+id);continue;}
@@ -244,7 +245,7 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
    const body=R(c.querySelector('#'+id)),el=body&&document.elementFromPoint(body.left+body.width/2,body.top+body.height/2);
    if(!el||!c.contains(el))centre.push(id+'→'+(el?.className||el?.tagName));
   }
-  probe.remove();
+  cells.forEach(c=>c.style.removeProperty('pointer-events'));
   for(const el of all('#layoutToolbar button,main>.card .layout-resize,.weather .board-resize-handle')){const b=R(el);if(b&&(b.width<44||b.height<44))small.push((el.id||el.getAttribute('aria-label')||el.className)+' '+Math.round(b.width)+'×'+Math.round(b.height));}
   for(const el of all('#layoutToolbar button'))if(R(el)&&parseFloat(getComputedStyle(el).fontSize)<16)small.push((el.id||el.textContent)+' 글씨 '+getComputedStyle(el).fontSize);
   const msg=document.querySelector('#layoutMessage'),lines=Math.round(msg.getBoundingClientRect().height/parseFloat(getComputedStyle(msg).lineHeight));
