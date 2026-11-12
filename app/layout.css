@@ -60,7 +60,7 @@ body.layout-editing{grid-template-rows:auto auto minmax(0,1fr) auto}
 .layout-tray-label{font-weight:700}
 .layout-tray-empty{color:#9097a1}
 .layout-chip{display:flex;align-items:center;gap:8px;padding:4px 5px 4px 12px;border:1px solid #9aaecb;border-radius:99px;background:#fff;font-weight:700;color:#354d74;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
-.layout-chip button{min-height:44px;padding:6px 12px;font-size:15px;border-radius:99px}
+.layout-chip button{min-height:44px;padding:6px 12px;font-size:16px;border-radius:99px}
 .layout-message{flex:1 1 240px;min-width:0;margin:0;font-size:15px;line-height:1.4;color:#4b5563;word-break:keep-all}
 @media(max-width:1200px){.layout-message{font-size:14px}}
 .layout-help{flex:0 0 auto;width:44px;height:44px;padding:0;border-radius:50%;font-size:18px;font-weight:700;color:#354d74}
