@@ -14,7 +14,7 @@ main>.layout-cell,main>.layout-empty{display:none}
 main>.layout-preview[hidden]{display:none}
 .layout-hide,.layout-resize{display:none}
 .layout-editing main{touch-action:none;user-select:none;-webkit-user-select:none}
-.layout-editing main>.layout-cell{display:block;z-index:2;border:1px dashed #9aaecb73;border-radius:6px}
+.layout-editing main>.layout-cell{display:block;z-index:0;border:1px dashed #9aaecb73;border-radius:6px} /* behind the boards: only gaps and empty space show it */
 .layout-editing main>.layout-empty{display:grid;place-items:center;z-index:0;border:2px dashed #9aa6b8;border-radius:14px;background:#f6f8fb;color:#7a8594;font-size:18px;font-weight:700}
 main>.layout-preview{z-index:3;display:grid;place-items:center;border:3px solid #2f6fd6;border-radius:14px;background:#2f6fd61f;color:#1f4f9e;font-size:18px;font-weight:700}
 main>.layout-preview[data-state="swap"]{border-color:#6a4fc2;background:#6a4fc21f;color:#4c3891}
@@ -26,16 +26,22 @@ main>.layout-preview[data-state="bad"]{border-color:#d23c3c;background:#d23c3c24
 .layout-dragging-active,.layout-dragging-active *{cursor:grabbing!important}
 .layout-editing main>.card .cardhead>*{pointer-events:none}
 .layout-editing main>.card [data-edit],.layout-editing main>.card .board-title-edit{visibility:hidden}
-/* Bottom-left, so it never covers a title on a narrow board (it is wider than [수정]). */
-.layout-editing .layout-hide{display:block;position:absolute;left:14px;bottom:14px;z-index:4;font-size:14px;font-weight:700;padding:7px 12px;border:1px solid #9aaecb;background:#fff;color:#354d74;box-shadow:0 2px 8px #18233514}
+/* [숨기기] sits over the space the hidden title pencil and [수정]/[작성] keep in the title row.
+   It is absolutely placed, so board widths do not change when editing starts, and the title
+   (which already leaves that space free) is never covered. */
+.layout-editing main>.card .cardhead{position:relative}
+.layout-editing main>.card .cardhead>.layout-hide{display:inline-flex;align-items:center;position:absolute;right:6px;top:50%;transform:translateY(-50%);z-index:4;min-height:40px;padding:6px 8px;font-size:14px;font-weight:700;line-height:1;white-space:nowrap;border:1px solid #9aaecb;border-radius:8px;background:#fff;color:#354d74;opacity:1;pointer-events:auto;cursor:pointer}
+/* The title row has less side padding on small screens (style.css); keep [숨기기] inside the free space. */
+@media(max-width:1100px),(max-height:800px){.layout-editing main>.card .cardhead>.layout-hide{right:4px;padding:5px 6px;font-size:13px}}
 .layout-editing .layout-resize{display:block;position:absolute;z-index:4;padding:0;border:0;background:#59677c;opacity:.8;touch-action:none}
 .layout-editing .layout-resize:hover{opacity:1}
 .layout-resize-e{top:50%;right:-8px;width:16px;height:64px;transform:translateY(-50%);border-radius:8px;cursor:ew-resize}
 .layout-resize-s{left:50%;bottom:-8px;width:64px;height:16px;transform:translateX(-50%);border-radius:8px;cursor:ns-resize}
 .layout-resize-se{right:-8px;bottom:-8px;width:30px;height:30px;border-radius:8px 0 14px 0;cursor:nwse-resize}
 
-/* Over the class title, stopping before the weather card (its size handles show while editing). */
-.layout-toolbar{position:fixed;top:10px;left:16px;z-index:35;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;width:max-content;max-width:calc(100vw - 32px);padding:10px 14px;background:#fff;border:1px solid #cbd4e0;border-radius:12px;box-shadow:0 8px 30px #18233522}
+/* Its own body grid row between the header and the boards while editing (layout-ui.js inserts it there). */
+body.layout-editing{grid-template-rows:auto auto minmax(0,1fr) auto}
+.layout-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;min-width:0;padding:8px 12px;background:#f6f8fb;border:1px solid #cbd4e0;border-radius:12px}
 .layout-toolbar[hidden]{display:none}
 .layout-heading{font-size:16px;color:#354d74}
 .layout-tray{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-height:44px;padding:4px 10px;border:1px dashed #b8c7df;border-radius:10px;background:#f6f8fb;font-size:14px;color:#4b5563}
@@ -48,3 +54,8 @@ main>.layout-preview[data-state="bad"]{border-color:#d23c3c;background:#d23c3c24
 .layout-message{flex-basis:100%;margin:0;font-size:13px;line-height:1.5;color:#4b5563}
 .layout-ghost{position:fixed;z-index:50;pointer-events:none;transform:translate(-50%,-120%);padding:8px 14px;border:2px solid #2f6fd6;border-radius:99px;background:#fff;color:#1f4f9e;font-weight:700;box-shadow:0 6px 20px #18233533}
 .layout-editing .size-controls{visibility:hidden}
+/* Weather size: a dashed frame just outside the weather card, with the handles on the frame
+   (outside the text, clear of the clock and the header buttons). */
+.layout-editing header>.weather{outline:2px dashed #9aaecb;outline-offset:6px}
+.layout-editing header>.weather .edge-left{left:-12px}
+.layout-editing header>.weather .edge-bottom{bottom:-12px}
