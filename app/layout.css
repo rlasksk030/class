@@ -1,0 +1,50 @@
+/* Board layout: one 12x6 grid. Each board's area comes from the saved layout (layout-ui.js).
+   Columns are 1fr (auto minimum) so a board's title-width minimum grows its own tracks. */
+body>main{grid-template-columns:repeat(12,1fr);grid-template-rows:repeat(6,minmax(0,1fr))}
+main>.card.layout-hidden{display:none!important}
+main.layout-tight .cardhead h2{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* A hidden weather card leaves no gap in the header. */
+header>.weather.board-concealed{display:none!important}
+header:has(>.weather.board-concealed){grid-template-columns:minmax(0,1fr) auto}
+
+/* ---------- Edit mode only ---------- */
+main>.layout-cell,main>.layout-empty,main>.layout-preview{min-width:0;min-height:0;overflow:hidden;pointer-events:none;box-sizing:border-box}
+main>.layout-cell,main>.layout-empty{display:none}
+main>.layout-preview[hidden]{display:none}
+.layout-hide,.layout-resize{display:none}
+.layout-editing main{touch-action:none;user-select:none;-webkit-user-select:none}
+.layout-editing main>.layout-cell{display:block;z-index:2;border:1px dashed #9aaecb73;border-radius:6px}
+.layout-editing main>.layout-empty{display:grid;place-items:center;z-index:0;border:2px dashed #9aa6b8;border-radius:14px;background:#f6f8fb;color:#7a8594;font-size:18px;font-weight:700}
+main>.layout-preview{z-index:3;display:grid;place-items:center;border:3px solid #2f6fd6;border-radius:14px;background:#2f6fd61f;color:#1f4f9e;font-size:18px;font-weight:700}
+main>.layout-preview[data-state="swap"]{border-color:#6a4fc2;background:#6a4fc21f;color:#4c3891}
+main>.layout-preview[data-state="bad"]{border-color:#d23c3c;background:#d23c3c24;color:#a62626}
+.layout-editing main>.card{z-index:1;box-shadow:0 0 0 2px #9aaecb}
+.layout-editing main>.card:focus-visible{outline:4px solid #354d74;outline-offset:3px}
+.layout-editing main>.card.layout-dragging{opacity:.55}
+.layout-editing main>.card .cardhead{cursor:grab;touch-action:none}
+.layout-dragging-active,.layout-dragging-active *{cursor:grabbing!important}
+.layout-editing main>.card .cardhead>*{pointer-events:none}
+.layout-editing main>.card [data-edit],.layout-editing main>.card .board-title-edit{visibility:hidden}
+/* Bottom-left, so it never covers a title on a narrow board (it is wider than [수정]). */
+.layout-editing .layout-hide{display:block;position:absolute;left:14px;bottom:14px;z-index:4;font-size:14px;font-weight:700;padding:7px 12px;border:1px solid #9aaecb;background:#fff;color:#354d74;box-shadow:0 2px 8px #18233514}
+.layout-editing .layout-resize{display:block;position:absolute;z-index:4;padding:0;border:0;background:#59677c;opacity:.8;touch-action:none}
+.layout-editing .layout-resize:hover{opacity:1}
+.layout-resize-e{top:50%;right:-8px;width:16px;height:64px;transform:translateY(-50%);border-radius:8px;cursor:ew-resize}
+.layout-resize-s{left:50%;bottom:-8px;width:64px;height:16px;transform:translateX(-50%);border-radius:8px;cursor:ns-resize}
+.layout-resize-se{right:-8px;bottom:-8px;width:30px;height:30px;border-radius:8px 0 14px 0;cursor:nwse-resize}
+
+/* Over the class title, stopping before the weather card (its size handles show while editing). */
+.layout-toolbar{position:fixed;top:10px;left:16px;z-index:35;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;width:max-content;max-width:calc(100vw - 32px);padding:10px 14px;background:#fff;border:1px solid #cbd4e0;border-radius:12px;box-shadow:0 8px 30px #18233522}
+.layout-toolbar[hidden]{display:none}
+.layout-heading{font-size:16px;color:#354d74}
+.layout-tray{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-height:44px;padding:4px 10px;border:1px dashed #b8c7df;border-radius:10px;background:#f6f8fb;font-size:14px;color:#4b5563}
+.layout-tray-label{font-weight:700}
+.layout-tray-empty{color:#9097a1}
+.layout-chip{display:flex;align-items:center;gap:8px;padding:4px 5px 4px 12px;border:1px solid #9aaecb;border-radius:99px;background:#fff;font-weight:700;color:#354d74;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.layout-chip button{font-size:13px;padding:5px 10px;border-radius:99px}
+.layout-actions{display:flex;flex-wrap:wrap;gap:6px}
+.layout-actions button{font-size:14px;padding:8px 13px;min-height:38px}
+.layout-message{flex-basis:100%;margin:0;font-size:13px;line-height:1.5;color:#4b5563}
+.layout-ghost{position:fixed;z-index:50;pointer-events:none;transform:translate(-50%,-120%);padding:8px 14px;border:2px solid #2f6fd6;border-radius:99px;background:#fff;color:#1f4f9e;font-weight:700;box-shadow:0 6px 20px #18233533}
+.layout-editing .size-controls{visibility:hidden}

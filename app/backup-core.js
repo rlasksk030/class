@@ -1,12 +1,13 @@
 // Settings backup file: user-made data only. Caches, location and every login credential stay out.
 (function(root){
+ const Layout=typeof module!=='undefined'?require('./layout-core.js'):root.LayoutCore;
  const FORMAT='classroom-dashboard-backup',SCHEMA_VERSION=2,MAX_BYTES=200*1024*1024;
  // Allowlist of localStorage keys written by the dashboard. Anything not listed is never exported or restored.
- const KEYS=['settings','classRosters','randomPicker','randomPickerSession','morningDefault','morningHistory','boardTitles','notes','ddayEvents','overrides','boardSizes','boardPreferences','dashboardLocked','dashboardPipOptions','periodSchedule','periodHighlightEnabled','classTimer','timerSound','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences'];
+ const KEYS=['settings','classRosters','randomPicker','randomPickerSession','morningDefault','morningHistory','boardTitles','notes','ddayEvents','overrides','boardSizes','boardPreferences','boardLayout','dashboardLocked','dashboardPipOptions','periodSchedule','periodHighlightEnabled','classTimer','timerSound','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences'];
  const SETTINGS_FIELDS=['grade','classroom','locationMode','manual'];
  const isObject=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
  // Keys whose stored value must be a plain object (others may be strings, booleans or arrays).
- const OBJECT_KEYS=new Set(['settings','classRosters','randomPicker','randomPickerSession','morningHistory','boardTitles','notes','overrides','boardSizes','boardPreferences','dashboardPipOptions','classTimer','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences']);
+ const OBJECT_KEYS=new Set(['settings','classRosters','randomPicker','randomPickerSession','morningHistory','boardTitles','notes','overrides','boardSizes','boardPreferences','boardLayout','dashboardPipOptions','classTimer','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences']);
  const INVALID='이 파일은 사용할 수 있는 학급 대시보드 백업 파일이 아닙니다.';
 
  function sanitize(key,value){
@@ -17,6 +18,7 @@
  }
  function valid(key,value){
   if(value===undefined)return false;
+  if(key==='boardLayout')return Layout.isValid(value);
   if(OBJECT_KEYS.has(key))return isObject(value);
   if(key==='morningDefault')return typeof value==='string';
   if(key==='ddayEvents'||key==='periodSchedule')return Array.isArray(value);
@@ -70,7 +72,14 @@
    entries.push([key,JSON.stringify(clean)]);
   }
   if(!entries.length)throw Error(INVALID);
-  return {backup,entries};
+  return {backup,entries:withLayout(backup.data,entries)};
+ }
+ // Backups and profiles from before the layout editor have no 'boardLayout': build it from their
+ // own hidden-board and size settings, so a restore never keeps this PC's arrangement instead.
+ function withLayout(data,entries){
+  if(entries.some(([key])=>key==='boardLayout'))return entries;
+  const layout=Layout.migrate({sizes:data.boardSizes,preferences:data.boardPreferences});
+  return [...entries,['boardLayout',JSON.stringify(layout)]];
  }
  // All-or-nothing write: on any failure every touched key is put back exactly as it was.
  function apply(storage,entries){
@@ -89,7 +98,8 @@
  function fromRaw(raw){
   if(!isObject(raw))throw Error(INVALID);
   const data=collect(k=>typeof raw[k]==='string'?raw[k]:null);
-  return {data,entries:Object.entries(data).map(([k,v])=>[k,JSON.stringify(v)])};
+  const entries=Object.entries(data).map(([k,v])=>[k,JSON.stringify(v)]);
+  return {data,entries:entries.length?withLayout(data,entries):entries};
  }
  const USER_KEYS=['settings','morningDefault','notes','classRosters','ddayEvents','whiteboardContents','boardTitles','diaryDrafts','activityCompletion'];
  // True when a store holds anything a teacher wrote (not just caches or screen defaults).
