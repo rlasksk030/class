@@ -4,7 +4,7 @@
 
 이번 v1.8.11은 v1.8.10과 기능이 같은 재배포본입니다.
 
-[전국용 설치 파일](https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/classroom-dashboard-nationwide-setup-1.8.11-x64.exe) · [옥구초 전용 설치 파일](https://github.com/rlasksk030/class/releases/download/v1.8.11/classroom-dashboard-setup-1.8.11.exe)
+[전국용 설치 파일(최신)](https://github.com/rlasksk030/class/blob/downloads/nationwide/README.md) · [옥구초 전용 설치 파일](https://github.com/rlasksk030/class/releases/download/v1.8.11/classroom-dashboard-setup-1.8.11.exe)
 
 사용 중인 판의 설치 파일을 받으세요. 기존 프로그램과 PIP 창을 닫고 기존 설치 폴더에 설치하면 됩니다. 전국용 v1.8.9 이상과 옥구초용 v1.8.7 이상은 설정 → 업데이트에서도 확인할 수 있습니다. 전국용 v1.8.8은 위 전국용 설치 파일을 한 번 직접 설치하세요.
 
