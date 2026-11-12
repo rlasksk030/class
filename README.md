@@ -1,6 +1,6 @@
 # 우리 교실 전국용 Windows 설치파일
 
-[전국용 v1.8.13 다운로드](https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/classroom-dashboard-nationwide-setup-1.8.13-x64.exe)
+[전국용 v1.8.14 다운로드](https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/classroom-dashboard-nationwide-setup-1.8.14-x64.exe)
 
 타이머 창에서 **PIP**를 누르면 작은 창을 항상 위에 표시할 수 있습니다. PIP에서 시작·일시정지·계속하기·다시 시작·초기화·완료 확인을 할 수 있고, 창을 닫아도 진행 중인 타이머는 유지됩니다. **시간 설정**을 누르면 본창으로 돌아갑니다.
 
@@ -10,6 +10,20 @@
 - 업데이트 전에 **설정 → 백업**을 한 번 해 두시면 안전합니다.
 
 옥구초 전용판은 별도 GitHub Release에서 업데이트됩니다. [옥구초 전용판 다운로드](https://github.com/rlasksk030/class/releases/latest)
+
+## v1.8.14 대시보드 배치 편집 — 칸 옮기기·크기·숨기기
+
+**업데이트 전에 설정 → 백업을 한 번 해 두세요.** 화면 배치 저장 방식이 바뀝니다(기존 숨김·크기 설정은 자동으로 이어집니다).
+
+대시보드 왼쪽 아래 **[배치 편집]** 을 누르면 시간표·아침활동·안내사항·급식 칸을 끌어 옮기고(다른 칸 위에 놓으면 자리 맞바꾸기), 손잡이로 크기를 바꾸고, **[숨기기]** 로 빈 자리를 만들어 다른 칸을 넓힐 수 있습니다. 숨긴 칸은 위쪽 "숨긴 칸"에서 다시 꺼냅니다. **[완료]** 를 눌러야 저장됩니다.
+
+- 마우스·전자칠판 터치·키보드 모두 됩니다. 화면 잠금 중에는 편집할 수 없습니다.
+- 배치는 백업·복원에 포함됩니다.
+- 학교종이·하이클래스 알림장 사용 방법은 달라지지 않았습니다.
+
+[Release 및 SHA-256](https://github.com/rlasksk030/class/releases/tag/nationwide-v1.8.14) · [검증 범위](v1.8.14-release-validation.json) · [사용 안내](https://github.com/rlasksk030/class/blob/feature/dashboard-layout-nationwide/%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C_%EB%B0%B0%EC%B9%98%ED%8E%B8%EC%A7%91_%EC%82%AC%EC%9A%A9%EC%95%88%EB%82%B4.md)
+
+이 버전의 Windows 실행·설치·업데이트 검사는 아직 하지 않았습니다(NOT RUN).
 
 ## v1.8.13 학교종이 알림장 — 버튼 한 번으로 등록
 

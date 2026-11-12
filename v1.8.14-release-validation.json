@@ -1,0 +1,50 @@
+{
+  "source": "9752dd57853a725dff0236c5482809e106cff2d8",
+  "base": "b9968d81021eac17a62f978d86c3d0e91a1270c9",
+  "branch": "feature/dashboard-layout-nationwide",
+  "version": "1.8.14",
+  "edition": "nationwide",
+  "appId": "org.school.classroomdashboard",
+  "validationBuild": false,
+  "builtOn": "teacher's Mac, npm run dist:win (electron-builder 26.15.3, Electron 40.10.6)",
+  "updateChannel": {
+    "provider": "generic",
+    "url": "https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/",
+    "channel": "nationwide"
+  },
+  "artifacts": [
+    {
+      "name": "classroom-dashboard-nationwide-setup-1.8.14-x64.exe",
+      "bytes": 99368071,
+      "sha256": "c752da72b3ff166e4455ed9b5612039482b15e8a69d39840107b07bf82e34edc"
+    },
+    {
+      "name": "classroom-dashboard-nationwide-setup-1.8.14-x64.exe.blockmap",
+      "bytes": 104959,
+      "sha256": "1e7adcc8ef1fdadc68dae17a7950fe84eabf1655599ee970c05c98eeb5455611"
+    },
+    {
+      "name": "nationwide.yml",
+      "bytes": 399,
+      "sha256": "04e5f0c3292127c5537b4fd226a0c2f005907c0c870da87863a090fbf13a0d8a"
+    }
+  ],
+  "checks": {
+    "syntax": "PASS (107/107)",
+    "unit": "PASS (107/107)",
+    "dashboardLayoutE2E": "PASS (55/55)",
+    "existingE2E": "PASS (board-titles 24, v182-features 43, regression 36, hiclass-link 16, recovery 17, timetable-layout 8, diary-drafts 17, hiclass-recipients 38, hiclass-submit 21, timer-startup 21, diary-layout 15, hiclass-window 11, photos 22, hiclass-photos 4, photo-boundaries 6, photo-transfer 5, multischool 10, schoolbell 73 synthetic site)",
+    "firstRunE2E": "PASS (6/6; new profile without a school: no page errors, no NEIS lookups; fails before the fix)",
+    "migrationV178": "NOT RUN (needs the v1.7.8 app)",
+    "packagedFilesMatchSource": "PASS (101/101 files in app.asar identical to app/)",
+    "packagedUpdateChannel": "PASS (update-config.json and app-update.yml: generic, downloads/nationwide, channel nationwide)",
+    "installerUnder100MB": "PASS",
+    "windowsExecution": "NOT RUN",
+    "windowsInstallUpdateReboot": "NOT RUN"
+  },
+  "testedOn": "macOS (Apple Silicon), Electron 40.10.6, isolated profiles, offline NEIS/weather",
+  "actionsNewRuns": 0,
+  "additionalCost": 0,
+  "releaseTag": "nationwide-v1.8.14",
+  "releaseLatest": false
+}
