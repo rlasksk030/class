@@ -59,6 +59,7 @@ releaseDate: '<빌드 시각>'
 | 1.8.16 빌드 `npm run dist:win` (`f3e446c`) | PASS — 설치 파일 99,370,331바이트(94.77MiB, 100MiB 미만), SHA-256 `3d6e6be0f5bfed38b5425f7201d2dc5faf5de32830d556470e0fded62af581b6` |
 | 설치 파일 속 업데이트 채널 | PASS — 설치 파일 → `app-64.7z` → `app.asar`의 `update-config.json`과 `resources/app-update.yml` 모두 generic·`downloads/nationwide`·`nationwide2`. `app.asar` 파일 103개가 소스와 같음 |
 | `dist` 두 피드 | PASS — `nationwide.yml`(파일 이름)·`nationwide2.yml`(Release 주소)의 version·sha512·size·releaseDate가 같고 설치 파일과 일치. `nationwide2.yml`은 앱 검사 통과 |
+| 배포(v1.8.16) | **완료** 2026-11-13 — PR #11 → `99b6fa3`, 태그 `nationwide-v1.8.16` → `f3e446c`, Release 게시(Latest 아님, 자산 6개), `downloads/nationwide` `a99ccd8`(설치 파일은 브랜치에 마지막, `nationwide.yml`·`nationwide2.yml` 둘 다 1.8.16). 공개 주소의 두 피드가 빌드와 같고, 브랜치·Release 설치 파일 sha512가 피드와 일치. `releases/latest`는 옥구초 `v1.8.15` 유지. Actions 신규 0회 |
 | Windows 설치·업데이트 | **미실행** — 아래 체크리스트 |
 
 모의 시험은 앱에 들어 있는 electron-updater(NsisUpdater, Windows 채널 이름 규칙)를 Electron 안에서 돌린다. `raw.githubusercontent.com`·`github.com`·Release 첨부 호스트는 Chromium 호스트 규칙으로 로컬 HTTPS 서버에 연결하고, 나머지 호스트는 모두 실패하게 해서 실제 인터넷에 나가지 않는다. 피드는 `make-nationwide-feeds.cjs`로 만들었다.
