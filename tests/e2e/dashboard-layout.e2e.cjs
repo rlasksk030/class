@@ -218,6 +218,65 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
    g=await geometry();ok(`${w}×${h} ${name} 배치: 겹침·제목 잘림 없음`,!g.issues.length,JSON.stringify(g));
   }
  }
+ // ---------- Edit tools never cover the header, board text or each other ----------
+ // Saved timetable/meal entries give those boards their bottom status line ("연결 실패 · 저장된 정보 · …").
+ await page.evaluate(()=>{const day=Core.dateKey(),time=Date.now(),cache=JSON.parse(localStorage.getItem('cache')||'{}');
+  cache[Core.dataKey(settings,day,'timetable')]={time,data:['국어','수학','사회','과학','체육'].map((subject,i)=>({period:String(i+1),subject}))};
+  cache[Core.dataKey(settings,day,'meal')]={time,data:['흑미밥','미역국','닭갈비','배추김치','사과']};
+  localStorage.setItem('cache',JSON.stringify(cache));});
+ // Rectangles of what is actually painted. For the centre probe the grid cells are made hit-testable
+ // through each element's style (the page's CSP blocks an added <style> element).
+ const inspect=()=>page.evaluate(()=>{
+  const R=el=>{if(!el||getComputedStyle(el).visibility==='hidden')return null;const b=el.getBoundingClientRect();return b.width>0&&b.height>0?b:null;};
+  const hit=(a,b)=>!!(a&&b&&a.left<b.right-.5&&b.left<a.right-.5&&a.top<b.bottom-.5&&b.top<a.bottom-.5);
+  const all=s=>[...document.querySelectorAll(s)],cover=[],centre=[],small=[];
+  const bar=R(document.querySelector('#layoutToolbar'));if(!bar)cover.push('도구 막대 없음');
+  for(const s of ['#classTitle','#date','#clock','#weather','header nav','.screen-tabs'])for(const el of all(s))if(hit(bar,R(el)))cover.push('도구 막대×'+s);
+  for(const h of all('.weather .board-resize-handle')){
+   const b=R(h),mark=R(h.querySelector('.handle-mark'));if(!b||!mark){cover.push('날씨 손잡이 안 보임');continue;}
+   for(const el of all('#clock,header nav button'))if(hit(b,R(el)))cover.push('날씨 손잡이×'+(el.id||el.textContent.trim()));
+   for(const el of all('#weather>*'))if(hit(mark,R(el)))cover.push('날씨 손잡이 표시×날씨 글자');
+  }
+  const cells=all('main>.layout-cell');cells.forEach(c=>c.style.setProperty('pointer-events','auto','important'));
+  for(const c of all('main>.card')){
+   if(getComputedStyle(c).display==='none')continue;const id=c.classList[1],hide=R(c.querySelector('.layout-hide'));
+   if(!hide){cover.push('숨기기 없음:'+id);continue;}
+   for(const el of c.querySelectorAll('.cardhead h2,.status,#'+id))if(el.textContent.trim()&&hit(hide,R(el)))cover.push('숨기기×'+id+(el.matches('h2')?' 제목':el.matches('.status')?' 상태 글자':' 내용'));
+   const body=R(c.querySelector('#'+id)),el=body&&document.elementFromPoint(body.left+body.width/2,body.top+body.height/2);
+   if(!el||!c.contains(el))centre.push(id+'→'+(el?.className||el?.tagName));
+  }
+  cells.forEach(c=>c.style.removeProperty('pointer-events'));
+  for(const el of all('#layoutToolbar button,main>.card .layout-resize,.weather .board-resize-handle')){const b=R(el);if(b&&(b.width<44||b.height<44))small.push((el.id||el.getAttribute('aria-label')||el.className)+' '+Math.round(b.width)+'×'+Math.round(b.height));}
+  for(const el of all('#layoutToolbar button'))if(R(el)&&parseFloat(getComputedStyle(el).fontSize)<16)small.push((el.id||el.textContent)+' 글씨 '+getComputedStyle(el).fontSize);
+  const msg=document.querySelector('#layoutMessage'),lines=Math.round(msg.getBoundingClientRect().height/parseFloat(getComputedStyle(msg).lineHeight));
+  const grip=getComputedStyle(document.querySelector('main>.card .cardhead'),'::before').content;
+  return {cover,centre,small,lines,message:msg.textContent,grip};
+ });
+ await reload();
+ for(const [w,h] of [[1100,760],[1440,900],[1920,1080]]){
+  await page.setViewportSize({width:w,height:h});await frames();
+  await page.click('#layoutToggle');await frames();await page.waitForTimeout(200);
+  let r=await inspect();
+  ok(`${w}×${h} 편집 모드: 도구 막대·날씨 손잡이·[숨기기]가 머리글·카드 글자를 가리지 않음`,!r.cover.length,JSON.stringify(r.cover));
+  ok(`${w}×${h} 편집 모드: 격자선은 카드 뒤(내용 한가운데에서 카드가 잡힘)`,!r.centre.length,JSON.stringify(r.centre));
+  ok(`${w}×${h} 크기 손잡이·도구 막대 버튼: 잡는 영역 44×44 이상, 버튼 글씨 16px 이상`,!r.small.length,JSON.stringify(r.small));
+  ok(`${w}×${h} 기본 안내 한 줄 · 제목 줄 옮기기 표시`,r.lines===1&&r.message==='칸 제목 줄을 끌어 옮기고, 가장자리를 끌어 크기를 바꿉니다.'&&r.grip!=='none',JSON.stringify([r.lines,r.message,r.grip]));
+  if(w===1440){
+   await page.click('#layoutHelp');
+   ok('[?]: 키보드·맞바꾸기 안내를 펼침',await page.isVisible('#layoutKeys')&&(await page.textContent('#layoutKeys')).includes('Shift+방향키')&&await page.getAttribute('#layoutHelp','aria-expanded')==='true');
+   await page.click('#layoutHelp');
+   await page.click('main>.meal .layout-hide');await frames();
+   r=await inspect();
+   ok('급식을 숨긴 편집 모드: 겹침 없음, [다시 표시]도 44×44 이상',!r.cover.length&&!r.small.length&&await page.isVisible('#layoutTray [data-layout-show=meal]'),JSON.stringify([r.cover,r.small]));
+  }
+  await page.click('#layoutCancel');await frames();
+ }
+ // The narrowest boards: four side by side at the smallest size.
+ await setLayout(crowded);await page.setViewportSize({width:1100,height:760});await frames();
+ await page.click('#layoutToggle');await frames();await page.waitForTimeout(200);
+ const narrow=await inspect();
+ ok('1100×760 네 칸 나란히(가장 좁은 칸) 편집 모드: [숨기기]가 제목·상태 글자를 가리지 않음',!narrow.cover.length,JSON.stringify(narrow.cover));
+ ok('평소 화면에는 옮기기 표시 없음',await page.click('#layoutCancel').then(()=>page.evaluate(()=>getComputedStyle(document.querySelector('main>.card .cardhead'),'::before').content))==='none');
  await setLayout(L.defaults());
  ok('페이지 오류 없음',!errors.length,errors.join(' | '));
 }catch(e){console.error(e);results.push(false);}finally{if(app)await app.close().catch(()=>{});}

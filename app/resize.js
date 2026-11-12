@@ -77,6 +77,10 @@
     button.setAttribute('aria-label', label);
     button.title = label + ' · 방향키로도 조절';
     button.hidden = true;
+    // Visible mark while [배치 편집] is on (layout.css); the button itself is the larger touch area.
+    const mark = document.createElement('span');
+    mark.className = 'handle-mark';
+    button.append(mark);
     weather.append(button);
     button.addEventListener('pointerdown', e => {
       if (!enabled || e.button !== 0) return;
