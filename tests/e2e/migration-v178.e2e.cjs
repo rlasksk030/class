@@ -48,8 +48,9 @@ const storage=page=>page.evaluate(()=>Object.fromEntries(Object.keys(localStorag
  ok('아침활동·안내사항 유지',(await page.innerText('#morning'))==='책 읽기 20분\n일기 쓰기'&&(await page.innerText('#notices'))==='체육복 챙기기');
  ok('새 제목 기능: 값 없으면 기본 제목',(await page.textContent('.morning h2')).trim()==='☀ 아침활동'&&(await page.textContent('.notices h2')).trim()==='✳ 안내사항'&&now.boardTitles===undefined);
  ok('D-Day 유지',(await page.textContent('#ddayBadge')).includes('수학여행'));
- ok('보드 숨김·글씨 크기 유지',await page.$eval('.meal',e=>e.classList.contains('board-concealed'))&&(await page.evaluate(()=>window.boardFontScales.morning))===1.2);
- ok('보드 크기 유지',await page.$eval('main',m=>m.style.gridTemplateColumns!==''));
+ ok('보드 숨김·글씨 크기 유지(숨긴 칸은 자리 비움)',await page.$eval('.meal',e=>getComputedStyle(e).display==='none')&&(await page.evaluate(()=>window.boardFontScales.morning))===1.2);
+ // The first run turns the old hidden flag and column/row fractions into the grid layout.
+ ok('보드 크기 유지(이전 비율 → 배치 격자)',await page.evaluate(([s,p])=>{const l=JSON.parse(localStorage.getItem('boardLayout'));return LayoutCore.isValid(l)&&LayoutCore.equal(l,LayoutCore.migrate({sizes:JSON.parse(s),preferences:JSON.parse(p)}))&&!LayoutCore.equal(l,LayoutCore.defaults());},[old.boardSizes,old.boardPreferences]));
  ok('교시 강조 설정 유지',JSON.parse(now.periodHighlightEnabled)===true&&JSON.parse(now.periodSchedule).length===6);
  await page.click('#timerButton');ok('타이머 설정 유지',(await page.textContent('#timerDisplay'))==='03:00'&&await page.isChecked('#timerSound'));await page.keyboard.press('Escape');
  await page.click('#randomTab');const roster=await page.innerText('#rosterList');ok('학생 명단·오늘 제외·뽑기 기록 유지',['김하늘','이바다','박구름','최별','정해'].every(n=>roster.includes(n))&&(await page.locator('#excludeList input:checked').count())===1&&(await page.locator('#pickHistory li').count())===1);
