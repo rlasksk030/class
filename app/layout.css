@@ -26,7 +26,8 @@ main>.layout-preview[data-state="bad"]{border-color:#d23c3c;background:#d23c3c24
 .layout-dragging-active,.layout-dragging-active *{cursor:grabbing!important}
 .layout-editing main>.card .cardhead>*{pointer-events:none}
 .layout-editing main>.card [data-edit],.layout-editing main>.card .board-title-edit{visibility:hidden}
-.layout-editing .layout-hide{display:block;position:absolute;top:12px;right:14px;z-index:4;font-size:14px;font-weight:700;padding:7px 12px;border:1px solid #9aaecb;background:#fff;color:#354d74}
+/* Bottom-left, so it never covers a title on a narrow board (it is wider than [수정]). */
+.layout-editing .layout-hide{display:block;position:absolute;left:14px;bottom:14px;z-index:4;font-size:14px;font-weight:700;padding:7px 12px;border:1px solid #9aaecb;background:#fff;color:#354d74;box-shadow:0 2px 8px #18233514}
 .layout-editing .layout-resize{display:block;position:absolute;z-index:4;padding:0;border:0;background:#59677c;opacity:.8;touch-action:none}
 .layout-editing .layout-resize:hover{opacity:1}
 .layout-resize-e{top:50%;right:-8px;width:16px;height:64px;transform:translateY(-50%);border-radius:8px;cursor:ew-resize}
