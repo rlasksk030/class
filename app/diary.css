@@ -61,12 +61,21 @@ body.diary-active>.size-controls{visibility:hidden}
 .diary-service-selector{display:flex;align-items:center;gap:12px}
 .diary-service-selector>span{white-space:nowrap;flex-shrink:0}
 .diary-service-selector select{font-size:18px;padding:6px;max-width:100%;min-width:0;flex:1}
-#diarySchoolbell{border:1px solid #dce1e8;border-radius:10px;padding:10px;background:#f7f9fc}
 #diarySchoolbell p{font-size:15px;line-height:1.5;margin:6px 0}
-#diarySchoolbell summary{cursor:pointer;padding:6px 0;font-size:17px}
-.schoolbell-connect-line{flex-wrap:wrap}
-.schoolbell-connect-line strong{margin-right:auto}
-.schoolbell-match{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
-.schoolbell-match label{display:flex;align-items:center;gap:6px;white-space:nowrap}
-#schoolbellSchool{width:220px}#schoolbellGrade{width:50px}#schoolbellClass{width:80px}
+#diarySchoolbell summary{cursor:pointer;padding:6px 0;font-size:16px;color:#555}
+#schoolbellLinkState{flex:1;min-width:0;font-size:18px;font-weight:700;color:#303640;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#diarySchoolbell[data-state="linked"] #schoolbellLinkState{color:#2f6a3a}
+#diarySchoolbell[data-state="expired"] #schoolbellLinkState{color:#9a4a36}
+#schoolbellSteps{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0;padding:0;list-style:none;counter-reset:step}
+#schoolbellMessage:empty{display:none}
+#schoolbellSteps li{counter-increment:step;padding:4px 8px;border-radius:99px;background:#fff;border:1px solid #dce1e8;font-size:16px;color:#737b86}
+#schoolbellSteps li::before{content:counter(step) ". "}
+#schoolbellSteps li.done{color:#2f6a3a;border-color:#9cc7a4}
+#schoolbellSteps li.done::before{content:"✓ "}
+#schoolbellSteps li.current{color:#fff;background:#354d74;border-color:#354d74;font-weight:700}
+#diarySchoolbell #schoolbellMessage{margin:6px 0 0;font-size:17px;line-height:1.4;color:#303640;overflow-wrap:anywhere}
+#schoolbellUnresolved{margin-top:8px;padding:6px 10px;border:1px solid #e3b3a6;border-radius:8px;background:#fcf3f0}
+#schoolbellRecipients select{font-size:17px;padding:4px 6px;width:auto;max-width:100%;margin:0;flex:0 0 auto}
+#schoolbellRecipients input{width:22px;height:22px;margin:0}
+#schoolbellRecipients small{font-size:14px;color:#555}
 .schoolbell-history-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;border-top:1px solid #dce1e8}

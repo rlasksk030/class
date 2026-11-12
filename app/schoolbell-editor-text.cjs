@@ -1,7 +1,8 @@
 'use strict';
-// Plain text from the observed Froala paragraph DOM. innerText counts visual
-// paragraph margins as extra line breaks; textContent loses the boundaries.
-// Self-contained, read-only: may also be used in an approved live DOM probe.
+// Plain text <-> the observed Froala paragraph DOM of the Schoolbell composer.
+// innerText counts visual paragraph margins as extra line breaks and textContent loses the
+// boundaries, so the editor is read by structure. Both functions are self-contained because
+// readEditorText is also serialized into the service page.
 function readEditorText(root){
  const blocks=new Set(['P','DIV']);
  const inline=new Set(['SPAN','B','STRONG','I','EM','U','S','STRIKE','A','FONT','SUB','SUP','CODE']);
@@ -26,4 +27,9 @@ function readEditorText(root){
  }
  return content(root).replace(/\r\n?/g,'\n');
 }
-module.exports={readEditorText};
+// Draft text -> the lines typed into the editor, one native line break between them.
+// Hangul, blank lines and the user's spaces are kept exactly; only the line-ending style changes.
+function editorLines(text){
+ return String(text??'').replace(/\r\n?/g,'\n').split('\n');
+}
+module.exports={readEditorText,editorLines};

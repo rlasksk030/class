@@ -65,18 +65,32 @@ function publication(value,count) {
   }
  }
  if(value.dateMode!==undefined||value.draftDate!==undefined||value.publishedDate!==undefined){
-  const {validDate}=require('./schoolbell-date-policy.cjs');
+  const validDate=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(v))&&new Date(v).toISOString().slice(0,10)===v;
   if(value.dateMode!=='immediate'||!validDate(value.draftDate)||!validDate(value.publishedDate))throw Error('발행 날짜 검증 기록을 확인해 주세요.');
   Object.assign(dateProof,{dateMode:value.dateMode,draftDate:value.draftDate,publishedDate:value.publishedDate});
  }
  return {postId:value.postId,boardId:value.boardId,attachmentsVerified:true,...dateProof,
   photos:value.photos.map(p=>({sha256:p.sha256,bytes:p.bytes})),verifiedAt:value.verifiedAt};
 }
-function matchTarget(expected, actual) {
- const clean = s => String(s || '').normalize('NFC').replace(/\s+/g, '');
- return clean(expected.schoolName) === clean(actual.schoolName) &&
-  clean(expected.grade) === clean(actual.grade) && clean(expected.classroom) === clean(actual.classroom) &&
-  (expected.year === undefined || clean(expected.year) === clean(actual.year));
+// v1.8.13 automatic registration receipt: what the board showed after sending.
+// The post ID is kept when the board exposes it; a verified post without an ID is still a success.
+function receipt(value,count) {
+ if(!value || !(value.postId===null || remoteId(value.postId)) || !remoteId(value.boardId) ||
+    value.photoCount!==count || !Number.isSafeInteger(value.verifiedAt) || value.verifiedAt<=0)throw Error('게시 확인 기록을 확인해 주세요.');
+ return {postId:value.postId,boardId:value.boardId,photoCount:value.photoCount,verifiedAt:value.verifiedAt};
+}
+// Class board link saved by [학교종이 연결하기]: board address, class name and school name only.
+function boardLink(value) {
+ const url=safeURL(value?.url,true),m=new URL(url).pathname.match(/^\/ko\/main\/group\/(\d+)\/boards\/classnews$/);
+ if(!m || m[1]!==value.groupId || new URL(url).search || new URL(url).hash)throw Error('담당 학급의 알림장 게시판을 열어 주세요.');
+ const text=v=>typeof v==='string'?v.replace(/[\x00-\x1f]/g,'').trim().slice(0,100):'';
+ return {url,groupId:m[1],title:text(value.title),schoolName:text(value.schoolName),linkedAt:Date.now()};
+}
+// Recipients chosen in the app. null = keep the selection the Schoolbell composer shows by default.
+function recipients(value) {
+ if(value===null || value===undefined)return null;
+ if(!['guardian1','guardian2','student'].every(k=>typeof value[k]==='boolean'))throw Error('수신대상을 확인해 주세요.');
+ return {guardian1:value.guardian1,guardian2:value.guardian2,student:value.student};
 }
 function createStore(profile) {
  const file = path.join(profile.dir, 'diary-services.json');
@@ -99,7 +113,10 @@ function createStore(profile) {
        !object(p)||!['auto-pending','auto-uncertain','auto-success','auto-user-confirmed','auto-user-not-posted'].includes(p.status)||!/^[a-f0-9]{64}$/.test(p.hash))))
     throw Error('발행 기록 파일을 확인해 주세요. 기존 기록은 보존됩니다.');
    // Old records without receipts remain readable and continue blocking duplicates.
-   for(const p of Object.values(row.automaticPosts||{}))if(p.publication!==undefined)publication(p.publication,p.photoCount);
+   for(const p of Object.values(row.automaticPosts||{})){
+    if(p.publication!==undefined)publication(p.publication,p.photoCount);
+    if(p.receipt!==undefined)receipt(p.receipt,p.photoCount);
+   }
   }
   return data;
  };
@@ -120,13 +137,18 @@ function createStore(profile) {
   if (!SERVICES.has(service)) throw Error('발행 서비스를 확인해 주세요.');
   edit(key, row => { row.service = service; });
  }
- function link(key, url) {
-  edit(key, row => { row.schoolbell = {url:safeURL(url,true),confirmation:'teacher-manual',time:Date.now()}; });
+ // row.schoolbell (the v1.8.12 "teacher-manual" confirmation) is never written or removed here.
+ // A class with only that old value shows as "reconnect needed".
+ function linkBoard(key, value) {
+  return edit(key, row => { row.schoolbellLink = boardLink(value); return {...row.schoolbellLink}; });
+ }
+ function setRecipients(key, value) {
+  return edit(key, row => { const next=recipients(value); if(next)row.schoolbellRecipients=next; else delete row.schoolbellRecipients; return next; });
  }
  function prepare(value) {
   const note = payload(value), hash = fingerprint(profile.id, 'schoolbell', note);
   return edit(note.classKey, row => {
-   if (row.service !== 'schoolbell' || !row.schoolbell) throw Error('학교종이 담당 학급을 먼저 확인해 주세요.');
+   if (row.service !== 'schoolbell') throw Error('발행 서비스를 학교종이로 선택해 주세요.');
    const auto = Object.values(row.automaticPosts || {});
    if (auto.some(p => ['auto-pending','auto-uncertain'].includes(p.status) ||
        p.hash === hash && p.status !== 'auto-user-not-posted')) return {blocked:true,status:'automatic-record'};
@@ -147,33 +169,54 @@ function createStore(profile) {
    return {...post,hash};
   });
  }
+ // One automatic attempt. The pending record is written before the service page is touched and
+ // blocks another send until the result is known (or the teacher resolves it by hand).
  function beginAutomatic(value) {
   const note=payload(value),hash=fingerprint(profile.id,'schoolbell',note);
   return edit(note.classKey,row=>{
    if(row.service!=='schoolbell')throw Error('발행 서비스가 변경되었습니다.');
-   if(Object.values(row.posts).some(p=>p.status==='manual-pending') ||
-      row.posts[hash] && row.posts[hash].status!=='manual-not-posted')return {blocked:true};
+   if(Object.values(row.posts).some(p=>p.status==='manual-pending'))return {blocked:true,reason:'unresolved'};
+   if(row.posts[hash] && row.posts[hash].status!=='manual-not-posted')return {blocked:true,reason:'duplicate'};
    const records=Object.values(row.automaticPosts||{});
-   if(records.some(p=>['auto-pending','auto-uncertain'].includes(p.status) ||
-      p.hash===hash && p.status!=='auto-user-not-posted'))return {blocked:true};
+   if(records.some(p=>['auto-pending','auto-uncertain'].includes(p.status)))return {blocked:true,reason:'unresolved'};
+   if(records.some(p=>p.hash===hash && p.status!=='auto-user-not-posted'))return {blocked:true,reason:'duplicate'};
    const id=crypto.randomUUID();
    row.automaticPosts ||= {};
-   row.automaticPosts[id]={hash,status:'auto-pending',stage:'prepared',date:note.date,photoCount:note.photos.length,time:Date.now()};
+   row.automaticPosts[id]={hash,status:'auto-pending',stage:'prepared',flow:2,date:note.date,photoCount:note.photos.length,time:Date.now()};
    return {id,hash};
   });
  }
+ // prepared -> submitting (written just before the send click) -> verifying.
  function automaticState(key,id,state) {
-  const stages=['prepared','opening','input','attachments','review','submitting','verifying'];
   return edit(key,row=>{
    const post=Object.hasOwn(row.automaticPosts||{},id)?row.automaticPosts[id]:null;
    if(!post || post.status!=='auto-pending')throw Error('자동 등록 기록을 확인해 주세요.');
-   if(state.status==='auto-success' && post.stage!=='verifying')throw Error('게시 결과를 확인해 주세요.');
    if(!['auto-pending','auto-uncertain','auto-success'].includes(state.status) ||
-      !stages.includes(state.stage))throw Error('등록 상태를 확인해 주세요.');
-   if(state.status==='auto-success')post.publication=publication(state.publication,post.photoCount);
+      !['prepared','submitting','verifying'].includes(state.stage))throw Error('등록 상태를 확인해 주세요.');
+   if(state.status==='auto-success'){
+    if(post.stage!=='submitting')throw Error('게시 결과를 확인해 주세요.');
+    post.receipt=receipt(state.receipt,post.photoCount);
+   }
    post.status=state.status;post.stage=state.stage;post.updatedAt=Date.now();
    return {...post};
   });
+ }
+ // Only for an attempt that provably never clicked 보내기: remove its pending record so the
+ // teacher can simply try again.
+ function discardAutomatic(key,id) {
+  return edit(key,row=>{
+   const post=Object.hasOwn(row.automaticPosts||{},id)?row.automaticPosts[id]:null;
+   if(!post || post.status!=='auto-pending')return false;
+   delete row.automaticPosts[id];return true;
+  });
+ }
+ // After a crash: an attempt of this version that never reached the send click is not a post.
+ // Older records and anything at or after the click stay and keep blocking.
+ function recoverAutomatic(key) {
+  const row=get(key);
+  const stale=Object.entries(row.automaticPosts||{}).filter(([,p])=>p.flow===2&&p.status==='auto-pending'&&p.stage==='prepared').map(([id])=>id);
+  if(!stale.length)return 0;
+  return edit(key,current=>{let n=0;for(const id of stale){const p=current.automaticPosts?.[id];if(p&&p.flow===2&&p.status==='auto-pending'&&p.stage==='prepared'){delete current.automaticPosts[id];n++;}}return n;});
  }
  function resolveAutomatic(key,id,outcome) {
   if(!['auto-user-confirmed','auto-user-not-posted'].includes(outcome))throw Error('실제 게시 결과를 확인해 주세요.');
@@ -182,17 +225,6 @@ function createStore(profile) {
    if(!post || !['auto-pending','auto-uncertain'].includes(post.status))throw Error('확인할 자동 등록 시도가 없습니다.');
    post.status=outcome;post.resolvedAt=Date.now();
    return {...post};
-  });
- }
- function reconcileAutomatic(key,id,hash,proof){
-  return edit(key,row=>{
-   const post=row.automaticPosts?.[id];
-   if(row.service!=='schoolbell'||!post||post.status!=='auto-uncertain'||post.stage!=='verifying'||post.hash!==hash)
-    throw Error('재검증할 게시 시도를 확인해 주세요.');
-   const receipt=publication(proof,post.photoCount);
-   if(!['development-test','teacher-authorized-class'].includes(receipt.executionMode)||receipt.draftDate!==post.date)throw Error('게시 검증 기록을 확인해 주세요.');
-   post.reconciliation={previousStatus:post.status,previousStage:post.stage,verifiedAt:receipt.verifiedAt};
-   post.publication=receipt;post.status='auto-success';post.updatedAt=Date.now();return {...post};
   });
  }
  // Claim the pre-existing HiClass partition for exactly one existing class.
@@ -206,6 +238,6 @@ function createStore(profile) {
   }
   return data.legacyHiclassClass === key ? profile.hiclassPartition : partition(profile.id,'hiclass',key);
  }
- return {get,select,link,prepare,resolve,beginAutomatic,automaticState,resolveAutomatic,reconcileAutomatic,hiclassPartition};
+ return {get,select,linkBoard,setRecipients,prepare,resolve,beginAutomatic,automaticState,discardAutomatic,recoverAutomatic,resolveAutomatic,hiclassPartition};
 }
-module.exports = {HOME,partition,safeURL,payload,fingerprint,matchTarget,createStore,classKey,publication,remoteId};
+module.exports = {HOME,partition,safeURL,payload,fingerprint,createStore,classKey,publication,receipt,boardLink,recipients,remoteId};
