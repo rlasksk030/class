@@ -56,7 +56,7 @@
 | 업데이트 피드 | `nationwide.yml` SHA-256 `4db24f92f7d3638c13bca53287801d9dbaac054d8f422aab8aa8d2c7b23c89b8`. version 1.8.15, sha512·크기가 설치 파일과 일치 |
 | 설치 파일 속 업데이트 채널 | PASS: `update-config.json`(소스와 같음)과 `app-update.yml` 모두 generic `https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/`, channel `nationwide` |
 | 설치 파일 속 앱 | PASS: 버전 1.8.15, `app.asar` 파일 101/101 소스 `app/`와 같음 |
-| 배포 | 미실행(승인 대기). 할 일: `downloads/nationwide`(설치 파일·blockmap·`nationwide.yml`·README) → 태그 `nationwide-v1.8.15` → Latest가 아닌 Release |
+| 배포 | 완료(2026-11-12). `downloads/nationwide` `70a75a6`→`0144803`: 설치 파일·blockmap·`nationwide.yml`·README·SHA-256·노트·검증 JSON, 예전 설치 파일은 그대로. 태그 `nationwide-v1.8.15`→`c1024a7`, Release는 Latest가 아님(Latest는 옥구초 v1.8.14 그대로), 자산 5개. 공개 raw 주소의 설치 파일·blockmap·피드와 Release 자산 5개의 SHA-256이 모두 일치. 새 Actions 실행 0회 |
 | Windows 설치·업데이트·실행 | 미실행 |
 
 ## 스크린샷 (고치기 전 → 고친 뒤)
