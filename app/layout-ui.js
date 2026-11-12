@@ -6,7 +6,8 @@
  const cards=Object.fromEntries(L.IDS.map(id=>[id,main.querySelector(':scope>.'+id)]));
  const idOf=card=>L.IDS.find(id=>cards[id]===card);
  const make=(tag,props={},parent)=>{const el=document.createElement(tag);Object.assign(el,props);if(parent)parent.append(el);return el;};
- const HELP='칸 제목 줄을 끌어 옮기고, 오른쪽·아래 손잡이를 끌어 크기를 바꿉니다. 다른 칸 위에 놓으면 자리를 맞바꿉니다. 키보드: Tab 칸 선택 · 방향키 이동 · Shift+방향키 크기 · Esc 취소';
+ const HELP='칸 제목 줄을 끌어 옮기고, 가장자리를 끌어 크기를 바꿉니다.';
+ const MORE='다른 칸 위에 놓으면 자리를 맞바꿉니다. 숨긴 칸은 빈 칸으로 끌어다 놓거나 [다시 표시]를 누릅니다. 키보드: Tab 칸 선택 · 방향키 이동 · Shift+방향키 크기 · Esc 취소';
 
  // A missing value carries the old settings over once; broken JSON counts as broken.
  function stored(){let raw=null;try{raw=localStorage.getItem('boardLayout');}catch{}if(raw===null)return undefined;try{return JSON.parse(raw);}catch{return '';}}
@@ -19,23 +20,26 @@
  const toggle=make('button',{id:'layoutToggle',type:'button',textContent:'배치 편집'},controls);
  toggle.setAttribute('aria-pressed','false');
 
- const bar=make('div',{id:'layoutToolbar',className:'layout-toolbar',hidden:true},document.body);
+ // A row of its own between the header and the boards, so it never covers the class title,
+ // the clock, the weather or the screen tabs; the boards give up that height while editing.
+ const bar=make('div',{id:'layoutToolbar',className:'layout-toolbar',hidden:true});
+ document.querySelector('body>header').after(bar);
  bar.setAttribute('role','toolbar');bar.setAttribute('aria-label','배치 편집');
  make('strong',{className:'layout-heading',textContent:'배치 편집'},bar);
  const tray=make('div',{id:'layoutTray',className:'layout-tray'},bar);tray.setAttribute('aria-label','숨긴 칸');
+ // One short line of help (or the latest result); the rest of the guide sits behind [?].
+ const message=make('p',{id:'layoutMessage',className:'layout-message'},bar);message.setAttribute('role','status');
+ const helpButton=make('button',{id:'layoutHelp',type:'button',className:'layout-help',textContent:'?',title:'더 알아보기 · 키보드로 배치하기'},bar);
+ helpButton.setAttribute('aria-label','배치 편집 도움말');helpButton.setAttribute('aria-expanded','false');helpButton.setAttribute('aria-controls','layoutKeys');
  const actions=make('div',{className:'layout-actions'},bar);
  const fillButton=make('button',{id:'layoutFill',type:'button',textContent:'빈 칸 채우기'},actions);
  const resetButton=make('button',{id:'layoutReset',type:'button',textContent:'기본 배치로'},actions);
  const cancelButton=make('button',{id:'layoutCancel',type:'button',textContent:'취소'},actions);
  const doneButton=make('button',{id:'layoutDone',type:'button',className:'primary',textContent:'완료'},actions);
- const message=make('p',{id:'layoutMessage',className:'layout-message'},bar);message.setAttribute('role','status');
+ const keys=make('p',{id:'layoutKeys',className:'layout-keys',textContent:MORE,hidden:true},bar);
+ const showKeys=open=>{keys.hidden=!open;helpButton.setAttribute('aria-expanded',String(open));};
+ helpButton.onclick=()=>showKeys(keys.hidden);
  const say=text=>{message.textContent=text||HELP;};
- // Keep the weather card (and its size handles) uncovered when there is room beside it.
- function positionBar(){
-  const weather=document.querySelector('header>.weather'),box=weather?.getBoundingClientRect();
-  const room=box&&box.width?box.left-16-12:0;
-  bar.style.maxWidth=room>=460?room+'px':'';
- }
 
  // Grid lines, empty-slot marks and the drop preview are grid items, so they line up with
  // the real tracks; they are only displayed while editing.
@@ -49,11 +53,14 @@
 
  for(const id of L.IDS){
   const card=cards[id];
-  const hide=make('button',{type:'button',className:'layout-hide',textContent:'숨기기'},card);
+  // In the title row, where [수정]/[작성] sit (they are hidden while editing); it counts toward
+  // the board's title width, so it never covers the title or the status line at the bottom.
+  const hide=make('button',{type:'button',className:'layout-hide',textContent:'숨기기'},card.querySelector('.cardhead'));
   hide.dataset.layoutHide=id;hide.setAttribute('aria-label',names[id]+' 숨기기');
   for(const dir of ['e','s','se']){
    const handle=make('button',{type:'button',className:'layout-resize layout-resize-'+dir,tabIndex:-1},card);
    handle.dataset.layoutResize=dir;handle.setAttribute('aria-label',names[id]+' 크기 조절');handle.title='끌어서 크기 조절 · Shift+방향키로도 됩니다';
+   make('span',{className:'handle-mark'},handle); // the visible mark; the button around it is the touch area
   }
  }
 
@@ -135,7 +142,7 @@
   document.body.classList.add('layout-editing');bar.hidden=false;toggle.hidden=true;toggle.setAttribute('aria-pressed','true');
   for(const id of L.IDS){cards[id].tabIndex=0;cards[id].setAttribute('aria-roledescription','옮길 수 있는 칸');cards[id].setAttribute('aria-label',names[id]+' 칸');}
   window.weatherSize?.enable(true);
-  say();render();positionBar();
+  showKeys(false);say();render();
  }
  function end(commit){
   if(!editing)return;
@@ -268,7 +275,7 @@
  // Boards are re-measured whenever their own size changes (track changes do not resize <main>).
  const observer=new ResizeObserver(fitContents);
  Object.values(cards).forEach(card=>observer.observe(card));
- window.addEventListener('resize',()=>{scheduleTitles();if(editing)positionBar();});
+ window.addEventListener('resize',scheduleTitles);
  // Title text, the title editor and lock state change header widths; watch only the headers so
  // this code's own class and style changes never trigger it again.
  const titleWatcher=new MutationObserver(scheduleTitles);
