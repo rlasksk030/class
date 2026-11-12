@@ -1,6 +1,6 @@
 # 우리 교실 전국용 Windows 설치파일
 
-[전국용 v1.8.14 다운로드](https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/classroom-dashboard-nationwide-setup-1.8.14-x64.exe)
+[전국용 v1.8.15 다운로드](https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/classroom-dashboard-nationwide-setup-1.8.15-x64.exe)
 
 타이머 창에서 **PIP**를 누르면 작은 창을 항상 위에 표시할 수 있습니다. PIP에서 시작·일시정지·계속하기·다시 시작·초기화·완료 확인을 할 수 있고, 창을 닫아도 진행 중인 타이머는 유지됩니다. **시간 설정**을 누르면 본창으로 돌아갑니다.
 
@@ -10,6 +10,19 @@
 - 업데이트 전에 **설정 → 백업**을 한 번 해 두시면 안전합니다.
 
 옥구초 전용판은 별도 GitHub Release에서 업데이트됩니다. [옥구초 전용판 다운로드](https://github.com/rlasksk030/class/releases/latest)
+
+## v1.8.15 배치 편집 화면 다듬기
+
+[배치 편집]을 켰을 때 도구 막대·손잡이·[숨기기]가 학급 제목이나 칸 글자를 가리던 문제를 고쳤습니다. 칸을 옮기고 크기를 바꾸는 방법과 저장된 배치는 그대로입니다.
+
+- 도구 막대는 머리글 아래에 한 줄로 나타나고, 버튼이 커졌습니다. 키보드·맞바꾸기 안내는 **[?]**에 있습니다.
+- [숨기기]는 칸 제목 줄 오른쪽에, 격자선은 칸 뒤에 보입니다. 칸 제목 줄 왼쪽의 점 여섯 개가 옮기기 표시입니다.
+- 크기 손잡이는 가늘어졌지만, 터치로 잡는 영역은 그대로 넉넉합니다.
+- 평소 화면은 바뀌지 않았습니다.
+
+[Release 및 SHA-256](https://github.com/rlasksk030/class/releases/tag/nationwide-v1.8.15) · [검증 범위](v1.8.15-release-validation.json) · [사용 안내](https://github.com/rlasksk030/class/blob/fix/layout-edit-polish-nationwide/%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C_%EB%B0%B0%EC%B9%98%ED%8E%B8%EC%A7%91_%EC%82%AC%EC%9A%A9%EC%95%88%EB%82%B4.md)
+
+이 버전의 Windows 실행·설치·업데이트 검사는 아직 하지 않았습니다(NOT RUN).
 
 ## v1.8.14 대시보드 배치 편집 — 칸 옮기기·크기·숨기기
 
