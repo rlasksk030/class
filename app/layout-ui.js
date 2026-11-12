@@ -81,7 +81,9 @@
    if(!card.querySelector('.cardhead.title-editing')||!card.dataset.minWidth)card.dataset.minWidth=minimumWidth(card);
    card.style.minWidth=card.dataset.minWidth+'px';
   }
-  if(main.scrollWidth<=main.clientWidth+1)return;
+  // Compare the boards themselves with <main> (edit handles poke out on purpose and do not count).
+  const right=main.getBoundingClientRect().right;
+  if(shown.every(card=>card.getBoundingClientRect().right<=right+1))return;
   main.classList.add('layout-tight');
   for(const card of shown){
    card.style.minWidth='';
