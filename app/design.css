@@ -99,7 +99,7 @@ header .weather>.eyebrow{display:none}
 header #clock{display:block;font-family:var(--uc-font-main);font-weight:700;font-size:calc(74px * var(--s));line-height:1;letter-spacing:0;font-variant-numeric:tabular-nums;color:var(--uc-text)}
 
 /* D-Day (연보라 알약, 최대 2개): 제목만 말줄임, "D-3"은 항상 남김 */
-#ddayBadge,.date-dday-line #ddayBadge{position:static;display:flex;align-items:center;gap:calc(10px * var(--s));min-width:0;max-width:none;margin:0;padding:0;background:transparent;font-family:var(--uc-font-main)}
+#ddayBadge,.date-dday-line #ddayBadge{position:static;display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-start;flex:0 1 auto;gap:calc(10px * var(--s));min-width:0;max-width:none;margin:0;padding:0;background:transparent;font-family:var(--uc-font-main)}
 #ddayBadge:empty{display:none}
 #ddayBadge .uc-dday,.date-dday-line #ddayBadge span.uc-dday{display:inline-flex;align-items:center;gap:.35em;flex:0 1 auto;min-width:0;max-width:var(--uc-dday-max);height:max(32px,calc(40px * var(--s)));padding:0 .75em;border:0;border-radius:var(--uc-radius-pill);background:var(--uc-dday-bg);color:var(--uc-dday-text);font-family:var(--uc-font-main);font-weight:700;font-size:max(15px,calc(21px * var(--s)));line-height:1;white-space:nowrap;overflow:hidden}
 #ddayBadge .uc-dday--today,.date-dday-line #ddayBadge span.uc-dday--today{background:var(--uc-dday-today-bg);color:var(--uc-dday-today-text)}
@@ -219,7 +219,7 @@ main>.card.show-foot>.status:not(:empty){display:flex}
 /* 가로 6칸 (A05): "1교시 · 09:00" 작은 글 + 과목 큰 글 */
 .tt-row #timetable{flex-direction:row;align-items:stretch}
 .tt-row #timetable .lesson{flex:1 1 0;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);align-content:center;column-gap:6px;row-gap:6px;height:auto;padding:10px 12px}
-.tt-row #timetable .lesson b{grid-area:1/1;width:auto;height:auto;padding:0;background:transparent;color:var(--uc-text-2);font-size:max(13px,calc(15px * var(--s)))}
+.tt-row #timetable .lesson b{grid-area:1/1;display:inline-block;width:auto;height:auto;padding:0;background:transparent;color:var(--uc-text-2);font-size:max(13px,calc(15px * var(--s)))}
 .tt-row #timetable .lesson b::after{content:'교시'}
 .tt-row #timetable .lesson .lesson-time{grid-area:1/2;margin:0;font-size:max(13px,calc(15px * var(--s)))}
 .tt-row #timetable .lesson .lesson-time::before{content:'· '}
@@ -232,7 +232,7 @@ main>.card.show-foot>.status:not(:empty){display:flex}
 #meal{flex:1 1 0;min-height:0;font-size:var(--meal-fs,30px);display:grid;grid-template-columns:repeat(var(--meal-cols,1),minmax(0,1fr));grid-template-rows:repeat(var(--meal-rows,6),minmax(0,1fr));align-items:center;column-gap:calc(var(--meal-gap,10px) * 2);row-gap:var(--meal-gap,10px);margin:0;padding:var(--pad,18px);overflow:hidden;white-space:normal;line-height:1.25}
 #meal .meal-item{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.4em;min-width:0}
 #meal .meal-name{font-family:var(--uc-font-main);font-weight:700;font-size:var(--meal-fs,30px);color:var(--uc-text);word-break:keep-all;overflow-wrap:anywhere}
-#meal .meal-allergy{font-family:var(--uc-font-sub);font-size:calc(var(--meal-fs,30px) * .46);font-weight:400;color:var(--uc-text-3);letter-spacing:.02em}
+#meal .meal-allergy{font-family:var(--uc-font-sub);font-size:max(12px,calc(var(--meal-fs,30px) * .46));font-weight:400;color:var(--uc-text-3);letter-spacing:.02em}
 #meal>.empty{grid-column:1/-1;grid-row:1/-1;align-self:center;font-family:var(--uc-font-sub);font-size:16px;color:var(--uc-text-3)}
 
 /* ---------- 아래 도구 막대 (3-9) ---------- */
