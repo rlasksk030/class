@@ -1,0 +1,5 @@
+/* 앱에 들어 있는 글꼴 두 가지(인터넷에서 불러오지 않음). PIP 창처럼 okgu.css를 읽지 않는 창에서 씁니다. */
+@font-face{font-family:'Gowun Batang';src:url('../fonts/GowunBatang-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:'Gowun Batang';src:url('../fonts/GowunBatang-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
+@font-face{font-family:'Nanum Barun Gothic';src:url('../fonts/NanumBarunGothic.woff') format('woff');font-weight:400;font-display:swap}
+@font-face{font-family:'Nanum Barun Gothic';src:url('../fonts/NanumBarunGothicBold.woff') format('woff');font-weight:700;font-display:swap}
