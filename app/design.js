@@ -55,7 +55,8 @@
   // hidden rather than cut. Only a subject too long for its row (it would wrap past it) gets smaller.
   for(const time of el.querySelectorAll('.lesson-time')){time.hidden=false;if(time.textContent&&time.scrollWidth>time.clientWidth+1)time.hidden=true;}
   if(!wide){
-   const tooTall=()=>[...el.querySelectorAll('.lesson')].some(r=>{const sp=r.querySelector('span');return sp&&sp.getBoundingClientRect().height>r.clientHeight+1;});
+   // A subject on two lines (or taller than its row) means it no longer fits beside the number and tag.
+   const tooTall=()=>[...el.querySelectorAll('.lesson')].some(r=>{const sp=r.querySelector('span');if(!sp)return false;const h=sp.getBoundingClientRect().height;return h>r.clientHeight+1||h>parseFloat(getComputedStyle(sp).lineHeight)*1.4;});
    let size=parseFloat(el.style.getPropertyValue('--subject-fs'));
    while(size>13&&tooTall()){size-=1;set(el,'--subject-fs',size);}
   }
