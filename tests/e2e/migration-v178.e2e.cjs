@@ -24,7 +24,7 @@ const storage=page=>page.evaluate(()=>Object.fromEntries(Object.keys(localStorag
  await page.click('[data-edit=notices]:visible, [data-empty-edit=notices]:visible');await page.fill('#editText','체육복 챙기기');await page.click('#editForm .primary');
  await page.click('#screenSettings');await page.click('#openDdaySettings');await page.fill('#ddayTitle','수학여행');await page.fill('#ddayDate','2026-12-01');await page.click('#ddayForm .primary');await page.keyboard.press('Escape');
  await page.click('#screenSettings');await page.uncheck('[data-board-visible=meal]');const plus=page.locator('.preference-row',{has:page.locator('[data-board-visible=morning]')}).locator('button').nth(1);await plus.click();await plus.click();
- await page.click('#openPeriodSettings');await page.click('#periodForm .primary');await page.click('#enablePeriods');await page.keyboard.press('Escape');
+ await page.click('#openPeriodSettings');await page.click('#periodForm .primary');await page.check('#periodHighlight');await page.keyboard.press('Escape');
  await page.click('#resizeToggle');await page.focus('[data-resize=middle-column]');for(let i=0;i<3;i++)await page.keyboard.press('ArrowRight');await page.click('#resizeToggle');
  await page.click('#timerButton');await page.click('[data-minutes="3"]');await page.check('#timerSound');await page.keyboard.press('Escape');
  await page.click('#randomTab');await page.$eval('#rosterEditor',d=>d.open=true);await page.fill('#rosterText','김하늘\n이바다\n박구름\n최별\n정해');await page.click('#saveRoster');await page.$eval('#exclusionDetails',d=>d.open=true).catch(()=>{});await page.locator('#excludeList input').first().check();await page.click('#drawOne');await page.waitForTimeout(2500);

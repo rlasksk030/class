@@ -24,7 +24,7 @@ async function launch(){const app=await _electron.launch({executablePath:electro
  // ---------- 시간표 ----------
  ok('시간표 자동 조회',(await page.locator('#timetable .lesson').count())===6);
  ok('현재 교시 자동 강조(지금 교시만, 다음 교시 표시 없음)',(await page.locator('#timetable .lesson-current').count())===1&&(await page.locator('#timetable .lesson-next').count())===0&&!(await page.innerText('#timetable')).includes('다음')&&!(await page.innerText('header')).includes('다음'));
- await page.click('[data-edit=timetable]');await page.fill('#editText','1 | 국어\n2 | 영어');await page.click('#editForm .primary');
+ await page.click('[data-edit=timetable]');{const fields=page.locator('#timetableRows input');ok('시간표 수정 창: 교시마다 과목 칸 1~6교시',(await fields.count())===6&&(await page.textContent('#timetableRows')).includes('6교시')&&!(await page.isVisible('#editText')));for(let i=0;i<6;i++)await fields.nth(i).fill(['국어','영어'][i]||'');}await page.click('#editForm .primary');
  ok('시간표 당일 직접 수정',(await page.innerText('#timetable')).includes('영어')&&(await page.innerText('#timetableStatus')).includes('직접 수정'));
  await page.click('[data-edit=timetable]');await page.click('#restore');ok('원래 시간표로 되돌리기',(await page.locator('#timetable .lesson').count())===6);
  // ---------- 안내사항: 어제 내용 ----------

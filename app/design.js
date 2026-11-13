@@ -90,6 +90,18 @@
  const schedule=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(measure);};
 
  window.dashboardDesign={measure:schedule,scale:()=>s};
+
+ // Every small window shares one frame (4장): title top-left, [×] (44×44) top-right. Dialogs built
+ // elsewhere without their own [×] get one here; closing with it is the same as their [닫기]/[취소].
+ function frameDialog(d){
+  if(d.dataset.framed||d.querySelector('.close-extra,.dialog-close'))return;
+  d.dataset.framed='';
+  const x=document.createElement('button');x.type='button';x.className='uc-icon-btn dialog-close dialog-x';x.setAttribute('aria-label','닫기');x.title='닫기';
+  x.append(Object.assign(document.createElement('span'),{className:'uc-ico uc-ico--close'}));
+  x.onclick=()=>d.close();d.prepend(x);
+ }
+ document.querySelectorAll('dialog').forEach(frameDialog);
+ new MutationObserver(list=>{for(const m of list)for(const n of m.addedNodes){if(n.nodeType!==1)continue;if(n.matches('dialog'))frameDialog(n);n.querySelectorAll?.('dialog').forEach(frameDialog);}}).observe(document.body,{childList:true,subtree:true});
  addEventListener('resize',schedule);
  new ResizeObserver(schedule).observe(main);
  for(const c of main.querySelectorAll(':scope>.card'))new ResizeObserver(schedule).observe(c);
