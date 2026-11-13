@@ -1,0 +1,61 @@
+/* =========================================================
+   우리 교실 디자인 다듬기 (design/우리교실_디자인적용_지시서.md)
+   불러오는 순서: ui/tokens.css → ui/components.css → ui/icons.css → 기존 CSS → 이 파일.
+   색은 --uc-* 변수만 씁니다. 어두운 테마 · 그라데이션 · 흐림 효과 · 애니메이션 없음.
+   ========================================================= */
+
+/* ---------- 1단계: 기본 모양 (배치는 그대로) ---------- */
+/* hidden 속성은 언제나 숨김 (아래에서 버튼 등에 display를 주므로) */
+[hidden]{display:none!important}
+:root{font-family:var(--uc-font-sub);color:var(--uc-text);background:var(--uc-bg)}
+body{background:var(--uc-bg);color:var(--uc-text);font-family:var(--uc-font-sub)}
+
+/* 학생이 읽는 글은 고운바탕, 교사가 누르고 읽는 글은 나눔바른고딕 */
+h1,h2,#clock,#date,#timetable,.lesson,#meal,#morning,#notices,.weather strong,#timerDisplay,.uc-num{font-family:var(--uc-font-main)}
+button,input,select,textarea,label,legend,summary,output{font-family:var(--uc-font-sub)}
+textarea{font-family:var(--uc-font-main)}
+
+/* 버튼 3단계: 보통 · 주요(.primary) · 글자(.uc-btn--ghost) — 모두 44×44 이상 */
+button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:var(--uc-touch-min);min-height:var(--uc-touch-min);padding:0 16px;border:1px solid var(--uc-line-strong);border-radius:var(--uc-radius-md);background:var(--uc-surface);color:var(--uc-text);font-size:15px;font-weight:700;line-height:1.2;white-space:nowrap;cursor:pointer}
+button:hover{background:var(--uc-surface)}
+button:active{filter:brightness(.96)}
+button:focus-visible{outline:3px solid var(--uc-primary);outline-offset:2px}
+button:disabled{background:var(--uc-surface-2);border-color:var(--uc-line);color:var(--uc-text-disabled);opacity:1;cursor:default}
+button.primary,.primary{border:none;background:var(--uc-primary);color:var(--uc-on-primary)}
+button.primary:hover{background:var(--uc-primary)}
+button.primary:disabled{background:#C9D1DD;color:#FFFFFF}
+
+/* 입력 칸 · 선택 상자 · 글 상자: 포커스는 남색 2px (브라우저 기본 파란 테두리 대신) */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),select{min-width:0;min-height:48px;padding:0 14px;border:1px solid var(--uc-line-strong);border-radius:var(--uc-radius-md);background:var(--uc-surface);color:var(--uc-text);font-size:16px;outline:none}
+textarea{min-width:0;padding:14px 16px;border:1px solid var(--uc-line-strong);border-radius:var(--uc-radius-md);background:var(--uc-surface);color:var(--uc-text);line-height:1.7;outline:none}
+input:not([type="checkbox"]):not([type="radio"]):focus,select:focus,textarea:focus{border-color:var(--uc-primary);box-shadow:inset 0 0 0 1px var(--uc-primary);outline:none}
+select{appearance:none;-webkit-appearance:none;padding-right:40px;background:var(--uc-surface) url("ui/icons/chevron-down.svg") no-repeat right 14px center/18px}
+label{color:var(--uc-text);font-size:15px;font-weight:700}
+input::placeholder,textarea::placeholder{color:var(--uc-text-3)}
+
+/* 체크박스 · 라디오: 상자 24px, 누르는 줄 48px */
+input[type="checkbox"]:not(.uc-switch){appearance:none;-webkit-appearance:none;flex:none;width:24px;height:24px;margin:0;padding:0;border:2px solid var(--uc-text-disabled);border-radius:var(--uc-radius-sm);background:var(--uc-surface);cursor:pointer}
+input[type="checkbox"]:not(.uc-switch):checked{border-color:var(--uc-primary);background:var(--uc-primary) url("ui/icons/check-white.svg") center/16px no-repeat}
+input[type="checkbox"]:not(.uc-switch):disabled{border-color:var(--uc-line-strong);background-color:var(--uc-surface-2);cursor:default}
+input[type="checkbox"]:focus-visible,input[type="radio"]:focus-visible{outline:3px solid var(--uc-primary);outline-offset:2px}
+input[type="radio"]{appearance:none;-webkit-appearance:none;flex:none;width:22px;height:22px;margin:0;padding:0;border:2px solid var(--uc-text-disabled);border-radius:50%;background:var(--uc-surface);cursor:pointer}
+input[type="radio"]:checked{border-color:var(--uc-primary);background:radial-gradient(var(--uc-primary) 0 5px,var(--uc-surface) 6px)}
+.check,label.check{display:flex;align-items:center;gap:12px;min-height:48px;margin:0;font-size:16px;font-weight:400;cursor:pointer}
+.check input{width:24px;margin:0}
+
+/* 대화 상자: 흐림 없는 회색 덮개, 모서리 20, 그림자 하나 */
+dialog{width:min(680px,calc(100vw - 48px));max-width:calc(100vw - 48px);max-height:calc(100vh - 48px);padding:28px 32px 24px;border:1px solid var(--uc-line);border-radius:var(--uc-radius-xl);background:var(--uc-surface);color:var(--uc-text);box-shadow:var(--uc-shadow-dialog)}
+dialog::backdrop{background:var(--uc-overlay);backdrop-filter:none}
+dialog h2{margin:0;font-family:var(--uc-font-main);font-size:var(--uc-fs-title);font-weight:700;line-height:1.25;letter-spacing:0;color:var(--uc-text)}
+dialog p,dialog small{font-size:15px;line-height:1.6;color:var(--uc-text-2);word-break:keep-all}
+dialog .actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--uc-line-soft)}
+
+/* 탭: 고운바탕 18px, 선택된 탭은 남색 바탕 흰 글자 */
+.screen-tabs button{height:52px;padding:0 20px;border:none;border-radius:12px;background:transparent;color:var(--uc-text-2);font-family:var(--uc-font-main);font-size:18px;font-weight:700}
+.screen-tabs button[aria-selected="true"]{background:var(--uc-primary);color:var(--uc-on-primary)}
+
+/* 연한 회색 글자 대신 --uc-text-3 이상 */
+.status,.eyebrow,footer,.empty,.extras-message,dialog small{color:var(--uc-text-3)}
+
+/* 바탕이 회색(--uc-bg)이 되었으므로 머리글 안 묶음은 바탕을 비웁니다 */
+header>.weather.card,#ddayBadge{background:transparent}
