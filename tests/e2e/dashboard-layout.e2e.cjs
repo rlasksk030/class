@@ -57,7 +57,7 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
  await reload();
 
  // ---------- Default board ----------
- ok('기본 배치 = 시간표 1-3열 · 아침활동/안내사항 4-10열(4:2행) · 급식 11-12열',L.equal(await current(),L.defaults())&&L.equal(await saved(),L.defaults()));
+ ok('기본 배치(A) = 시간표 1-3열 · 아침활동/안내사항 4-9열(4:2행) · 급식 10-12열',L.equal(await current(),L.defaults())&&L.equal(await saved(),L.defaults()));
  let g=await geometry();ok('기본 배치: 겹침·잘림 없음',!g.issues.length,JSON.stringify(g));
  ok('평소에는 격자선·빈 칸·편집 도구가 보이지 않음',!(await page.isVisible('#layoutToolbar'))&&!(await page.locator('main>.layout-cell').first().isVisible())&&!(await page.isVisible('.layout-hide')));
  await page.screenshot({path:path.join(OUT,'layout-default.png')});
@@ -76,7 +76,7 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
  await page.click('main>.meal .layout-hide');await frames();
  ok('급식 숨기기: 칸이 사라지고 빈 칸 표시',!(await page.isVisible('main>.meal'))&&(await page.locator('main>.layout-empty').count())===1&&(await page.textContent('#layoutTray')).includes('급식'));
  const emptyBox=await box('main>.layout-empty'),mainBox=await box('main');
- ok('빈 칸은 오른쪽 끝 두 열 전체',Math.abs(emptyBox.x+emptyBox.width-(mainBox.x+mainBox.width))<=1&&Math.abs(emptyBox.height-mainBox.height)<=1);
+ ok('빈 칸은 오른쪽 끝 세 열 전체',Math.abs(emptyBox.x+emptyBox.width-(mainBox.x+mainBox.width))<=1&&Math.abs(emptyBox.height-mainBox.height)<=1);
  // Stretch notices to the right edge with its side handle.
  const morningFont=await page.$eval('#morning',e=>parseFloat(e.style.fontSize));
  const handle=await box('main>.notices .layout-resize-e'),edge=await cell(12,6);
@@ -118,12 +118,12 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
 
  // ---------- Moving and swapping (mouse) ----------
  await page.click('#layoutToggle');
- let from=await head('timetable',2),to=await cell(12,3);
+ let from=await head('timetable',2),to=await cell(7,2);
  await press(from);await moveTo(from,to);
  ok('다른 칸 위로 끌면 맞바꾸기 미리보기',(await previewState())==='swap');
  await page.mouse.up();await frames();
  let l=await current();
- ok('시간표↔급식 자리 맞바꾸기(크기가 달라도)',at(l,'timetable')==='11,1,2,6,true'&&at(l,'meal')==='1,1,3,6,true',at(l,'timetable')+' / '+at(l,'meal'));
+ ok('시간표↔아침활동 자리 맞바꾸기(크기가 달라도)',at(l,'timetable')==='4,1,6,4,true'&&at(l,'morning')==='1,1,3,6,true',at(l,'timetable')+' / '+at(l,'morning'));
  g=await geometry();ok('맞바꾼 뒤 겹침·잘림 없음',!g.issues.length,JSON.stringify(g));
  await page.click('#layoutCancel');await frames();
  ok('[취소]로 맞바꾸기 되돌림',L.equal(await current(),L.defaults()));
@@ -131,9 +131,9 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
  await page.click('#layoutToggle');await page.click('main>.notices .layout-hide');
  from=await head('morning',5);to=await cell(5,3);
  await press(from);await moveTo(from,to);ok('빈 자리로 옮기기 미리보기',(await previewState())==='ok');await page.mouse.up();await frames();
- ok('아침활동을 아래 빈 자리로 옮김',at(await current(),'morning')==='4,3,7,4,true',at(await current(),'morning'));
+ ok('아침활동을 아래 빈 자리로 옮김',at(await current(),'morning')==='4,3,6,4,true',at(await current(),'morning'));
  await page.click('#layoutReset');await page.click('main>.meal .layout-hide');await frames();
- from=await head('timetable',2);to=await cell(11,2);
+ from=await head('timetable',2);to=await cell(10,2);
  await press(from);await moveTo(from,to);
  ok('칸 두 개에 걸치는 자리는 빨간색',(await previewState())==='bad');
  await page.mouse.up();await frames();
@@ -143,19 +143,19 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
  const cp={x:chip.x+chip.width/2,y:chip.y+chip.height/2};await press(cp);await moveTo(cp,slot);
  ok('숨긴 칸을 빈 칸으로 끌면 놓일 자리 미리보기',(await previewState())==='ok');
  await page.mouse.up();await frames();
- ok('보관함에서 끌어다 놓아 다시 표시',at(await current(),'meal')==='11,1,2,6,true'&&(await page.textContent('#layoutTray')).includes('없음'));
+ ok('보관함에서 끌어다 놓아 다시 표시',at(await current(),'meal')==='10,1,3,6,true'&&(await page.textContent('#layoutTray')).includes('없음'));
  await page.click('main>.meal .layout-hide');await page.click('#layoutTray [data-layout-show=meal]');await frames();
- ok('[다시 표시] 버튼',at(await current(),'meal')==='11,1,2,6,true');
+ ok('[+ 칸 이름] 다시 표시 버튼',at(await current(),'meal')==='10,1,3,6,true');
 
  // ---------- Keyboard ----------
  await page.focus('main>.notices');await page.keyboard.press('Shift+ArrowLeft');
- ok('Shift+←: 크기 줄이기',at(await current(),'notices')==='4,5,6,2,true');
+ ok('Shift+←: 크기 줄이기',at(await current(),'notices')==='4,5,5,2,true');
  await page.keyboard.press('ArrowRight');
- ok('→: 빈 자리로 한 칸 이동',at(await current(),'notices')==='5,5,6,2,true');
+ ok('→: 빈 자리로 한 칸 이동',at(await current(),'notices')==='5,5,5,2,true');
  await page.focus('main>.timetable');await page.keyboard.press('ArrowRight');
- ok('→: 옆 칸과 자리 맞바꾸기',at(await current(),'timetable')==='4,1,7,4,true'&&at(await current(),'morning')==='1,1,3,6,true');
+ ok('→: 옆 칸과 자리 맞바꾸기',at(await current(),'timetable')==='4,1,6,4,true'&&at(await current(),'morning')==='1,1,3,6,true');
  await page.keyboard.press('Shift+ArrowDown');
- ok('Shift+↓: 겹치면 크기 바꾸지 않음',at(await current(),'timetable')==='4,1,7,4,true'&&(await message()).includes('더 늘이거나'));
+ ok('Shift+↓: 겹치면 크기 바꾸지 않음',at(await current(),'timetable')==='4,1,6,4,true'&&(await message()).includes('더 늘이거나'));
  await page.keyboard.press('Escape');await frames();
  ok('Esc: 편집 취소',!(await page.isVisible('#layoutToolbar'))&&L.equal(await current(),L.defaults()));
 
@@ -170,14 +170,15 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await frames();
  await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:false});
  l=await current();
- ok('터치(pointerType touch)로 끌어 맞바꾸기',(await page.evaluate(()=>window.__pointerTypes)).includes('touch')&&at(l,'meal')==='1,1,3,6,true'&&at(l,'timetable')==='11,1,2,6,true',JSON.stringify(await page.evaluate(()=>window.__pointerTypes)));
+ ok('터치(pointerType touch)로 끌어 맞바꾸기',(await page.evaluate(()=>window.__pointerTypes)).includes('touch')&&at(l,'meal')==='1,1,3,6,true'&&at(l,'timetable')==='10,1,3,6,true',JSON.stringify(await page.evaluate(()=>window.__pointerTypes)));
  await page.click('#layoutDone');
 
  // ---------- Lock ----------
  await page.click('#screenLock');
  ok('대시보드 잠금 시 [배치 편집] 비활성',await page.isDisabled('#layoutToggle')&&(await page.evaluate(()=>{window.boardLayout.begin();return window.boardLayout.editing();}))===false);
  await page.click('#screenLock');await frames();
- await page.click('#layoutToggle');await page.click('main>.notices .layout-hide');await page.click('#screenLock');await frames();
+ await page.click('#layoutToggle');ok('편집 중에는 아래 막대 자리에 편집 막대만',await page.isVisible('#layoutToolbar')&&!(await page.isVisible('#screenLock'))&&!(await page.isVisible('.screen-tabs')));
+ await page.click('main>.notices .layout-hide');await page.evaluate(()=>document.getElementById('screenLock').click());await frames();
  ok('편집 중 잠그면 지금까지 배치를 저장하고 편집 종료',!(await page.evaluate(()=>window.boardLayout.editing()))&&at(await saved(),'notices').endsWith('false'));
  await page.click('#screenLock');await frames();
 
@@ -260,7 +261,7 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
   ok(`${w}×${h} 편집 모드: 도구 막대·날씨 손잡이·[숨기기]가 머리글·카드 글자를 가리지 않음`,!r.cover.length,JSON.stringify(r.cover));
   ok(`${w}×${h} 편집 모드: 격자선은 카드 뒤(내용 한가운데에서 카드가 잡힘)`,!r.centre.length,JSON.stringify(r.centre));
   ok(`${w}×${h} 크기 손잡이·도구 막대 버튼: 잡는 영역 44×44 이상, 버튼 글씨 16px 이상`,!r.small.length,JSON.stringify(r.small));
-  ok(`${w}×${h} 기본 안내 한 줄 · 제목 줄 옮기기 표시`,r.lines===1&&r.message==='칸 제목 줄을 끌어 옮기고, 가장자리를 끌어 크기를 바꿉니다.'&&r.grip!=='none',JSON.stringify([r.lines,r.message,r.grip]));
+  ok(`${w}×${h} 기본 안내 한 줄 · 끌기 손잡이(점 6개) 표시`,r.lines===1&&r.message==='점 6개를 끌어 옮기고, 오른쪽 아래 모서리를 끌어 크기를 바꿉니다.'&&r.grip!=='none',JSON.stringify([r.lines,r.message,r.grip]));
   if(w===1440){
    await page.click('#layoutHelp');
    ok('[?]: 키보드·맞바꾸기 안내를 펼침',await page.isVisible('#layoutKeys')&&(await page.textContent('#layoutKeys')).includes('Shift+방향키')&&await page.getAttribute('#layoutHelp','aria-expanded')==='true');

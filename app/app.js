@@ -21,11 +21,31 @@ async function neis(endpoint,params,s=settings){
  return first.data;
 }
 function textLine(parent,text,cls){const el=document.createElement('div');el.textContent=text;if(cls)el.className=cls;parent.append(el);return el;}
+// Small DOM helpers for the refreshed design (no HTML style attributes: CSP style-src 'self').
+function ucIcon(name){const el=document.createElement('span');el.className='uc-ico uc-ico--'+name;el.setAttribute('aria-hidden','true');return el;}
+const EMPTY={morning:{icon:'morning-sun',message:'오늘 아침활동이 아직 없어요',sub:'한 번 저장하면 매일 자동으로 표시됩니다',button:'아침활동 작성'},notices:{icon:'notice-star',message:'오늘 안내사항이 없어요',sub:'작성하면 학생 화면에 크게 표시됩니다',button:'안내사항 작성'}};
+// Empty morning/notices board: a dashed box with one write button that opens the same editor as [수정]/[작성].
+function emptyState(kind){
+ const e=EMPTY[kind],box=document.createElement('div');box.className='uc-empty board-empty';
+ const msg=document.createElement('p');msg.className='uc-empty__msg';msg.textContent=e.message;
+ const sub=document.createElement('p');sub.className='uc-empty__sub';sub.textContent=e.sub;
+ const write=document.createElement('button');write.type='button';write.className='board-empty-write';write.dataset.emptyEdit=kind;
+ write.append(ucIcon("plus"),document.createTextNode(e.button));
+ write.onclick=()=>document.querySelector(`[data-edit="${kind}"]`)?.click();
+ box.append(ucIcon(e.icon),msg,sub,write);return box;
+}
+// "쇠고기미역국 (5.6.13.16.)" is shown as the name with "5·6·13·16" beside it; the saved text is unchanged.
+function mealItem(text){
+ const m=String(text).match(/^(.*?)\s*\(\s*([0-9][0-9.,\s]*)\)\s*$/),row=document.createElement('div');row.className='meal-item';
+ const name=document.createElement('span');name.className='meal-name';name.textContent=m?m[1]:text;row.append(name);
+ if(m){const numbers=m[2].split(/[.,\s]+/).filter(Boolean);if(numbers.length){row.append(document.createTextNode(' '));const a=document.createElement('span');a.className='meal-allergy';a.textContent=numbers.join('·');row.append(a);}}
+ return row;
+}
 let fitFrame;
 function fitContents(){
  cancelAnimationFrame(fitFrame);
  fitFrame=requestAnimationFrame(()=>{
-  for(const id of ['morning','notices','meal','timetable']){
+  for(const id of ['morning','notices']){ // timetable and meal: design.js sets their sizes
    const el=$(id),max=(Number(getComputedStyle(el).getPropertyValue('--max-font'))||32)*(window.boardFontScales?.[id]||1);
    // Measure real wrapping and available height after headers/status labels.
    let low=1,high=max;
@@ -44,10 +64,13 @@ function render(){
  // "학교 ○학년 ○반" only when all three are set (the 옥구초 app always has a school, even before
  // the class is chosen on first run); a school alone shows its name, nothing shows '우리 교실'.
  $('classTitle').textContent=!settings.school?'우리 교실':settings.grade&&settings.classroom?`${settings.school.SCHUL_NM} ${settings.grade}학년 ${settings.classroom}반`:settings.school.SCHUL_NM;
- $('morning').textContent=morningText||'아침활동을 저장하면 매일 자동으로 표시됩니다.';
- $('notices').textContent=notes[day]?.notices||'';
+ for(const [kind,text] of [['morning',morningText],['notices',notes[day]?.notices||'']]){
+  const el=$(kind),empty=!String(text||'').trim();
+  el.closest('.card').classList.toggle('is-empty',empty);
+  if(empty)el.replaceChildren(emptyState(kind));else el.textContent=text;
+ }
  for(const kind of ['timetable','meal']){const el=$(kind);el.replaceChildren();if(!settings.school){textLine(el,'설정에서 학교를 선택해 주세요.','empty');continue;}const key=Core.dataKey(settings,day,kind),entry=cache[key],value=Core.display(overrides[key],entry);
- if(value===undefined)textLine(el,errors[kind]||'오늘 정보를 불러오고 있습니다.','empty');else if(!value.length)textLine(el,kind==='meal'?'오늘은 급식이 없습니다.':'오늘은 등록된 수업이 없습니다.','empty');else if(kind==='meal')el.textContent=value.join('\n');else value.forEach((v,i)=>{const row=textLine(el,'','lesson');const n=document.createElement('b');n.textContent=v.period||i+1;row.append(n);const sub=document.createElement('span');sub.textContent=v.subject;row.append(sub);});
+ if(value===undefined)textLine(el,errors[kind]||'오늘 정보를 불러오고 있습니다.','empty');else if(!value.length)textLine(el,kind==='meal'?'오늘은 급식이 없습니다.':'오늘은 등록된 수업이 없습니다.','empty');else if(kind==='meal')el.replaceChildren(...value.map(mealItem));else value.forEach((v,i)=>{const row=textLine(el,'','lesson');const n=document.createElement('b');n.textContent=v.period||i+1;row.append(n);const sub=document.createElement('span');sub.textContent=v.subject;row.append(sub);});
  $(kind+'Status').textContent=overrides[key]!==undefined?'직접 수정한 오늘의 정보':entry?`${errors[kind]?'연결 실패 · 저장된 정보':'자동 조회'} · ${new Date(entry.time).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}`:'';
  }
 }
@@ -65,7 +88,26 @@ async function locationFor(s){if(s.locationMode==='manual')return {...s.manual,s
 }
 const weatherLabel=c=>c===0?'맑음':c<=3?'구름 조금':c<=48?'안개':c<=67?'비':c<=77?'눈':c<=82?'소나기':c<=86?'눈':c>=95?'뇌우':'날씨';
 const weatherKey=s=>s.locationMode==='manual'?`manual:${s.manual.lat}:${s.manual.lon}`:`auto:${s.school?.SD_SCHUL_CODE||'none'}`;
-function showWeather(entry,failed=false){const el=$('weather');el.replaceChildren();if(!entry){textLine(el,failed?'날씨 정보를 불러오지 못했습니다':'날씨를 확인하고 있습니다','status');return;}const w=entry.data;const strong=document.createElement('strong');strong.textContent=`${weatherLabel(w.current.weather_code)} ${Math.round(w.current.temperature_2m)}°`;el.append(strong);textLine(el,`최고 ${Math.round(w.daily.temperature_2m_max[0])}° / 최저 ${Math.round(w.daily.temperature_2m_min[0])}°`);const rain=w.daily.precipitation_probability_max[0];textLine(el,`강수확률 ${rain==null?'—':rain+'%'}`);const pm=entry.pm;textLine(el,pm==null?'미세먼지 정보 없음':`미세먼지(PM10) 예측 ${Math.round(pm)} μg/m³`);textLine(el,`${entry.source} · ${new Date(entry.time).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}${failed?' · 저장된 날씨':''}`,'status');}
+// PM10 grades used in Korea: 좋음 0–30, 보통 31–80, 나쁨 81–150, 매우 나쁨 151 이상.
+const dustGrade=pm=>pm<=30?['good','좋음']:pm<=80?['normal','보통']:pm<=150?['bad','나쁨']:['verybad','매우 나쁨'];
+// Cloud with the sun: the sun stays yellow (--uc-sun), the cloud follows the text color.
+function weatherIcon(){
+ const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('class','weather-icon');svg.setAttribute('aria-hidden','true');
+ for(const [cls,d] of [['weather-icon__sun','M9 2.5v1.5 M3.3 4.8l1.1 1.1 M1.5 10.5H3 M14.7 4.8l-1.1 1.1 M5.4 12.6a4 4 0 1 1 7.2-3.6'],['weather-icon__cloud','M17.5 20.5H8.5a4 4 0 1 1 1-7.9A5.5 5.5 0 0 1 20 14.2a3.3 3.3 0 0 1-2.5 6.3z']]){const path=document.createElementNS(ns,'path');path.setAttribute('d',d);path.setAttribute('class',cls);svg.append(path);}
+ return svg;
+}
+function showWeather(entry,failed=false){const el=$('weather');el.replaceChildren();$('weatherSource').textContent='';if(!entry){textLine(el,failed?'날씨 정보를 불러오지 못했습니다':'날씨를 확인하고 있습니다','status');return;}const w=entry.data;
+el.append(weatherIcon());
+const strong=document.createElement('strong');strong.className='weather-temp';strong.textContent=`${Math.round(w.current.temperature_2m)}°`;el.append(strong);
+const info=document.createElement('div');info.className='weather-info';el.append(info);
+textLine(info,weatherLabel(w.current.weather_code),'weather-label');
+const rain=w.daily.precipitation_probability_max[0];textLine(info,`최고 ${Math.round(w.daily.temperature_2m_max[0])}° · 최저 ${Math.round(w.daily.temperature_2m_min[0])}° · 강수 ${rain==null?'—':rain+'%'}`,'weather-range');
+const pm=entry.pm,dust=document.createElement('span');
+if(pm==null){dust.className='uc-dust weather-dust weather-dust--none';dust.textContent='미세먼지 정보 없음';}else{const [grade,label]=dustGrade(pm);dust.className='uc-dust weather-dust uc-dust--'+grade;dust.textContent=`미세먼지 ${label} ${Math.round(pm)}㎍/㎥`;}
+info.append(dust);
+const when=new Date(entry.time),at=when.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+textLine(el,`${entry.source} · ${at}${failed?' · 저장된 날씨':''}`,'status');
+$('weatherSource').textContent=`날씨 · ${entry.source} ${when.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',hour12:false})} 기준${failed?'(저장된 날씨)':''} / `;}
 let weatherRun=0;
 async function refreshWeather(){const run=++weatherRun,s=structuredClone(settings),key=weatherKey(s),old=read('weather:'+key,null);showWeather(old);try{const p=await locationFor(s);if(!validPoint(p))throw Error('위치 없음');const params={latitude:p.lat,longitude:p.lon,timezone:'Asia/Seoul'};const u=new URL('https://api.open-meteo.com/v1/forecast');u.search=new URLSearchParams({...params,current:'temperature_2m,weather_code',daily:'temperature_2m_max,temperature_2m_min,precipitation_probability_max',forecast_days:'1'});const data=await request(u.href);if(!data.current||!data.daily)throw Error('날씨 응답 오류');const entry={data,time:Date.now(),source:p.source,pm:null};put('weather:'+key,entry);if(run===weatherRun)showWeather(entry);try{const air=new URL('https://air-quality-api.open-meteo.com/v1/air-quality');air.search=new URLSearchParams({...params,current:'pm10'});entry.pm=(await request(air.href)).current?.pm10??null;put('weather:'+key,entry);if(run===weatherRun)showWeather(entry);}catch{}}catch{if(run===weatherRun)showWeather(old,true);}}
 function tick(){const now=new Date();$('date').textContent=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',weekday:'long'}).format(now);$('clock').textContent=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(now);const next=Core.dateKey(now);if(next!==day){day=next;generation++;if($('editDialog').open)$('editDialog').close();render();refreshSchool();refreshWeather();}}

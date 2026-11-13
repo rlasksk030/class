@@ -21,7 +21,7 @@ function update(data){if(!data?.state)return;const changed=kind!==data.kind;kind
   clock.hidden=!visible('time');clock.textContent=relevant.time;
   current.hidden=!visible('currentPeriod')&&!visible('currentSubject');current.textContent=lesson('current')||(relevant.scheduleSet?'지금은 쉬는 시간':'교시 시간을 설정해 주세요');
   next.hidden=!visible('nextPeriod')&&!visible('nextSubject');next.textContent=lesson('next')?'다음 '+lesson('next'):'다음 수업 없음';
-  let timer=root.querySelector('.pip-timer');if(relevant.timer&&visible('timer')){if(!timer){timer=button('',root,()=>command({type:'timer'}));timer.className='pip-timer';}timer.textContent='⏱ '+relevant.timer+(relevant.timerState==='paused'?' · 일시정지':'');}else timer?.remove();
+  let timer=root.querySelector('.pip-timer');if(relevant.timer&&visible('timer')){if(!timer){timer=button('',root,()=>command({type:'timer'}));timer.className='pip-timer';}timer.textContent=relevant.timer+(relevant.timerState==='paused'?' · 일시정지':'');}else timer?.remove();
  }else if(kind==='timer'){
   let wrap=root.querySelector('.timer-pip');
   if(!wrap){

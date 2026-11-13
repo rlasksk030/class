@@ -20,36 +20,42 @@ async function setLock(page,on){if((await page.evaluate(()=>!!window.dashboardLo
  await page.screenshot({path:OUT+'/'+(process.argv[4]||'new')+'-01-default-locked.png'});
  if(process.argv[4]==='orig'){await app.close();return;}
  const before=await body(page);
- ok('1. 기본 제목 표시',(await title(page,'morning'))==='☀ 아침활동'&&(await title(page,'notices'))==='✳ 안내사항',await title(page,'morning'));
+ const editing=()=>page.evaluate(()=>window.boardLayout.editing());
+ const arrange=async on=>{if((await editing())!==on)await page.click(on?'#layoutToggle':'#layoutDone');await page.waitForTimeout(150);};
+ ok('1. 기본 제목 표시(아이콘은 글자 앞 그림)',(await title(page,'morning'))==='아침활동'&&(await title(page,'notices'))==='안내사항'&&await page.isVisible('.morning h2 .uc-ico--morning-sun')&&await page.isVisible('.notices h2 .uc-ico--notice-star'),await title(page,'morning'));
  // 10. locked: no edit
  ok('10a. 잠금 시 연필 숨김',!(await page.isVisible('.morning .board-title-edit')));
  await page.dblclick('.morning .board-title');ok('10b. 잠금 시 더블클릭 편집 불가',!(await page.$('.board-title-editor')));
  await setLock(page,false);ok('11a. 잠금 해제',await unlocked(page));
- ok('11b. 잠금 해제 시 연필 표시',await page.isVisible('.morning .board-title-edit'));
+ // Titles change only in [배치 편집]; the normal dashboard shows just [수정]/[작성].
+ ok('11b. 평소 화면에는 연필 없음',!(await page.isVisible('.morning .board-title-edit'))&&await page.isVisible('[data-edit=morning]'));
+ await page.dblclick('.morning .board-title');ok('11c. 평소 화면에서 더블클릭해도 편집 안 됨',!(await page.$('.board-title-editor')));
+ await arrange(true);ok('11d. [배치 편집]에서 연필 표시',await page.isVisible('.morning .board-title-edit')&&await page.isVisible('.notices .board-title-edit'));
  await page.screenshot({path:OUT+'/new-02-unlocked.png'});
  // 2+4 Enter save
  await page.click('.morning .board-title-edit');
  const headBefore=(await layout(page)).morning.head;
  await page.screenshot({path:OUT+'/new-03-editing.png'});
- ok('4a. 편집 중 헤더 높이 유지',(await layout(page)).morning.head===base.morning.head,`${headBefore} vs ${base.morning.head}`);
+ ok('4a. 편집 중 헤더 높이 유지',headBefore===base.morning.head,`${headBefore} vs ${base.morning.head}`);
  await page.fill('.board-title-editor input','오늘 할 일');await page.keyboard.press('Enter');
- ok('2/4. 아침활동 Enter 저장',(await title(page,'morning'))==='☀ 오늘 할 일');
- // 5 Esc cancel
- await page.dblclick('.morning .board-title');await page.fill('.board-title-editor input','취소될 제목');await page.keyboard.press('Escape');
- ok('5. Esc 취소',(await title(page,'morning'))==='☀ 오늘 할 일'&&!(await page.$('.board-title-editor')));
+ ok('2/4. 아침활동 Enter 저장',(await title(page,'morning'))==='오늘 할 일'&&await editing());
+ // 5 Esc cancel (only the title edit; [배치 편집] stays on)
+ await page.click('.morning .board-title-edit');await page.fill('.board-title-editor input','취소될 제목');await page.keyboard.press('Escape');
+ ok('5. Esc 취소',(await title(page,'morning'))==='오늘 할 일'&&!(await page.$('.board-title-editor'))&&await editing());
  // 3+6 notices, outside click save
  await page.click('.notices .board-title-edit');await page.fill('.board-title-editor input','꼭 확인하세요');await page.mouse.click(700,450);
  await page.click('#meal');
- ok('3/6. 안내사항 바깥 클릭 저장',(await title(page,'notices'))==='✳ 꼭 확인하세요',await title(page,'notices'));
+ ok('3/6. 안내사항 바깥 클릭 저장',(await title(page,'notices'))==='꼭 확인하세요',await title(page,'notices'));
  // Korean IME-like: typing real Korean with keyboard.type
- await page.dblclick('.notices .board-title');await page.keyboard.press('Control+A');await page.keyboard.type('꼭 확인하세요');await page.keyboard.press('Enter');
+ await page.click('.notices .board-title-edit');await page.keyboard.press('Control+A');await page.keyboard.type('꼭 확인하세요');await page.keyboard.press('Enter');
  // 13 long title
  await page.click('.morning .board-title-edit');const ml=await page.$eval('.board-title-editor input',i=>i.maxLength);await page.fill('.board-title-editor input','가'.repeat(45));const len=await page.$eval('.board-title-editor input',i=>i.value.length);await page.keyboard.press('Enter');
+ await arrange(false);
  const L=await layout(page);const tmorning=await title(page,'morning');
  const cut=await page.$eval('.morning .board-title',h=>h.scrollWidth>h.clientWidth);
- ok('13a. 최대 30자 제한',ml===30&&len===30&&tmorning==='☀ '+'가'.repeat(30),`${ml}/${len}`);
+ ok('13a. 최대 30자 제한',ml===30&&len===30&&tmorning==='가'.repeat(30),`${ml}/${len}`);
  ok('13b. 긴 제목에서도 보드 크기·위치 불변',JSON.stringify(Object.fromEntries(Object.entries(L).map(([k,v])=>[k,v.card])))===JSON.stringify(Object.fromEntries(Object.entries(base).map(([k,v])=>[k,v.card]))),'ellipsis='+cut);
- ok('13c. 제목 스타일 불변',['font','size','weight','color'].every(p=>L.morning[p]===base.morning[p]&&L.notices[p]===base.notices[p]));
+ ok('13c. 제목 글꼴 · 굵기 · 색 불변(크기는 칸 폭에 맞춰 줄어듦)',['font','weight','color'].every(p=>L.morning[p]===base.morning[p]&&L.notices[p]===base.notices[p])&&parseFloat(L.morning.size)<=parseFloat(base.morning.size)&&parseFloat(L.morning.size)>=15);
  await page.screenshot({path:OUT+'/new-04-long-title.png'});
  // narrow window
  const win=await app.browserWindow(page);await win.evaluate(w=>w.setSize(900,650));await page.waitForTimeout(500);await page.screenshot({path:OUT+'/new-05-long-title-narrow.png'});
@@ -57,29 +63,31 @@ async function setLock(page,on){if((await page.evaluate(()=>!!window.dashboardLo
  ok('13d. 좁은 창에서도 헤더 넘침 없음',narrowOk);
  await win.evaluate(w=>w.setSize(1440,960));await page.waitForTimeout(400);
  // 9 restore default
- await page.click('.morning .board-title-edit');await page.screenshot({path:OUT+'/new-06-editing-long.png'});await page.click('.board-title-reset');
- ok('9. 기본 제목 복원',(await title(page,'morning'))==='☀ 아침활동'&&!JSON.parse(await page.evaluate(()=>localStorage.getItem('boardTitles'))).morning);
+ await arrange(true);await page.click('.morning .board-title-edit');await page.screenshot({path:OUT+'/new-06-editing-long.png'});await page.click('.board-title-reset');
+ ok('9. 기본 제목 복원',(await title(page,'morning'))==='아침활동'&&!JSON.parse(await page.evaluate(()=>localStorage.getItem('boardTitles'))).morning);
  await page.click('.morning .board-title-edit');await page.fill('.board-title-editor input','오늘 할 일');await page.keyboard.press('Enter');
- // 12 touch long press via CDP
+ // 12 touch: tapping the pencil in [배치 편집] starts editing; a tap outside saves
  const cdp=await page.context().newCDPSession(page);
+ const tap=async p=>{await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[p]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(200);};
+ const pen=await (await page.$('.notices .board-title-edit')).boundingBox();await tap({x:pen.x+pen.width/2,y:pen.y+pen.height/2});
+ const touchEdit=!!(await page.$('.notices .board-title-editor, .notices .cardhead .board-title-editor'));
+ ok('12a. 연필 터치로 편집 시작',touchEdit);
+ if(touchEdit){await page.fill('.board-title-editor input','알립니다');const rb=await (await page.$('#meal')).boundingBox();await tap({x:rb.x+20,y:rb.y+20});}
+ ok('12b. 터치 바깥 탭 저장',(await title(page,'notices'))==='알립니다',await title(page,'notices'));
+ await arrange(false);
  const box=await (await page.$('.notices .board-title')).boundingBox();const tp={x:box.x+30,y:box.y+box.height/2};
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[tp]});await page.waitForTimeout(800);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
- const touchEdit=!!(await page.$('.notices .board-title-editor, .notices .cardhead .board-title-editor'));
- ok('12a. 터치 길게 누르기로 편집 시작',touchEdit);
- if(touchEdit){await page.fill('.board-title-editor input','알립니다');const rb=await (await page.$('#meal')).boundingBox();await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:rb.x+20,y:rb.y+20}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(200);}
- ok('12b. 터치 바깥 탭 저장',(await title(page,'notices'))==='✳ 알립니다',await title(page,'notices'));
- const pb=await (await page.$('.morning .board-title-edit')).boundingBox();await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:pb.x+pb.width/2,y:pb.y+pb.height/2}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(200);
- ok('12c. 연필 터치로 편집 시작',!!(await page.$('.morning .board-title-editor')));await page.keyboard.press('Escape');
- // lock while editing
- await page.click('.morning .board-title-edit');await page.fill('.board-title-editor input','오늘 할 일');await setLock(page,true);
- ok('10c. 편집 중 잠그면 편집 종료·연필 숨김',!(await page.$('.board-title-editor'))&&!(await page.isVisible('.morning .board-title-edit')));
+ ok('12c. 평소 화면에서 길게 눌러도 편집 안 됨',!(await page.$('.board-title-editor')));
+ // lock while editing: the lock tool is reached from the keyboard/script while the edit bar is shown
+ await arrange(true);await page.click('.morning .board-title-edit');await page.fill('.board-title-editor input','오늘 할 일');await page.evaluate(()=>document.getElementById('screenLock').click());await page.waitForTimeout(200);
+ ok('10c. 편집 중 잠그면 편집 종료·연필 숨김',!(await page.$('.board-title-editor'))&&!(await editing())&&!(await page.isVisible('.morning .board-title-edit')));
  const after=await body(page);
  ok('8a. 본문 내용 유지(화면·저장소)',JSON.stringify(before)===JSON.stringify(after),after.morning+' / '+after.notices);
  await page.evaluate(()=>document.dispatchEvent(new Event('update:flush')));
  await app.close();
  // 7 restart
  ({app,page}=await launch());
- ok('7. 재실행 후 제목 유지',(await title(page,'morning'))==='☀ 오늘 할 일'&&(await title(page,'notices'))==='✳ 알립니다');
+ ok('7. 재실행 후 제목 유지',(await title(page,'morning'))==='오늘 할 일'&&(await title(page,'notices'))==='알립니다');
  ok('8b. 재실행 후 본문 유지',JSON.stringify(await body(page))===JSON.stringify(before));
  ok('10d. 재실행 후 잠금 유지·연필 숨김',!(await unlocked(page))&&!(await page.isVisible('.notices .board-title-edit')));
  await page.screenshot({path:OUT+'/new-07-restart-custom.png'});

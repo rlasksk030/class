@@ -3,11 +3,11 @@
  const Layout=typeof module!=='undefined'?require('./layout-core.js'):root.LayoutCore;
  const FORMAT='classroom-dashboard-backup',SCHEMA_VERSION=2,MAX_BYTES=200*1024*1024;
  // Allowlist of localStorage keys written by the dashboard. Anything not listed is never exported or restored.
- const KEYS=['settings','classRosters','randomPicker','randomPickerSession','morningDefault','morningHistory','boardTitles','notes','ddayEvents','overrides','boardSizes','boardPreferences','boardLayout','dashboardLocked','dashboardPipOptions','periodSchedule','periodHighlightEnabled','classTimer','timerSound','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences'];
+ const KEYS=['settings','classRosters','randomPicker','randomPickerSession','morningDefault','morningHistory','boardTitles','notes','ddayEvents','overrides','boardSizes','boardPreferences','boardLayout','dashboardLocked','dashboardPipOptions','periodSchedule','periodHighlightEnabled','classTimer','timerSound','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences','layoutStructure','boardLayoutB'];
  const SETTINGS_FIELDS=['grade','classroom','locationMode','manual'];
  const isObject=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
  // Keys whose stored value must be a plain object (others may be strings, booleans or arrays).
- const OBJECT_KEYS=new Set(['settings','classRosters','randomPicker','randomPickerSession','morningHistory','boardTitles','notes','overrides','boardSizes','boardPreferences','boardLayout','dashboardPipOptions','classTimer','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences']);
+ const OBJECT_KEYS=new Set(['settings','classRosters','randomPicker','randomPickerSession','morningHistory','boardTitles','notes','overrides','boardSizes','boardPreferences','boardLayout','dashboardPipOptions','classTimer','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences','boardLayoutB']);
  const INVALID='이 파일은 사용할 수 있는 학급 대시보드 백업 파일이 아닙니다.';
 
  function sanitize(key,value){
@@ -18,7 +18,8 @@
  }
  function valid(key,value){
   if(value===undefined)return false;
-  if(key==='boardLayout')return Layout.isValid(value);
+  if(key==='boardLayout'||key==='boardLayoutB')return Layout.isValid(value);
+  if(key==='layoutStructure')return Layout.STRUCTURES.includes(value);
   if(OBJECT_KEYS.has(key))return isObject(value);
   if(key==='morningDefault')return typeof value==='string';
   if(key==='ddayEvents'||key==='periodSchedule')return Array.isArray(value);
@@ -76,10 +77,13 @@
  }
  // Backups and profiles from before the layout editor have no 'boardLayout': build it from their
  // own hidden-board and size settings, so a restore never keeps this PC's arrangement instead.
+ // A backup from before the A/B screen structures only knew the top-header board (structure A),
+ // so it opens in A; this PC's own structure-B arrangement is left as it is.
  function withLayout(data,entries){
-  if(entries.some(([key])=>key==='boardLayout'))return entries;
-  const layout=Layout.migrate({sizes:data.boardSizes,preferences:data.boardPreferences});
-  return [...entries,['boardLayout',JSON.stringify(layout)]];
+  const has=key=>entries.some(([k])=>k===key),extra=[];
+  if(!has('boardLayout'))extra.push(['boardLayout',JSON.stringify(Layout.migrate({sizes:data.boardSizes,preferences:data.boardPreferences}))]);
+  if(!has('layoutStructure'))extra.push(['layoutStructure',JSON.stringify('A')]);
+  return [...entries,...extra];
  }
  // All-or-nothing write: on any failure every touched key is put back exactly as it was.
  function apply(storage,entries){

@@ -98,7 +98,7 @@ test('timer PIP renders all states, preserves buttons during ticks and sends con
 test('main renderer publishes the same timer to both PIPs and routes expand to the timer dialog',()=>{
  const forms=new Element(),actions=Object.assign(new Element(),{className:'actions'});forms.append(actions);
  const timerButton=new Element();let openedTimer=0;timerButton.onclick=()=>openedTimer++;
- const targets=Object.fromEntries(['header nav','.random-heading','.whiteboard-toolbar','.activity-heading','#timerDialog .extras-heading'].map(q=>[q,new Element()]));
+ const targets=Object.fromEntries(['.app-bar__right','.random-heading','.whiteboard-toolbar','.activity-heading','#timerDialog .extras-heading'].map(q=>[q,new Element()]));
  const document={createElement:t=>new Element(t),createTextNode:s=>s,querySelector:q=>targets[q]};
  const published=[],opened=[],screenCalls=[],calls=[];let onCommand,timer=X.timerAction({},'preset',0,65000);
  const tools={schedule:()=>[],timer:()=>timer,activity:{snapshot:()=>({})},random:{snapshot:()=>({})},whiteboard:{snapshot:()=>({})},screen:i=>screenCalls.push(i),controlTimer:action=>{calls.push(action);timer=X.timerAction(timer,action,Date.now());}};
