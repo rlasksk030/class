@@ -455,3 +455,98 @@ dialog .uc-spacer{flex:1 1 0}
 #screenDialog .preference-row button{width:48px;min-width:48px;height:44px;padding:0;font-size:16px}
 #screenDialog .preference-row output{min-width:0;text-align:center;font-size:15px;font-weight:700;color:var(--uc-text)}
 #boardVisibilityStatus:empty{display:none}
+
+/* =========================================================
+   4단계: 탭 화면 공통 머리 · 화이트보드(G01) · 알림장(H02/H03, H04)
+   (랜덤 뽑기는 random-picker.css, 활동완료는 activity.css)
+   ========================================================= */
+.uc-page-head__title{line-height:1.2}
+/* G01 화이트보드 */
+#whiteboardScreen{top:0;left:0;right:0;height:auto;max-height:none;padding:var(--P,28px) var(--P,28px) 0;gap:14px;background:var(--uc-bg)}
+#whiteboardScreen:not([hidden]){display:flex;flex-direction:column}
+.whiteboard-toolbar{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 10px 8px 18px;border:1px solid var(--uc-line);border-radius:var(--uc-radius-lg);background:var(--uc-surface);box-shadow:var(--uc-shadow-card)}
+.whiteboard-toolbar strong{margin:0 8px 0 0;font-family:var(--uc-font-main);font-size:24px;font-weight:700}
+.whiteboard-toolbar button{height:44px;min-height:44px;padding:0 12px;font-size:15px}
+.whiteboard-toolbar .uc-ico{width:18px;height:18px}
+.whiteboard-tools.uc-seg{gap:2px;padding:3px;border-radius:12px;background:var(--uc-surface-2)}
+.whiteboard-tools.uc-seg>button{height:42px;min-height:42px;min-width:0;border:1px solid transparent;background:transparent;font-family:var(--uc-font-sub);font-size:15px;color:var(--uc-text-2)}
+.whiteboard-tools.uc-seg>button[aria-pressed="true"]{border:1px solid var(--uc-line-strong);background:var(--uc-surface);color:var(--uc-text);box-shadow:var(--uc-shadow-card)}
+.whiteboard-sep{width:1px;height:28px;margin:0 4px;background:var(--uc-line)}
+.whiteboard-gap{flex:1 1 auto}
+#whiteboardColor{width:44px;height:44px;min-height:44px;padding:6px;border:1px solid var(--uc-line-strong);border-radius:var(--uc-radius-md);background:var(--uc-surface);cursor:pointer}
+#whiteboardColor::-webkit-color-swatch-wrapper{padding:0}
+#whiteboardColor::-webkit-color-swatch{border:0;border-radius:50%}
+#whiteboardFontSize{min-width:48px;font-size:16px;font-weight:700;color:var(--uc-text);text-align:center}
+.whiteboard-info{width:44px;min-width:44px;padding:0!important}
+.whiteboard-info .uc-ico{width:22px;height:22px}
+#whiteboardClear{color:var(--uc-danger)}
+#whiteboardUndo:disabled,#whiteboardRedo:disabled{background:transparent;color:var(--uc-text-disabled)}
+#whiteboardPhotoStatus{flex:none;min-height:0;max-height:3em;margin:-6px 4px 0;font-size:14px;color:var(--uc-text-2)}
+#whiteboardPhotoStatus:empty{display:none}
+.whiteboard-help{position:absolute;z-index:4;right:calc(var(--P,28px) + 16px);bottom:calc(var(--bar-h) + var(--P,28px) + 12px);display:flex;flex-direction:column;gap:4px;max-width:520px;padding:12px 16px;border:1px solid var(--uc-line);border-radius:12px;background:var(--uc-surface);box-shadow:var(--uc-shadow-dialog);font-size:14px;line-height:1.55;color:var(--uc-text-2)}
+.whiteboard-help strong{font-size:14px;color:var(--uc-text)}
+.whiteboard-surface{border:1px solid var(--uc-line);border-radius:var(--uc-radius-lg);background:var(--uc-surface);overflow:hidden}
+.whiteboard-block textarea{font-family:var(--uc-font-main);color:var(--uc-text)}
+.textblock-tools button,.textblock-width{min-height:36px;font-size:13px}
+/* H02 · H03 알림장 */
+#diaryScreen{top:0;left:0;right:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(300px,25vw,380px);grid-template-rows:auto minmax(0,1fr);gap:16px var(--G,16px);padding:var(--P,28px) var(--P,28px) 0;background:var(--uc-bg);overflow:hidden}
+#diaryScreen>.diary-heading{grid-column:1/-1;display:flex;align-items:center;gap:16px;min-width:0}
+#diaryScreen>.diary-heading h1{margin:0;font-family:var(--uc-font-main);font-size:var(--uc-fs-page-title);font-weight:700}
+.diary-service-selector{display:flex;align-items:center;gap:8px;margin:0;font-size:15px;color:var(--uc-text-2)}
+.diary-service-selector select{width:auto;min-width:150px}
+#diaryScreen .diary-date{display:flex;align-items:center;gap:10px;margin:0 0 0 auto;font-size:15px;font-weight:700;color:var(--uc-text-2)}
+#diaryScreen .diary-date input{width:200px}
+#diaryScreen>.diary-fields{grid-column:1;grid-row:2;gap:14px;min-height:0;padding:22px 24px;border:1px solid var(--uc-line);border-radius:var(--uc-radius-lg);background:var(--uc-surface);box-shadow:var(--uc-shadow-card)}
+#diaryScreen>.diary-footer{grid-column:2;grid-row:2;display:flex;flex-direction:column;gap:12px;min-height:0;padding:22px 22px 20px;border:1px solid var(--uc-line);border-radius:var(--uc-radius-lg);background:var(--uc-surface);box-shadow:var(--uc-shadow-card);overflow:auto}
+.diary-send-title{margin:0;font-family:var(--uc-font-main);font-size:24px;font-weight:700}
+#diaryScreen label{font-size:15px;font-weight:700}
+#diaryScreen button{min-height:44px;font-size:15px}
+#diaryScreen input:not([type=checkbox]),#diaryScreen textarea{padding:0 14px}
+.diary-hiclass{padding:10px 12px 10px 16px;border:0;border-radius:12px;background:var(--uc-surface-2)}
+.diary-hiclass[data-state="linked"]{background:var(--uc-done-bg)}
+.diary-hiclass[data-state="expired"]{background:var(--uc-dust-verybad-bg)}
+#diaryLinkState{font-size:16px;color:var(--uc-text)}
+.diary-hiclass[data-state="linked"] #diaryLinkState{color:var(--uc-done-text)}
+.diary-hiclass[data-state="linked"] #diaryLinkState::before{content:'';display:inline-block;width:9px;height:9px;margin-right:8px;border-radius:50%;background:var(--uc-done);vertical-align:middle}
+#diaryLinkSteps li{border-color:var(--uc-line);color:var(--uc-text-2)}
+#diaryLinkSteps li.done{color:var(--uc-done);border-color:var(--uc-done-line)}
+#diaryLinkSteps li.done::before{content:counter(step) ". "}
+#diaryLinkSteps li.current{background:var(--uc-primary);border-color:var(--uc-primary)}
+.diary-field-head{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;margin-bottom:-6px}
+.diary-field-name{font-size:15px;font-weight:700;color:var(--uc-text)}
+.diary-field-head .diary-actions{margin:0}
+.diary-title-field{flex-direction:column;align-items:stretch!important;gap:8px!important}
+#diaryTitle{height:52px;font-family:var(--uc-font-main);font-size:22px}
+.diary-font-controls{justify-content:flex-end;margin:0}
+.diary-font-controls span{font-size:14px;color:var(--uc-text-3)}
+.diary-font-controls button{width:44px;min-width:44px;padding:0}
+#diaryFontReset{width:auto!important;padding:0 10px!important}
+#diaryFontSize{min-width:48px;font-size:15px;font-weight:700}
+.diary-body-field{gap:8px}
+#diaryBody{padding:12px 16px!important;border:2px solid var(--uc-primary);font-family:var(--uc-font-main);line-height:1.6}
+.diary-photos{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding-top:12px;border-top:1px dashed var(--uc-line)}
+.diary-photos p{margin:0;font-size:13px;color:var(--uc-text-3)}
+#diaryPhotoHelp{flex:1 1 300px}
+.diary-photos .diary-photo-paste{flex-basis:100%;margin:-4px 0 0 0}
+#diaryPhotos{flex-basis:100%}
+#diaryPhotos figure{border-color:var(--uc-line);border-radius:10px}
+#diaryPhotos img{background:var(--uc-surface-2)}
+#diaryPhotos button{min-height:36px;font-size:13px}
+.diary-footer .diary-actions{flex-direction:column;align-items:stretch;gap:8px}
+.diary-recipients strong{font-size:15px}
+.diary-recipients label{display:flex!important;align-items:center;gap:12px;min-height:48px;padding:0 14px;border:1px solid var(--uc-line);border-radius:var(--uc-radius-md);font-weight:400!important;font-size:16px!important}
+.diary-recipients small{font-size:13px;color:var(--uc-text-3)}
+.diary-registration{margin-top:auto;flex-wrap:nowrap!important}
+#diaryStatus{flex:none;height:auto;max-height:4.5em;font-size:14px;color:var(--uc-text-2)}
+#diaryPublish,#schoolbellPublish{height:64px;min-height:64px!important;border-radius:12px;font-family:var(--uc-font-main);font-size:24px!important}
+#diaryImportDialog{width:min(600px,calc(100vw - 48px))}
+#diaryCandidates{display:flex;flex-direction:column;gap:10px}
+#diaryCandidates label{padding:12px 14px;border:1px solid var(--uc-line);border-radius:12px;font-weight:400;font-size:15px}
+/* 다른 탭 화면 아래로 대시보드 출처 줄이 비치지 않게 */
+body:is(.whiteboard-active,.random-active,.activity-active,.diary-active)>footer{visibility:hidden}
+.group-card p{white-space:pre-line}
+/* 보내기 칸: 좁고 낮은 창(확대 150%)에서도 [등록] 버튼은 늘 보이고, 수신 대상 쪽이 스크롤됩니다 */
+#diaryScreen>.diary-footer{overflow:hidden}
+#diaryScreen>.diary-footer>.diary-send-title,#diaryScreen>.diary-footer>.diary-registration{flex:none}
+#diaryScreen>.diary-footer>.diary-recipients{flex:0 1 auto;min-height:0;overflow:auto}
+@media (max-height:560px){#diaryScreen{gap:8px var(--G,16px)}#diaryScreen>.diary-footer{padding:12px 14px;gap:8px}.diary-send-title{font-size:20px}#diaryPublish,#schoolbellPublish{height:52px;min-height:52px!important;font-size:20px!important}}
