@@ -121,3 +121,11 @@ test('timer bounds recover from removed monitors and clamp to the available work
  assert.deepEqual(b,{x:0,y:0,width:800,height:600});
  assert.deepEqual(safeBounds(null,[area],area,'timer'),{x:40,y:40,width:400,height:340});
 });
+
+test('dashboard PIP keeps the next period as a secondary line; its two options still hide it',()=>{
+ const p=pipRenderer(),root=p.nodes.content,walk=(n,q)=>n.matches?.(q)?n:(n.children||[]).map(c=>walk(c,q)).find(Boolean);
+ const send=options=>p.listener()({kind:'dashboard',state:{dashboard:{options,time:'10:20',currentPeriod:'2',currentSubject:'수학',nextPeriod:'3',nextSubject:'사회',scheduleSet:true,timer:null}}});
+ send({});assert.equal(walk(root,'.current').textContent,'2교시 · 수학');assert.equal(walk(root,'.next').textContent,'다음 3교시 · 사회');assert.equal(walk(root,'.next').hidden,false);
+ send({nextPeriod:false,nextSubject:false});assert.equal(walk(root,'.next').hidden,true);
+ send({nextPeriod:false});assert.equal(walk(root,'.next').textContent,'다음 사회');
+});

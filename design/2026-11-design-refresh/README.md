@@ -1,7 +1,7 @@
 # 디자인 자료 (Claude Design 결과물)
 
 이 폴더는 '우리 교실' 디자인 다듬기 작업의 원본 자료입니다. **설치 파일에는 들어가지 않습니다.**
-(`electron-builder.json`의 `directories.app`이 `app`이므로, 저장소 맨 위의 `design/`은 빌드에 포함되지 않습니다.)
+(`electron-builder.json`의 `directories.app`이 `app`이므로, 저장소 맨 위의 `design/2026-11-design-refresh/`는 빌드에 포함되지 않습니다. 보완 지시서 6장에 따라 이 위치에 둡니다.)
 
 | 경로 | 내용 |
 |---|---|

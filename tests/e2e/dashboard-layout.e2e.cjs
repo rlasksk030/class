@@ -279,6 +279,55 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
  ok('1100×760 네 칸 나란히(가장 좁은 칸) 편집 모드: [숨기기]가 제목·상태 글자를 가리지 않음',!narrow.cover.length,JSON.stringify(narrow.cover));
  ok('평소 화면에는 옮기기 표시 없음',await page.click('#layoutCancel').then(()=>page.evaluate(()=>getComputedStyle(document.querySelector('main>.card .cardhead'),'::before').content))==='none');
  await setLayout(L.defaults());
+
+ // ---------- Screen structure A / B (화면 설정): each keeps its own arrangement, also after a restart ----------
+ await page.setViewportSize({width:1440,height:900});await frames();
+ const aBefore=await saved();
+ await page.click('#screenSettings');await page.check('#screenDialog input[name=layoutStructure][value=B]');await frames();
+ ok('화면 구조 B: 왼쪽 정보 기둥 + B 기본 배치',await page.evaluate(()=>document.body.classList.contains('structure-b'))&&L.equal(await current(),L.defaults('B'))&&(await page.evaluate(()=>localStorage.getItem('layoutStructure')))==='"B"');
+ g=await geometry();ok('B 기본 배치: 겹침·잘림 없음',!g.issues.length,JSON.stringify(g));
+ const column=await box('body>header'),firstBoard=await box('main');ok('B: 정보 기둥은 칸 영역 왼쪽',column.x+column.width<=firstBoard.x+1&&column.height>firstBoard.height*.9);
+ ok('B: 기둥에 시계 · 날짜, 위쪽 머리글 없음',await page.isVisible('header #clock')&&await page.isVisible('header #date')&&Math.abs((await box('body>header')).y-(await box('main')).y)<=2);
+ await page.keyboard.press('Escape');
+ await page.click('#layoutToggle');await page.click('main>.meal .layout-hide');await page.click('#layoutDone');await frames();
+ ok('B에서 바꾼 배치는 B에만 저장',at(await page.evaluate(()=>JSON.parse(localStorage.getItem('boardLayoutB'))),'meal').endsWith('false')&&L.equal(await saved(),aBefore));
+ await page.click('#screenSettings');await page.check('#screenDialog input[name=layoutStructure][value=A]');await frames();await page.keyboard.press('Escape');
+ ok('A로 돌아오면 A 배치 그대로(급식 보임)',!(await page.evaluate(()=>document.body.classList.contains('structure-b')))&&L.equal(await current(),aBefore)&&await page.isVisible('main>.meal'));
+ await page.click('#screenSettings');await page.check('#screenDialog input[name=layoutStructure][value=B]');await page.keyboard.press('Escape');
+ await app.close();await launch();
+ ok('앱을 다시 켜도 구조 B와 B 배치 유지',await page.evaluate(()=>document.body.classList.contains('structure-b'))&&!(await page.isVisible('main>.meal'))&&L.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('boardLayout'))),aBefore));
+ for(const [w,h] of [[1100,760],[1920,1080]]){await page.setViewportSize({width:w,height:h});await frames();await page.waitForTimeout(200);g=await geometry();ok(`B ${w}×${h}: 겹침·잘림 없음`,!g.issues.length,JSON.stringify(g));}
+ await page.setViewportSize({width:1440,height:900});
+ await page.click('#settings');await page.click('#settingsNavRun');
+ const pipItems=await page.$$eval('[data-pip-option]',els=>els.map(e=>e.closest('label').textContent.trim()));
+ // 보완 지시서 2장: the PIP keeps all six items, including the next period.
+ ok('설정의 PIP 항목 6개 그대로(다음 교시 · 다음 과목 포함, 2열 × 3줄)',JSON.stringify(pipItems)===JSON.stringify(['현재 교시','현재 과목','다음 교시','다음 과목','현재 시각','타이머']),JSON.stringify(pipItems));
+ // Backup → restore keeps structure B and its own arrangement.
+ await page.click('#settingsNavBackup');await page.click('#backupCreate');await page.waitForTimeout(800);
+ const withB=JSON.parse(fs.readFileSync(BACKUP,'utf8'));ok('백업 파일에 구조 · B 배치 포함',withB.data.layoutStructure==='B'&&at(withB.data.boardLayoutB,'meal').endsWith('false'));
+ await page.keyboard.press('Escape');
+ await page.evaluate(d=>{localStorage.setItem('layoutStructure','"A"');localStorage.setItem('boardLayoutB',JSON.stringify(d));},L.defaults('B'));await reload();
+ await restore(BACKUP);
+ ok('백업 복원 후 구조 B와 B 배치 복원',await page.evaluate(()=>document.body.classList.contains('structure-b'))&&at(await page.evaluate(()=>JSON.parse(localStorage.getItem('boardLayoutB'))),'meal').endsWith('false'));
+ await app.evaluate(({},f)=>{globalThis.__openFile=null;});
+ await page.click('#screenSettings');await page.check('#screenDialog input[name=layoutStructure][value=A]');await page.keyboard.press('Escape');
+
+ // ---------- Fonts (보완 지시서 3-1) and the notices size (5-1) ----------
+ await setLayout(L.defaults());await page.setViewportSize({width:1440,height:900});await frames();
+ await page.evaluate(()=>{const d=Core.dateKey(),n=JSON.parse(localStorage.getItem('notes')||'{}');n[d]={...n[d],notices:'체육복 챙기기\n우유 급식 신청서 금요일까지 제출\n5교시 강당 이동'};localStorage.setItem('notes',JSON.stringify(n));});
+ await reload();await page.waitForTimeout(300);
+ const noticeSize=await page.$eval('#notices',e=>parseFloat(getComputedStyle(e).fontSize));
+ ok('안내사항 3줄 · 1440×900 기본 배치: 글씨 18px 이상',noticeSize>=18,noticeSize+'px');
+ const fontsUsed=await page.evaluate(()=>{const first=e=>getComputedStyle(e).fontFamily.split(',')[0].replace(/["']/g,'').trim();
+  return {clock:first(document.getElementById('clock')),title:first(document.querySelector('main>.timetable h2')),tab:first(document.querySelector('.screen-tabs button')),button:first(document.querySelector('[data-edit=morning],[data-empty-edit=morning]')),tool:first(document.querySelector('#settings .uc-tool__label')),
+   loaded:['Gowun Batang','Nanum Barun Gothic'].every(f=>document.fonts.check('16px "'+f+'"')&&document.fonts.check('bold 16px "'+f+'"'))};});
+ ok('주요 요소 글꼴은 고운바탕 · 나눔바른고딕이고 실제로 로드됨',fontsUsed.loaded&&fontsUsed.clock==='Gowun Batang'&&fontsUsed.title==='Gowun Batang'&&fontsUsed.tab==='Gowun Batang'&&fontsUsed.button==='Nanum Barun Gothic'&&fontsUsed.tool==='Nanum Barun Gothic',JSON.stringify(fontsUsed));
+ await page.click('#timerButton');const timerFont=await page.$eval('#timerDisplay',e=>getComputedStyle(e).fontFamily.split(',')[0].replace(/["']/g,'').trim());await page.keyboard.press('Escape');
+ ok('타이머 숫자도 고운바탕',timerFont==='Gowun Batang',timerFont);
+ const pipReady=app.waitForEvent('window');await page.evaluate(()=>desktop.openPip('timer'));const pip=await pipReady;await pip.waitForLoadState('domcontentloaded');await pip.waitForSelector('#pipTimerDisplay');await pip.evaluate(()=>document.fonts.ready);
+ const pipFont=await pip.evaluate(()=>({display:getComputedStyle(document.getElementById('pipTimerDisplay')).fontFamily.split(',')[0].replace(/["']/g,'').trim(),button:getComputedStyle(document.querySelector('.pip-timer-controls button')).fontFamily.split(',')[0].replace(/["']/g,'').trim(),loaded:document.fonts.check('bold 16px "Gowun Batang"')&&document.fonts.check('16px "Nanum Barun Gothic"')}));
+ ok('PIP 타이머 숫자 고운바탕 · 버튼 나눔바른고딕(시스템 글꼴 아님)',pipFont.display==='Gowun Batang'&&pipFont.button==='Nanum Barun Gothic'&&pipFont.loaded,JSON.stringify(pipFont));
+ await pip.close();
  ok('페이지 오류 없음',!errors.length,errors.join(' | '));
 }catch(e){console.error(e);results.push(false);}finally{if(app)await app.close().catch(()=>{});}
  const passed=results.filter(Boolean).length;

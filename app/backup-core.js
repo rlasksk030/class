@@ -77,12 +77,13 @@
  }
  // Backups and profiles from before the layout editor have no 'boardLayout': build it from their
  // own hidden-board and size settings, so a restore never keeps this PC's arrangement instead.
- // A backup from before the A/B screen structures only knew the top-header board (structure A),
- // so it opens in A; this PC's own structure-B arrangement is left as it is.
+ // A backup from before the A/B screen structures only knew the top-header board: it opens in
+ // structure A with its own board, and structure B starts from its default board.
  function withLayout(data,entries){
   const has=key=>entries.some(([k])=>k===key),extra=[];
   if(!has('boardLayout'))extra.push(['boardLayout',JSON.stringify(Layout.migrate({sizes:data.boardSizes,preferences:data.boardPreferences}))]);
   if(!has('layoutStructure'))extra.push(['layoutStructure',JSON.stringify('A')]);
+  if(!has('boardLayoutB'))extra.push(['boardLayoutB',JSON.stringify(Layout.defaults('B'))]);
   return [...entries,...extra];
  }
  // All-or-nothing write: on any failure every touched key is put back exactly as it was.

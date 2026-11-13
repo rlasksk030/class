@@ -21,7 +21,8 @@ body[data-kind="activity"] .uc-pip__title{display:none}
 #expand.uc-pip__action{flex:none;height:2.75rem;min-height:2.75rem;padding:0 .75rem;border:none;border-radius:var(--uc-radius-md);background:rgba(255,255,255,.75);color:inherit;font-size:.875rem}
 #content{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;padding:.6rem .9rem .75rem;overflow:auto}
 /* J01 대시보드: 지금 교시만 크게, 아래 얇은 선 밑에 시각 · 타이머 */
-.current{flex:1 1 auto;display:flex;align-items:center;margin:0;font-family:var(--uc-font-main);font-size:3rem;font-weight:700;line-height:1.15;color:var(--uc-now-text);overflow-wrap:anywhere}
+.current{flex:1 1 auto;display:flex;align-items:flex-end;margin:0;font-family:var(--uc-font-main);font-size:3rem;font-weight:700;line-height:1.15;color:var(--uc-now-text);overflow-wrap:anywhere}
+.next{flex:none;margin:.3rem 0 .6rem;font-family:var(--uc-font-main);font-size:1.25rem;color:var(--uc-text-2);overflow-wrap:anywhere}
 .pip-foot{flex:none;display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding-top:.5rem;border-top:1px solid var(--uc-line)}
 .clock{font-family:var(--uc-font-main);font-size:1.375rem;color:var(--uc-text-2)}
 .pip-timer{margin-left:auto;min-height:2.75rem;padding:0 .25rem;border:none;background:transparent;font-family:var(--uc-font-main);font-size:1.875rem;font-weight:700;color:var(--uc-primary);font-variant-numeric:tabular-nums}
