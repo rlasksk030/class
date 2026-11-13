@@ -58,13 +58,16 @@ async function launch(){const app=await _electron.launch({executablePath:electro
  // ---------- 랜덤 뽑기 ----------
  await page.click('#randomTab');await page.$eval('#rosterEditor',e=>e.open=true);await page.fill('#rosterText',['가온','나래','다온','라온','마루','바다'].join('\n'));await page.click('#saveRoster');
  await page.click('#drawOne');await page.waitForTimeout(1800);ok('1명 뽑기',(await page.locator('#pickHistory li').count())===1);
- await page.selectOption('#pickCount','3');await page.click('#drawMany');await page.waitForTimeout(1800);ok('여러 명 뽑기',(await page.locator('#pickHistory li').count())===4);
+ // E04 발표 화면: 뽑힌 이름을 크게, 닫으면 그대로 돌아옴(뽑기 기록은 그대로)
+ await page.click('#showBig');{const big=await page.textContent('#presentName'),small=await page.textContent('#pickResult');ok('발표 화면으로 크게(같은 이름, 아래 막대 없음)',await page.isVisible('#randomPresent')&&big===small&&big.length>0&&!(await page.isVisible('.app-bar .screen-tabs')));}
+ await page.click('#presentClose');ok('발표 화면 닫기',!(await page.isVisible('#randomPresent'))&&(await page.locator('#pickHistory li').count())===1&&!(await page.textContent('#pickResult')).includes('🎉'));
+ await page.click('#pickPlus');ok('인원 [−] 2 [+] → 3',(await page.textContent('#pickCount'))==='3');await page.click('#drawMany');await page.waitForTimeout(1800);ok('여러 명 뽑기',(await page.locator('#pickHistory li').count())===4);
  const hist=await page.evaluate(()=>JSON.parse(localStorage.getItem('randomPickerSession')).history);ok('한 라운드 중복 없음',new Set(hist).size===hist.length);
- await page.selectOption('#pickCount','3');await page.click('#drawMany');await page.waitForTimeout(400);ok('남은 인원 초과 시 안내',(await page.textContent('#pickStatus')).includes('뽑을 수 있는 학생은 2명'));
+ await page.click('#drawMany');await page.waitForTimeout(400);ok('남은 인원 초과 시 안내',(await page.textContent('#pickStatus')).includes('뽑을 수 있는 학생은 2명'));
  await page.$eval('#exclusionDetails',e=>e.open=true);await page.locator('#excludeList input').nth(0).check();ok('오늘 제외',(await page.evaluate(()=>JSON.parse(localStorage.getItem('randomPickerSession')).excluded.length))===1);
  await page.click('#includeAll');ok('전체 다시 포함',(await page.evaluate(()=>JSON.parse(localStorage.getItem('randomPickerSession')).excluded.length))===0);
  await page.click('#newRound');ok('새 라운드',(await page.locator('#pickHistory li').count())===0);
- await page.selectOption('#groupMode','2');await page.click('#makeGroups');const g1=await page.innerText('#groupResults');await page.click('#shuffleGroups');
+ await page.click('[data-group-mode="2"]');await page.click('#makeGroups');const g1=await page.innerText('#groupResults');await page.click('#shuffleGroups');
  ok('모둠 자동 편성·다시 섞기',(await page.locator('#groupResults h3').count())===3&&!!g1);
  // ---------- 알림장 (로컬) ----------
  await page.click('#diaryTab');await page.fill('#diaryBody','내일 준비물: 리코더');await page.uncheck('#diaryParents');await page.uncheck('#diaryStudents');

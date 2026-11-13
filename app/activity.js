@@ -1,7 +1,7 @@
 window.createActivityCompletion=function({read,put}){
  const root=document.createElement('section');root.id='activityScreen';root.hidden=true;
  root.setAttribute('role','tabpanel');root.setAttribute('aria-labelledby','activityTab');
- root.innerHTML=`<div class="activity-heading"><div class="activity-title-area"><label for="activityTitle">활동완료 <span id="activityClass"></span></label><input id="activityTitle" type="text" maxlength="160" placeholder="활동명을 입력하세요" autocomplete="off"></div><button id="newActivity" type="button">새 활동</button><details class="activity-menu"><summary aria-label="전체 상태 변경 메뉴">더보기</summary><div><button id="completeAll" type="button">전체 완료</button><button id="incompleteAll" type="button">전체 미완료</button></div></details></div><div class="activity-feedback"><span id="activityMessage" role="status" aria-live="polite"></span><span id="activitySaveStatus" role="status"></span></div><div class="activity-columns"><section class="activity-column pending"><h2>미완료 <span id="pendingCount">0명</span></h2><div id="pendingStudents" class="activity-cards" aria-label="미완료 학생"></div></section><section class="activity-column complete"><h2>완료 <span id="completeCount">0명</span></h2><div id="completeStudents" class="activity-cards" aria-label="완료 학생"></div></section></div>`;
+ root.innerHTML=`<div class="activity-heading"><div class="activity-title-area"><label for="activityTitle">활동완료 · <span id="activityClass"></span></label><input id="activityTitle" type="text" maxlength="160" placeholder="활동명을 입력하세요" autocomplete="off"></div><button id="newActivity" type="button">새 활동</button><details class="activity-menu"><summary aria-label="전체 상태 변경 메뉴">더보기</summary><div><button id="completeAll" type="button">전체 완료</button><button id="incompleteAll" type="button">전체 미완료</button></div></details></div><div class="activity-feedback"><span class="activity-hint">이름을 누르면 완료 칸으로 옮겨집니다. 잘못 눌렀으면 한 번 더 누르세요.</span><span id="activityMessage" role="status" aria-live="polite"></span><span id="activitySaveStatus" role="status"></span></div><div class="activity-columns"><section class="activity-column pending"><h2>미완료 <span id="pendingCount">0명</span></h2><div id="pendingStudents" class="activity-cards" aria-label="미완료 학생"></div></section><section class="activity-column complete"><h2>완료 <span id="completeCount">0명</span></h2><div id="completeStudents" class="activity-cards" aria-label="완료 학생"></div><div class="uc-empty activity-empty"><p class="uc-empty__msg">아직 완료한 학생이 없어요</p><p class="uc-empty__sub">왼쪽에서 이름을 누르면 여기로 옮겨집니다</p></div></section></div>`;
  document.body.append(root);
  const $=id=>root.querySelector('#'+id);let key=null,activity={title:'',done:[]},rosterSignature='';
  function save(){
@@ -31,13 +31,13 @@ window.createActivityCompletion=function({read,put}){
   for(const student of students){
    const finished=done.has(student.id),button=document.createElement('button');button.type='button';
    button.className='activity-student';button.dataset.studentId=student.id;
-   button.textContent=student.name+(finished?' ✓':'');
+   button.textContent=student.name;if(finished)button.prepend(Object.assign(document.createElement('span'),{className:'uc-ico uc-ico--check'}));
    button.setAttribute('aria-label',student.name+(finished?' — 완료 취소':' — 완료로 이동'));
    button.onclick=()=>toggle(student.id,true);
    (finished?complete:pending).append(button);if(student.id===movedId)moved=button;
   }
   const count=students.filter(s=>done.has(s.id)).length;
-  $('pendingCount').textContent=(students.length-count)+'명';$('completeCount').textContent=count+'명';
+  $('pendingCount').textContent=(students.length-count)+'명';$('completeCount').textContent=count+'명';root.classList.toggle('none-complete',count===0&&students.length>0);
   $('activityMessage').textContent=!students.length?'랜덤 뽑기 탭에서 현재 학급 명단을 등록해 주세요.':count===students.length?'✓ 모두 완료했어요!':'';
   if(moved){if(focus)moved.focus({preventScroll:true});moved.scrollIntoView({block:'nearest'});if(!matchMedia('(prefers-reduced-motion: reduce)').matches)moved.animate([{opacity:.35,transform:'translateY(6px)'},{opacity:1,transform:'translateY(0)'}],{duration:180,easing:'ease-out'});}
  }
