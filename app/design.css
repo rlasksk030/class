@@ -550,3 +550,105 @@ body:is(.whiteboard-active,.random-active,.activity-active,.diary-active)>footer
 #diaryScreen>.diary-footer>.diary-send-title,#diaryScreen>.diary-footer>.diary-registration{flex:none}
 #diaryScreen>.diary-footer>.diary-recipients{flex:0 1 auto;min-height:0;overflow:auto}
 @media (max-height:560px){#diaryScreen{gap:8px var(--G,16px)}#diaryScreen>.diary-footer{padding:12px 14px;gap:8px}.diary-send-title{font-size:20px}#diaryPublish,#schoolbellPublish{height:52px;min-height:52px!important;font-size:20px!important}}
+
+/* =========================================================
+   5단계: 설정 창 (I01–I03b) · 첫 실행 (I06)
+   ========================================================= */
+#settingsDialog{width:min(980px,calc(100vw - 48px));height:min(700px,calc(100vh - 48px));max-height:calc(100vh - 48px);padding:0;overflow:hidden}
+#settingsDialog[open]{display:flex}
+#settingsDialog>form{flex:1 1 auto;display:flex;flex-direction:column;gap:0;min-height:0}
+#settingsDialog .dialog-x{top:26px;right:32px}
+.settings-head{flex:none;padding:28px 96px 18px 32px;border-bottom:1px solid var(--uc-line)}
+.settings-head h2{margin:0}
+.settings-sub{margin:4px 0 0;font-size:15px;color:var(--uc-text-2)}
+.settings-kicker,.settings-intro,.settings-steps{display:none}
+.settings-body{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:230px minmax(0,1fr)}
+.settings-nav{display:flex;flex-direction:column;gap:6px;padding:18px 14px;border-right:1px solid var(--uc-line);background:var(--uc-surface)}
+.settings-tab{justify-content:flex-start;height:52px;min-height:52px;padding:0 16px;border:none;border-radius:10px;background:transparent;color:var(--uc-text-2);font-size:16px;text-align:left}
+.settings-tab[aria-selected="true"]{background:var(--uc-primary-soft);color:var(--uc-primary);box-shadow:inset 3px 0 0 var(--uc-primary)}
+.settings-panes{min-height:0;overflow:auto;padding:24px 32px}
+.settings-pane{display:flex;flex-direction:column;gap:16px}
+.settings-pane__title{margin:0;font-family:var(--uc-font-main);font-size:24px;font-weight:700}
+#settingsDialog .actions{flex:none;margin:0;padding:16px 32px;border-top:1px solid var(--uc-line)}
+.settings-version{font-size:14px;color:var(--uc-text-3)}
+#settingsDialog .actions button{height:48px;min-height:48px}
+/* 학교 · 학급 카드 */
+.settings-card{display:flex;flex-direction:column;border:1px solid var(--uc-line);border-radius:16px}
+.settings-row{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-bottom:1px solid var(--uc-line-soft)}
+.settings-row:last-child{border-bottom:0}
+.settings-row__head{display:flex;align-items:center;gap:12px}
+.settings-check{flex:none;width:28px;height:28px;border-radius:50%;background:var(--uc-surface-2)}
+.settings-row.is-done .settings-check{background:var(--uc-done-bg) url("ui/icons/check.svg") center/16px no-repeat}
+.settings-row__text{flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;font-size:15px}
+.settings-row__text strong{font-size:15px}
+.settings-row__state{color:var(--uc-text-2)}
+.settings-row.is-done .settings-row__state{color:var(--uc-done)}
+#schoolSelected{flex-basis:100%;font-family:var(--uc-font-main);font-size:18px;font-weight:700;color:var(--uc-text)}
+.settings-row__action{flex:none;height:44px;min-height:44px}
+.settings-row__action.uc-btn--ghost{color:var(--uc-primary)}
+#settingsDialog details>summary{display:none}
+#settingsDialog details{padding:0}
+#settingsDialog details[open]{padding:12px 14px;border-radius:12px;background:var(--uc-surface-2)}
+#neisGuide ol{margin:0;padding-inline-start:1.4rem}
+#neisGuide li{margin-block:.5rem;font-size:15px}
+#neisGuide li p{margin:4px 0}
+#neisGuide button,#schoolChooser button{height:44px;min-height:44px}
+#schoolChooser{display:none}
+#schoolChooser[open]{display:grid;grid-template-columns:180px minmax(0,1fr) auto;align-items:end;gap:10px}
+#schoolChooser>p,#schoolChooser>details,#schoolChooser>label:has(#schoolResults){grid-column:1/-1}
+#schoolChooser>details{display:block;background:transparent!important;padding:0!important}
+#schoolChooser>details>summary{display:block;cursor:pointer;font-size:14px;font-weight:700;color:var(--uc-primary)}
+#schoolChooser label,#neisGuide label{margin:0}
+#schoolStatus{margin:0;font-size:14px;color:var(--uc-text-2)}
+#schoolStatus:empty{display:none}
+.settings-row__label{font-size:15px}
+.settings-row--class .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.settings-row--class .fields label{margin:0;font-size:0}
+.settings-row--class .fields select,.settings-row--class .fields input{font-size:16px;margin:0}
+#classInfoStatus{margin:0;font-size:14px;color:var(--uc-warning)}
+#classInfoStatus:empty{display:none}
+/* 실행 · PIP */
+.settings-pane .switch-row{margin:0;font-size:16px;font-weight:400}
+.settings-pane .switch-row .uc-switch{order:2;margin-left:auto}
+.desktop-startup+p[role="status"]{margin:-8px 0 0;font-size:14px;color:var(--uc-text-2)}
+.desktop-startup+p[role="status"]:empty{display:none}
+.dashboard-pip-settings,.backup-settings,.update-settings{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin:0;padding:16px;border:1px solid var(--uc-line);border-radius:16px}
+.dashboard-pip-settings legend,.backup-settings legend,.update-settings legend{padding:0 6px;font-size:16px;font-weight:700;color:var(--uc-text)}
+.backup-settings,.update-settings{grid-template-columns:1fr}
+.backup-settings p{margin:0;font-size:14px;color:var(--uc-text-2)}
+.backup-actions{display:flex;flex-wrap:wrap;gap:10px}
+.backup-actions button{height:48px;min-height:48px}
+#backupStatus:empty{display:none}
+.update-settings__line{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.update-settings__version{font-family:var(--uc-font-main);font-size:20px;font-weight:700}
+/* I06 첫 실행: 같은 설정 창을 학교 · 학급 한 장짜리 카드로 */
+#settingsDialog.settings-first{width:min(920px,calc(100vw - 48px));height:auto;max-height:calc(100vh - 48px)}
+#settingsDialog.settings-first::backdrop{background:var(--uc-bg)}
+.settings-first .settings-head{border-bottom:0;padding:40px 44px 8px}
+.settings-first .settings-kicker{display:block;margin:0 0 8px;font-size:14px;color:var(--uc-text-3)}
+.settings-first .settings-head h2{font-size:34px}
+.settings-first .settings-sub{display:none}
+.settings-first .settings-intro{display:block;margin:6px 0 0;font-size:15px;color:var(--uc-text-2)}
+.settings-first .settings-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0 0;padding:0;list-style:none}
+.settings-step{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--uc-line);border-radius:12px;background:var(--uc-surface)}
+.settings-step__no{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--uc-surface-2);color:var(--uc-text-3);font-weight:700}
+.settings-step.is-done .settings-step__no{background:var(--uc-done-bg);color:var(--uc-done)}
+.settings-step.is-current{border:2px solid var(--uc-primary);padding:13px 15px;background:color-mix(in srgb,var(--uc-primary-soft) 40%,var(--uc-surface))}
+.settings-step.is-current .settings-step__no{background:var(--uc-primary);color:var(--uc-on-primary)}
+.settings-step__text{display:flex;flex-direction:column;min-width:0}
+.settings-step__text strong{font-family:var(--uc-font-main);font-size:19px}
+.settings-step__state{font-size:13px;color:var(--uc-text-3)}
+.settings-first .settings-body{display:block}
+.settings-first .settings-nav{display:none}
+.settings-first .settings-panes{padding:14px 44px 18px}
+.settings-first .settings-pane__title{display:none}
+.settings-first #settingsPaneSchool{display:flex!important}
+.settings-first #settingsPaneRun{display:none!important}
+/* 첫 실행에서도 예전 데이터를 가져올 수 있게 백업 · 복원 묶음은 학교 카드 아래에 보입니다 */
+.settings-first #settingsPaneBackup{display:flex!important;margin-top:16px}
+.settings-first #settingsPaneBackup>.update-settings{display:none}
+.settings-first .actions{padding:18px 44px 32px;border-top:0}
+.settings-first .settings-version{display:none}
+.check .uc-switch,label .uc-switch{width:64px;height:36px}
+.settings-first .settings-body{display:flex;flex-direction:column}
+.settings-first .settings-panes{flex:1 1 auto;min-height:0;overflow:auto}
