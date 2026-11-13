@@ -287,7 +287,6 @@ body:is(.whiteboard-active,.random-active,.activity-active,.diary-active) .app-b
 .layout-editing main>.card{z-index:1;border:2px dashed var(--uc-primary);box-shadow:none;padding-bottom:38px;position:relative}
 .layout-editing main>.card>:not(.cardhead):not(.layout-resize):not(.layout-size){opacity:.38}
 .layout-editing main>.card>.cardhead{padding-left:44px;cursor:grab;touch-action:none;position:relative}
-.layout-editing main>.card .cardhead::before{content:'';position:absolute;left:12px;top:50%;width:22px;height:22px;transform:translateY(-50%);background:currentColor;opacity:.75;-webkit-mask:url(ui/icons/grip.svg) center/contain no-repeat;mask:url(ui/icons/grip.svg) center/contain no-repeat;pointer-events:none}
 .layout-editing main>.card .cardhead:hover{box-shadow:none}
 .layout-editing main>.card>.cardhead>[data-edit]{display:none}
 /* 제목 입력 칸 모양(흰 바탕 + 연필). 아이콘은 그 앞에 그대로 */
@@ -652,3 +651,13 @@ body:is(.whiteboard-active,.random-active,.activity-active,.diary-active)>footer
 .check .uc-switch,label .uc-switch{width:64px;height:36px}
 .settings-first .settings-body{display:flex;flex-direction:column}
 .settings-first .settings-panes{flex:1 1 auto;min-height:0;overflow:auto}
+
+/* =========================================================
+   7단계 점검: 누르는 것은 모두 44×44 이상
+   ========================================================= */
+.uc-switch{width:72px;height:44px;border:4px solid transparent;background-clip:padding-box}
+.check .uc-switch,label .uc-switch{width:72px;height:44px}
+.layout-editing main>.card>.cardhead .board-title-edit{width:44px;min-width:44px;height:44px;min-height:44px;margin-left:-46px}
+.layout-editing main>.card>.cardhead h2.board-title .board-title-text{padding-right:48px}
+.schedule-no input[type="number"]{width:44px}
+.whiteboard-tools.uc-seg>button{height:44px;min-height:44px}
