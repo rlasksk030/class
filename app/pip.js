@@ -1,7 +1,7 @@
 const root=document.getElementById('content'),title=document.getElementById('pipTitle');
 let kind=null,state=null,signature='',boardNodes=new Map(),pendingText=new Map(),boardCanvas,boardLayer;
 let pipScale=1,activityTitleKey=null,pendingActivityTitle=null,composingActivityTitle=false;
-function resizeContent(){const base={dashboard:[400,240],random:[440,340],activity:[680,520],whiteboard:[720,500]}[kind]||[400,240];pipScale=Math.max(.35,Math.min(2,innerWidth/base[0],innerHeight/base[1]));document.documentElement.style.fontSize=(16*pipScale)+'px';if(kind==='whiteboard'&&boardLayer&&state)renderBoard(state.whiteboard,false);}
+function resizeContent(){const base={dashboard:[400,240],random:[440,340],activity:[680,520],whiteboard:[720,500],timer:[400,300]}[kind]||[400,240];pipScale=Math.max(.35,Math.min(2,innerWidth/base[0],innerHeight/base[1]));document.documentElement.style.fontSize=(16*pipScale)+'px';if(kind==='whiteboard'&&boardLayer&&state)renderBoard(state.whiteboard,false);}
 window.addEventListener('resize',resizeContent);
 const command=value=>window.pip.command(value);
 document.getElementById('expand').onclick=()=>command({type:'expand'});
@@ -9,9 +9,10 @@ function el(tag,text,parent){const node=document.createElement(tag);if(text!==un
 function button(text,parent,action){const node=el('button',text,parent);node.type='button';node.onclick=action;return node;}
 function update(data){if(!data?.state)return;const changed=kind!==data.kind;kind=data.kind;state=data.state;const relevant=state[kind],next=JSON.stringify(relevant);if(!changed&&signature===next)return;signature=next;
  if(changed)resizeContent();
- title.textContent={dashboard:'우리교실',activity:'활동완료',random:'랜덤 뽑기',whiteboard:'화이트보드'}[kind];
+ title.textContent={dashboard:'우리교실',activity:'활동완료',random:'랜덤 뽑기',whiteboard:'화이트보드',timer:'타이머'}[kind];
+ document.getElementById('expand').textContent=kind==='timer'?'시간 설정':'↗ 크게 보기';
  if(kind==='whiteboard'){renderBoard(relevant,changed);return;}
- if(changed||!['dashboard','activity'].includes(kind))root.replaceChildren();boardLayer=null;boardNodes.clear();
+ if(changed||!['dashboard','activity','timer'].includes(kind))root.replaceChildren();boardLayer=null;boardNodes.clear();
  if(kind==='dashboard'){
   for(const cls of ['clock','current','next'])if(!root.querySelector('.'+cls))el('div','',root).className=cls;
   const options=relevant.options||{},visible=key=>options[key]!==false;
@@ -21,6 +22,27 @@ function update(data){if(!data?.state)return;const changed=kind!==data.kind;kind
   current.hidden=!visible('currentPeriod')&&!visible('currentSubject');current.textContent=lesson('current')||(relevant.scheduleSet?'지금은 쉬는 시간':'교시 시간을 설정해 주세요');
   next.hidden=!visible('nextPeriod')&&!visible('nextSubject');next.textContent=lesson('next')?'다음 '+lesson('next'):'다음 수업 없음';
   let timer=root.querySelector('.pip-timer');if(relevant.timer&&visible('timer')){if(!timer){timer=button('',root,()=>command({type:'timer'}));timer.className='pip-timer';}timer.textContent='⏱ '+relevant.timer+(relevant.timerState==='paused'?' · 일시정지':'');}else timer?.remove();
+ }else if(kind==='timer'){
+  let wrap=root.querySelector('.timer-pip');
+  if(!wrap){
+   wrap=el('section',undefined,root);wrap.className='timer-pip';
+   const display=el('div','',wrap);display.id='pipTimerDisplay';display.setAttribute('role','timer');display.setAttribute('aria-label','남은 시간');
+   const message=el('div','',wrap);message.id='pipTimerMessage';message.setAttribute('role','status');
+   const controls=el('div',undefined,wrap);controls.className='pip-timer-controls';
+   for(const [action,label]of [['start','시작'],['pause','일시정지'],['restart','다시 시작'],['reset','초기화']]){
+    const b=button(label,controls,()=>command({type:'timer-action',action}));b.dataset.timerAction=action;
+   }
+   const dismiss=button('확인',controls,()=>command({type:'timer-action',action:'dismiss'}));dismiss.id='pipTimerDismiss';
+  }
+  const seconds=relevant.seconds;
+  wrap.dataset.state=relevant.state;
+  wrap.querySelector('#pipTimerDisplay').textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
+  const message=wrap.querySelector('#pipTimerMessage'),label={idle:'시작을 눌러 주세요',running:'진행 중',paused:'일시정지',finished:'시간이 다 되었습니다!'}[relevant.state];
+  if(message.textContent!==label)message.textContent=label;
+  const start=wrap.querySelector('[data-timer-action="start"]');start.disabled=relevant.state==='running';start.textContent=relevant.state==='paused'?'계속하기':'시작';
+  wrap.querySelector('[data-timer-action="pause"]').disabled=relevant.state!=='running';
+  wrap.querySelector('[data-timer-action="pause"]').hidden=relevant.state==='finished';
+  wrap.querySelector('#pipTimerDismiss').hidden=relevant.state!=='finished';
  }else if(kind==='activity'){
   let wrap=root.querySelector('.pip-activity');
   if(!wrap){wrap=el('div',undefined,root);wrap.className='pip-activity';const input=el('input',undefined,wrap);input.id='pipActivityTitle';input.type='text';input.maxLength=160;input.placeholder='활동명을 입력하세요';input.setAttribute('aria-label','활동명');

@@ -16,3 +16,32 @@ test('restore is all-or-nothing',async()=>{const b=await B.create(sample().getIt
  s.fail=null;B.apply(s,entries);assert.equal(s.getItem('morningDefault'),JSON.stringify('책 읽기'));});
 test('backup file name',()=>{assert.equal(B.fileName(new Date('2026-09-29T16:00:00Z')),'옥구초_학급대시보드_백업_2026-09-30.json');});
 test('restore keeps settings that are never backed up',async()=>{const b=await B.create(sample().getItem);const {entries}=await B.parse(JSON.stringify(b));const s=store({settings:JSON.stringify({grade:'3',classroom:'4',apiKey:'LOCAL'})});B.apply(s,entries);assert.deepEqual(JSON.parse(s.getItem('settings')),{grade:'6',classroom:'2',apiKey:'LOCAL'});});
+const Layout=require('./layout-core.js');
+const signed=async data=>JSON.stringify({format:B.FORMAT,schemaVersion:2,appVersion:'1.8.12',createdAt:'2026-11-01T00:00:00.000Z',school:'',academicYear:'',grade:'6',classroom:'2',keys:Object.keys(data),checksum:await B.checksum(data),data});
+test('board layout is backed up and restored as saved',async()=>{
+ const layout=Layout.move(Layout.hide(Layout.defaults(),'meal').layout,'notices',6,5).layout;
+ const s=sample();s.setItem('boardLayout',JSON.stringify(layout));
+ const b=await B.create(s.getItem);assert.deepEqual(b.data.boardLayout,layout);assert.ok(b.keys.includes('boardLayout'));
+ const {entries}=await B.parse(JSON.stringify(b));
+ assert.deepEqual(entries.filter(([k])=>k==='boardLayout').map(([,v])=>JSON.parse(v)),[layout]);
+});
+test('a broken board layout is never exported and makes a restore file invalid',async()=>{
+ const broken=Layout.defaults();broken.items.meal.x=9;broken.items.meal.w=4; // overlaps morning
+ const s=sample();s.setItem('boardLayout',JSON.stringify(broken));
+ assert.equal(B.collect(s.getItem).boardLayout,undefined);
+ await assert.rejects(B.parse(await signed({morningDefault:'책 읽기',boardLayout:broken})),{message:B.INVALID});
+});
+test('a backup from before the layout editor restores its own hidden boards and sizes',async()=>{
+ const {entries}=await B.parse(await signed({morningDefault:'책 읽기',boardPreferences:{meal:{visible:false,scale:1.2}},boardSizes:{columns:[100,300,200],row:.5,weatherWidth:260}}));
+ const layout=JSON.parse(entries.find(([k])=>k==='boardLayout')[1]);
+ assert.ok(Layout.isValid(layout));assert.equal(layout.items.meal.visible,false);assert.deepEqual(layout.items.morning,{x:3,y:1,w:6,h:3,visible:true});
+ assert.equal(JSON.parse(entries.find(([k])=>k==='boardSizes')[1]).weatherWidth,260,'old keys are restored as they were');
+ const plain=await B.parse(await signed({morningDefault:'책 읽기'}));
+ assert.ok(Layout.equal(JSON.parse(plain.entries.find(([k])=>k==='boardLayout')[1]),Layout.defaults()));
+});
+test('raw profile data without a layout gets one from its own settings',()=>{
+ const {entries,data}=B.fromRaw({morningDefault:JSON.stringify('책'),boardPreferences:JSON.stringify({notices:{visible:false,scale:1}})});
+ assert.equal(data.morningDefault,'책');
+ assert.equal(JSON.parse(entries.find(([k])=>k==='boardLayout')[1]).items.notices.visible,false);
+ assert.deepEqual(B.fromRaw({cache:'{}'}).entries,[],'nothing to restore stays empty');
+});

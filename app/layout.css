@@ -1,0 +1,87 @@
+/* Board layout: one 12x6 grid. Each board's area comes from the saved layout (layout-ui.js).
+   Columns are 1fr (auto minimum) so a board's title-width minimum grows its own tracks. */
+body>main{grid-template-columns:repeat(12,1fr);grid-template-rows:repeat(6,minmax(0,1fr))}
+main>.card.layout-hidden{display:none!important}
+main.layout-tight .cardhead h2{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* A hidden weather card leaves no gap in the header. */
+header>.weather.board-concealed{display:none!important}
+header:has(>.weather.board-concealed){grid-template-columns:minmax(0,1fr) auto}
+
+/* ---------- Edit mode only ---------- */
+main>.layout-cell,main>.layout-empty,main>.layout-preview{min-width:0;min-height:0;overflow:hidden;pointer-events:none;box-sizing:border-box}
+main>.layout-cell,main>.layout-empty{display:none}
+main>.layout-preview[hidden]{display:none}
+.layout-hide,.layout-resize{display:none}
+.layout-editing main{touch-action:none;user-select:none;-webkit-user-select:none}
+.layout-editing main>.layout-cell{display:block;z-index:0;border:1px dashed #9aaecb73;border-radius:6px} /* behind the boards: only gaps and empty space show it */
+.layout-editing main>.layout-empty{display:grid;place-items:center;z-index:0;border:2px dashed #9aa6b8;border-radius:14px;background:#f6f8fb;color:#7a8594;font-size:18px;font-weight:700}
+main>.layout-preview{z-index:3;display:grid;place-items:center;border:3px solid #2f6fd6;border-radius:14px;background:#2f6fd61f;color:#1f4f9e;font-size:18px;font-weight:700}
+main>.layout-preview[data-state="swap"]{border-color:#6a4fc2;background:#6a4fc21f;color:#4c3891}
+main>.layout-preview[data-state="bad"]{border-color:#d23c3c;background:#d23c3c24;color:#a62626}
+.layout-editing main>.card{z-index:1;box-shadow:0 0 0 2px #9aaecb}
+.layout-editing main>.card:focus-visible{outline:4px solid #354d74;outline-offset:3px}
+.layout-editing main>.card.layout-dragging{opacity:.55}
+.layout-editing main>.card .cardhead{cursor:grab;touch-action:none}
+/* Move grip: six dots in the title row's left padding (drawn with CSS, no symbol font needed),
+   and a slightly darker title row under the pointer. */
+.layout-editing main>.card .cardhead::before{content:'';position:absolute;left:5px;top:50%;width:10px;height:15px;transform:translateY(-50%);background:radial-gradient(circle,currentColor 1.5px,transparent 1.8px) 0 0/5px 5px;opacity:.5;pointer-events:none}
+.layout-editing main>.card .cardhead:hover{box-shadow:inset 0 0 0 100vmax #18233512}
+.layout-editing main>.card .cardhead:hover::before{opacity:.85}
+.layout-dragging-active,.layout-dragging-active *{cursor:grabbing!important}
+.layout-editing main>.card .cardhead>*{pointer-events:none}
+.layout-editing main>.card [data-edit],.layout-editing main>.card .board-title-edit{visibility:hidden}
+/* [숨기기] sits over the space the hidden title pencil and [수정]/[작성] keep in the title row.
+   It is absolutely placed, so board widths do not change when editing starts, and the title
+   (which already leaves that space free) is never covered. */
+.layout-editing main>.card .cardhead{position:relative}
+.layout-editing main>.card .cardhead>.layout-hide{display:inline-flex;align-items:center;position:absolute;right:6px;top:50%;transform:translateY(-50%);z-index:4;min-height:40px;padding:6px 8px;font-size:14px;font-weight:700;line-height:1;white-space:nowrap;border:1px solid #9aaecb;border-radius:8px;background:#fff;color:#354d74;opacity:1;pointer-events:auto;cursor:pointer}
+/* The title row has less side padding on small screens (style.css); keep [숨기기] inside the free space. */
+@media(max-width:1100px),(max-height:800px){.layout-editing main>.card .cardhead>.layout-hide{right:4px;padding:5px 6px;font-size:13px}}
+/* Size handles: a thin light mark on the board edge; the transparent button around it stays at
+   least 44px for touch and reaches only 10px outside the board (boards are 12px or more apart). */
+.layout-editing .layout-resize{display:block;position:absolute;z-index:4;padding:0;border:0;border-radius:0;background:transparent;touch-action:none}
+.handle-mark{position:absolute;border-radius:3px;background:#93a4bf;pointer-events:none}
+.layout-editing .layout-resize:hover>.handle-mark,.layout-editing .layout-resize:focus-visible>.handle-mark{background:#59677c}
+.layout-resize-e{top:50%;right:-10px;width:44px;height:64px;transform:translateY(-50%);cursor:ew-resize}
+.layout-resize-e>.handle-mark{top:16px;right:8px;width:4px;height:32px}
+.layout-resize-s{left:50%;bottom:-10px;width:64px;height:44px;transform:translateX(-50%);cursor:ns-resize}
+.layout-resize-s>.handle-mark{left:16px;bottom:8px;width:32px;height:4px}
+.layout-resize-se{right:-10px;bottom:-10px;width:44px;height:44px;cursor:nwse-resize}
+.layout-resize-se>.handle-mark{right:8px;bottom:8px;width:14px;height:14px;border-radius:0 0 7px 0;background:none;border:solid #93a4bf;border-width:0 4px 4px 0}
+.layout-editing .layout-resize-se:hover>.handle-mark,.layout-editing .layout-resize-se:focus-visible>.handle-mark{background:none;border-color:#59677c}
+
+/* Its own body grid row between the header and the boards while editing (layout-ui.js inserts it there). */
+body.layout-editing{grid-template-rows:auto auto minmax(0,1fr) auto}
+.layout-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;min-width:0;padding:8px 12px;background:#f6f8fb;border:1px solid #cbd4e0;border-radius:12px}
+.layout-toolbar[hidden]{display:none}
+.layout-heading{font-size:17px;color:#354d74;white-space:nowrap}
+.layout-tray{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-height:44px;padding:4px 10px;border:1px dashed #b8c7df;border-radius:10px;background:#f6f8fb;font-size:14px;color:#4b5563}
+.layout-tray-label{font-weight:700}
+.layout-tray-empty{color:#9097a1}
+.layout-chip{display:flex;align-items:center;gap:8px;padding:4px 5px 4px 12px;border:1px solid #9aaecb;border-radius:99px;background:#fff;font-weight:700;color:#354d74;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.layout-chip button{min-height:44px;padding:6px 12px;font-size:16px;border-radius:99px}
+.layout-message{flex:1 1 240px;min-width:0;margin:0;font-size:15px;line-height:1.4;color:#4b5563;word-break:keep-all}
+@media(max-width:1200px){.layout-message{font-size:14px}}
+.layout-help{flex:0 0 auto;width:44px;height:44px;padding:0;border-radius:50%;font-size:18px;font-weight:700;color:#354d74}
+.layout-help[aria-expanded="true"]{background:#354d74;border-color:#354d74;color:#fff}
+.layout-actions{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+.layout-actions button{min-height:44px;padding:8px 16px;font-size:16px}
+.layout-actions #layoutDone{min-width:100px;font-size:17px;font-weight:700}
+.layout-keys{flex-basis:100%;margin:0;font-size:15px;line-height:1.5;color:#4b5563}
+.layout-keys[hidden]{display:none}
+.layout-ghost{position:fixed;z-index:50;pointer-events:none;transform:translate(-50%,-120%);padding:8px 14px;border:2px solid #2f6fd6;border-radius:99px;background:#fff;color:#1f4f9e;font-weight:700;box-shadow:0 6px 20px #18233533}
+.layout-editing .size-controls{visibility:hidden}
+/* Weather size: a dashed frame just outside the weather card, with the handles on the frame
+   (outside the text, clear of the clock and the header buttons). */
+.layout-editing header>.weather{outline:2px dashed #9aaecb;outline-offset:6px}
+.layout-editing header>.weather .board-resize-handle,.layout-editing header>.weather .board-resize-handle:hover,.layout-editing header>.weather .board-resize-handle:focus-visible{width:44px;height:44px;border-radius:0;background:transparent;opacity:1}
+header>.weather .board-resize-handle>.handle-mark{display:none}
+.layout-editing header>.weather .board-resize-handle>.handle-mark{display:block}
+.layout-editing header>.weather .board-resize-handle:hover>.handle-mark,.layout-editing header>.weather .board-resize-handle:focus-visible>.handle-mark{background:#59677c}
+/* Marks on the frame line (6px outside the card, 2px wide). The bottom touch area leans
+   outward (into the header's bottom padding) so it overlaps the weather text as little as possible. */
+.layout-editing header>.weather .edge-left{left:-29px}
+.layout-editing header>.weather .edge-left>.handle-mark{left:20px;top:8px;width:4px;height:28px}
+.layout-editing header>.weather .edge-bottom{bottom:-32px}
+.layout-editing header>.weather .edge-bottom>.handle-mark{bottom:23px;left:8px;width:28px;height:4px}

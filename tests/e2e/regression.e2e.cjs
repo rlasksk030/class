@@ -41,16 +41,16 @@ async function launch(){const app=await _electron.launch({executablePath:electro
  ok('D-Day 삭제·없으면 영역 숨김',!(await page.isVisible('#ddayBadge')));
  await page.keyboard.press('Escape');
  // ---------- 보드 설정 ----------
- await page.click('#screenSettings');await page.uncheck('[data-board-visible=meal]');ok('보드 숨김(자리 유지)',await page.$eval('.meal',e=>e.classList.contains('board-concealed')&&e.getBoundingClientRect().width>0));
+ await page.click('#screenSettings');await page.uncheck('[data-board-visible=meal]');ok('보드 숨김(자리 비움)',await page.$eval('.meal',e=>getComputedStyle(e).display==='none')&&(await page.evaluate(()=>JSON.parse(localStorage.getItem('boardLayout')).items.meal.visible))===false);
  await page.check('[data-board-visible=meal]');const rowPlus=page.locator('.preference-row',{has:page.locator('[data-board-visible=notices]')}).locator('button').nth(1);await rowPlus.click();
  ok('보드별 글씨 크기',(await page.evaluate(()=>JSON.parse(localStorage.getItem('boardPreferences')).notices.scale))===1.1);await page.keyboard.press('Escape');
- const before=await page.$eval('.timetable',e=>Math.round(e.getBoundingClientRect().width));await page.click('#resizeToggle');await page.focus('[data-resize=left-column]');for(let i=0;i<4;i++)await page.keyboard.press('ArrowRight');
- const wider=await page.$eval('.timetable',e=>Math.round(e.getBoundingClientRect().width));await page.click('#resizeReset');const reset=await page.$eval('.timetable',e=>Math.round(e.getBoundingClientRect().width));await page.click('#resizeToggle');
- ok('보드 크기 조절·기본 크기 복원',wider>before&&Math.abs(reset-before)<=1,`${before}→${wider}→${reset}`);
+ const before=await page.$eval('.notices',e=>Math.round(e.getBoundingClientRect().width));await page.click('#layoutToggle');await page.focus('main>.notices');for(let i=0;i<2;i++)await page.keyboard.press('Shift+ArrowLeft');
+ const narrower=await page.$eval('.notices',e=>Math.round(e.getBoundingClientRect().width));await page.click('#layoutReset');const reset=await page.$eval('.notices',e=>Math.round(e.getBoundingClientRect().width));await page.click('#layoutDone');
+ ok('보드 크기 조절·기본 배치 복원',narrower<before&&Math.abs(reset-before)<=1,`${before}→${narrower}→${reset}`);
  // ---------- 타이머 ----------
  await page.click('#timerButton');for(const n of [1,3,5,10,15]){await page.click(`[data-minutes="${n}"]`);if((await page.textContent('#timerDisplay'))!==String(n).padStart(2,'0')+':00')ok('타이머 프리셋 '+n,false);}
  await page.fill('#timerMinutes','0');await page.fill('#timerSeconds','3');await page.click('#timerSet');await page.check('#timerSound');await page.click('#timerStart');await page.keyboard.press('Escape');
- await page.waitForTimeout(1200);ok('팝업 닫아도 진행·버튼에 남은 시간',/⏱ 00:0[12]/.test(await page.textContent('#timerButton')),await page.textContent('#timerButton'));
+ await page.waitForFunction(()=>/⏱ 00:0[12]/.test(document.querySelector('#timerButton').textContent));const closedTimerLabel=await page.textContent('#timerButton');ok('팝업 닫아도 진행·버튼에 남은 시간',/⏱ 00:0[12]/.test(closedTimerLabel)&&await page.evaluate(()=>classroomTools.timer().state==='running'&&!document.querySelector('#timerDialog').open),closedTimerLabel);
  await page.waitForTimeout(2600);ok('타이머 완료 표시',(await page.textContent('#timerButton')).includes('종료')&&await page.isVisible('#timerFinished'));await page.click('#timerFinished button');
  await page.click('#timerButton');await page.click('#timerReset');ok('타이머 초기화',(await page.textContent('#timerDisplay'))==='00:03');await page.click('#timerStart');await page.click('#timerPause');ok('일시정지→계속하기',(await page.textContent('#timerStart'))==='계속하기');await page.click('#timerReset');await page.keyboard.press('Escape');
  // ---------- 랜덤 뽑기 ----------

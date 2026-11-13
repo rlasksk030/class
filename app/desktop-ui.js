@@ -13,9 +13,9 @@
   input.onchange=()=>{pipOptions[key]=input.checked;put('dashboardPipOptions',pipOptions);publish();};row.append(input,document.createTextNode(label));pipSettings.append(row);
  }
  $('settingsForm').querySelector('.actions').before(pipSettings);
- for(const [kind,selector]of [['dashboard','header nav'],['random','.random-heading'],['whiteboard','.whiteboard-toolbar'],['activity','.activity-heading']]){
+ for(const [kind,selector]of [['dashboard','header nav'],['random','.random-heading'],['whiteboard','.whiteboard-toolbar'],['activity','.activity-heading'],['timer','#timerDialog .extras-heading']]){
   const button=document.createElement('button');button.type='button';button.className='pip-open';button.textContent='PIP로 보기';button.dataset.pip=kind;
-  button.onclick=()=>window.desktop.openPip(kind).catch(()=>{button.textContent='PIP 다시 열기'});document.querySelector(selector).append(button);
+  button.onclick=()=>{publish();window.desktop.openPip(kind).catch(()=>{button.textContent='PIP 다시 열기'});};document.querySelector(selector).append(button);
  }
  const tools=window.classroomTools;
  function snapshot(){
@@ -27,7 +27,7 @@
   const label=row=>row?`${row.period}교시 · ${lessons.find(l=>String(l.period)===String(row.period))?.subject||''}`:null;
   const timer=tools.timer();const seconds=Math.ceil(ExtrasCore.timerRemaining(timer,Date.now())/1000);
   const subject=row=>row?lessons.find(l=>String(l.period)===String(row.period))?.subject||'':null;
-  return {dashboard:{options:pipOptions,time,current:label(current),next:label(next),currentPeriod:current?String(current.period):null,currentSubject:subject(current),nextPeriod:next?String(next.period):null,nextSubject:subject(next),scheduleSet:rows.length>0,timer:timer.state==='running'||timer.state==='paused'?`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`:null,timerState:timer.state},activity:tools.activity.snapshot(),random:tools.random.snapshot(),whiteboard:tools.whiteboard.snapshot()};
+  return {dashboard:{options:pipOptions,time,current:label(current),next:label(next),currentPeriod:current?String(current.period):null,currentSubject:subject(current),nextPeriod:next?String(next.period):null,nextSubject:subject(next),scheduleSet:rows.length>0,timer:timer.state==='running'||timer.state==='paused'?`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`:null,timerState:timer.state},timer:{state:timer.state,seconds,durationSeconds:Math.ceil(timer.duration/1000)},activity:tools.activity.snapshot(),random:tools.random.snapshot(),whiteboard:tools.whiteboard.snapshot()};
  }
  let previous='';function publish(){const state=snapshot(),json=JSON.stringify(state);if(json!==previous){previous=json;window.desktop.publishPip(state);}}
  window.desktop.onPipCommand(command=>{
@@ -36,6 +36,8 @@
   else if(command.type==='random-draw'&&command.key===ClassRoster.key())tools.random.drawOne();
   else if(command.type==='random-repeat'&&command.key===ClassRoster.key())tools.random.setNoRepeat(command.value);
   else if(command.type==='whiteboard-edit')tools.whiteboard.editText(command.change);
+  else if(command.type==='timer-action'&&command.kind==='timer')tools.controlTimer(command.action);
+  else if(command.type==='expand'&&command.kind==='timer')$('timerButton').click();
   else if(command.type==='expand')tools.screen(['dashboard','whiteboard','random','activity'].indexOf(command.kind));
   else if(command.type==='timer')$('timerButton').click();
   publish();
