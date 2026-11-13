@@ -313,3 +313,145 @@ main>.layout-preview[data-state="bad"]{border-color:var(--uc-danger);background:
 main>.layout-preview[data-state="swap"]{border-color:var(--uc-dday-today-bg);background:var(--uc-dday-bg);color:var(--uc-dday-text)}
 .layout-ghost{border:2px solid var(--uc-primary);background:var(--uc-surface);color:var(--uc-primary);box-shadow:var(--uc-shadow-dialog)}
 .layout-editing header>.weather{outline:2px dashed var(--uc-primary);outline-offset:8px;border-radius:12px}
+
+/* =========================================================
+   3단계: 작은 창 공통 틀 (B01–B04, C01–C03, D01–D02, I04, I05)
+   ① 제목(고운바탕 28) ② [×] 오른쪽 위 ③ 안내 한 줄 ④ 내용 ⑤ [보조]   [취소][저장]
+   ========================================================= */
+dialog[open]{display:flex;flex-direction:column;gap:16px;overflow:auto}
+dialog>form{display:flex;flex-direction:column;gap:16px;min-width:0}
+dialog .dialog-head,dialog .extras-heading{display:flex;align-items:flex-start;gap:10px;margin:0}
+dialog .dialog-head h2,dialog .extras-heading h2{flex:1 1 0;min-width:0;margin:0}
+.uc-icon-btn,dialog .close-extra,dialog .dialog-close{flex:none;width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:1px solid var(--uc-line-strong);border-radius:var(--uc-radius-md);background:var(--uc-surface);color:var(--uc-text-2)}
+.uc-icon-btn .uc-ico{width:20px;height:20px}
+dialog .dialog-x{position:absolute;top:24px;right:28px;z-index:2}
+dialog:has(>.dialog-x)>h2,dialog:has(>.dialog-x)>form>h2:first-child,dialog:has(>.dialog-x) .eyebrow+h2{padding-right:56px}
+dialog{position:fixed}
+dialog .dialog-desc,dialog>h2+p,dialog>form>h2+p,dialog .extras-heading+p{margin:-8px 0 0;font-size:15px;line-height:1.6;color:var(--uc-text-2)}
+dialog .actions,dialog .settings-navigation{position:static;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:10px;margin:4px 0 0;padding:16px 0 0;border-top:1px solid var(--uc-line-soft);background:transparent}
+dialog .actions button,dialog .settings-navigation button{height:48px;min-height:48px;font-size:16px}
+dialog .uc-spacer{flex:1 1 0}
+.uc-btn--ghost,button.uc-btn--ghost{border:none;background:transparent;color:var(--uc-text-2)}
+.uc-btn--danger,button.uc-btn--danger{border:none;background:transparent;color:var(--uc-danger)}
+#restore{margin-right:auto}
+.extras-links:empty{display:none}
+/* 창 폭: 기본 680, 작은 창 600, 넓은 창 760 */
+#updateDialog,#recoveryDialog,#backupConfirmDialog{width:min(600px,calc(100vw - 48px))}
+#periodDialog,#ddayDialog,#timerDialog,#screenDialog{width:min(760px,calc(100vw - 48px))}
+
+/* B01–B04 수정 창 */
+#editDialog .edit-tools{display:flex;align-items:center;gap:12px;min-height:0}
+#editDialog .edit-tools:has(#loadYesterday[hidden]) .edit-hint:empty{display:none}
+#editDialog .edit-hint{font-size:14px;color:var(--uc-text-3)}
+#loadYesterday{flex:none;height:44px;min-height:44px;padding:0 14px;margin:0;font-size:15px}
+#yesterdayStatus{margin:-8px 0 0;min-height:0;font-size:14px;color:var(--uc-warning)}
+#yesterdayStatus:empty{display:none}
+#editText{height:260px;min-height:200px;margin:0;padding:14px 16px;border:2px solid var(--uc-primary);font-family:var(--uc-font-main);font-size:22px;font-weight:700;line-height:1.7;resize:none}
+#editDialog[data-kind="timetable"] .edit-tools{display:none}
+.timetable-rows{display:flex;flex-direction:column;border:1px solid var(--uc-line);border-radius:12px;overflow:hidden}
+.timetable-row{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:12px;margin:0;padding:6px 14px;border-bottom:1px solid var(--uc-line-soft);font-weight:400}
+.timetable-row:last-child{border-bottom:0}
+.timetable-row__name{font-family:var(--uc-font-main);font-size:17px;color:var(--uc-primary)}
+.timetable-row input{width:100%;min-height:44px;height:44px;margin:0;font-family:var(--uc-font-main);font-size:18px;font-weight:700}
+.edit-note{margin:-6px 0 0;font-size:14px;color:var(--uc-text-3)}
+
+/* C02 교시 시간 설정 */
+.switch-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;background:var(--uc-surface-2)}
+.switch-row__text{flex:1 1 auto;display:flex;flex-direction:column;gap:2px;margin:0;font-weight:400;cursor:pointer}
+.switch-row__text strong{font-size:16px;color:var(--uc-text)}
+.switch-row__text span{font-size:14px;color:var(--uc-text-2)}
+.switch-row__state,#periodHighlightStatus{min-width:3em;padding:0;border-radius:0;background:transparent;font-size:15px;font-weight:700;color:var(--uc-text-2)}
+.switch-row:has(.uc-switch:checked) .switch-row__state{color:var(--uc-primary)}
+.uc-switch:focus-visible{outline:3px solid var(--uc-primary);outline-offset:3px}
+.schedule-head,.schedule-row{display:grid;grid-template-columns:84px minmax(0,1fr) 20px minmax(0,1fr) 64px;align-items:center;gap:10px}
+.schedule-head{padding:0 0 4px;font-size:13px;color:var(--uc-text-3)}
+.schedule-row{padding:6px 0;border-top:1px solid var(--uc-line-soft)}
+.schedule-row input[type="time"]{width:100%;margin:0}
+.schedule-no{display:flex;align-items:center;gap:2px;margin:0;font-family:var(--uc-font-main);font-size:17px;font-weight:400;color:var(--uc-primary)}
+.schedule-no input[type="number"]{width:2.2em;min-height:44px;height:44px;margin:0;padding:0;border:0;background:transparent;text-align:right;font-family:var(--uc-font-main);font-size:17px;color:var(--uc-primary);-moz-appearance:textfield}
+.schedule-no input::-webkit-inner-spin-button{display:none}
+.schedule-tilde{text-align:center;color:var(--uc-text-3)}
+.schedule-row button{margin:0;height:44px;min-height:44px;padding:0 10px}
+.add-row{align-self:flex-start;height:44px;min-height:44px;margin:4px 0 0;border:1px dashed var(--uc-line-strong);font-size:15px}
+.add-row .uc-ico{width:16px;height:16px}
+
+/* C03 D-Day 관리 */
+.dday-form{display:grid;grid-template-columns:minmax(0,1fr) 190px auto auto;align-items:end;gap:10px}
+.dday-form .uc-field{margin:0}
+.dday-form .uc-label small{font-weight:400;color:var(--uc-text-3);font-size:14px}
+.dday-form input{margin:0}
+.dday-form button{height:48px;min-height:48px}
+.dday-hint{margin:-4px 0 0;font-size:14px;color:var(--uc-text-2)}
+#ddayList .event-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--uc-line-soft);border-bottom:0}
+#ddayList .event-row:last-child{border-bottom:1px solid var(--uc-line-soft)}
+#ddayList .uc-dday{flex:0 1 auto;height:36px;font-size:18px;min-width:0;max-width:60%}
+#ddayList .event-date{flex:1 1 auto;font-size:15px;color:var(--uc-text-2);white-space:nowrap}
+#ddayList .event-row.is-past{opacity:.6}
+#ddayList .event-row button{height:44px;min-height:44px}
+
+/* D01 · D02 타이머 */
+#timerDialog{text-align:center}
+#timerDialog .extras-heading{align-items:center}
+#timerDialog .extras-heading h2{text-align:left}
+#timerDialog .extras-heading .pip-open{order:1;height:44px;min-height:44px;font-size:15px}
+#timerDialog .extras-heading .close-extra{order:2}
+.timer-presets.uc-seg{justify-content:center;flex-wrap:wrap}
+.timer-presets.uc-seg>button{min-height:48px}
+.timer-presets.uc-seg>button:disabled{border-color:var(--uc-line);background:var(--uc-surface);color:var(--uc-text-disabled)}
+#timerDisplay{margin:0;font-family:var(--uc-font-main);font-weight:700;font-size:clamp(96px,14vw,150px);line-height:1.05;letter-spacing:0;color:var(--uc-text);font-variant-numeric:tabular-nums}
+#timerDialog[data-state="running"] #timerDisplay,#timerDialog[data-state="paused"] #timerDisplay{color:var(--uc-primary)}
+.timer-progress{display:none;width:min(560px,100%);height:10px;margin:-6px auto 0;border-radius:var(--uc-radius-pill);background:var(--uc-primary-soft);overflow:hidden}
+.timer-progress__bar{display:block;height:100%;width:calc(var(--timer-left,1) * 100%);border-radius:inherit;background:var(--uc-primary)}
+.timer-remain{display:none;margin:-8px 0 0;font-size:15px;color:var(--uc-text-2)}
+#timerDialog[data-state="running"] .timer-progress,#timerDialog[data-state="paused"] .timer-progress,#timerDialog[data-state="running"] .timer-remain,#timerDialog[data-state="paused"] .timer-remain{display:block}
+#timerDialog .timer-fields{display:flex;align-items:center;justify-content:center;gap:10px}
+/* 진행 중에는 직접 입력 줄을 숨기고(D02), 일시정지 · 대기 중에는 보입니다 */
+#timerDialog[data-state="running"] .timer-fields{display:none}
+.timer-unit{display:inline-flex;align-items:center;gap:8px;margin:0;font-size:15px;font-weight:400;color:var(--uc-text-2)}
+.timer-unit input{width:96px;min-height:56px;height:56px;margin:0;text-align:center;font-family:var(--uc-font-main);font-size:28px;font-weight:700}
+#timerSet{height:56px;min-height:56px}
+#timerMessage{min-height:0;font-size:18px;color:var(--uc-primary)}
+#timerMessage:empty{display:none}
+.timer-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.timer-actions button{min-width:120px;height:56px;min-height:56px;font-size:18px;border-radius:12px}
+.timer-actions button.uc-btn--ghost{min-width:96px}
+.timer-sound{justify-content:flex-start;padding-top:12px;border-top:1px solid var(--uc-line-soft)}
+
+/* I04 앱 업데이트 */
+.version-box{display:flex;align-items:center;gap:16px;padding:16px 18px;border-radius:12px;background:var(--uc-surface-2)}
+.version-box__text{flex:1 1 auto;min-width:0}
+.version-box__label{font-size:13px;color:var(--uc-text-3)}
+#updateDialog #installedVersion{margin:2px 0 0;font-size:14px;color:var(--uc-text-2)}
+#updateDialog #installedVersion b{font-family:var(--uc-font-main);font-size:26px;color:var(--uc-text);margin-right:4px}
+#updateDialog #updateStatus{margin:0;font-size:16px;color:var(--uc-text)}
+#updateDialog #updateStatus:empty{display:none}
+.update-help{margin:0;font-size:14px;color:var(--uc-text-2)}
+#checkUpdate{height:48px;min-height:48px}
+
+/* I05 이전 데이터 찾기 */
+#recoveryStatus.is-found{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:10px;background:var(--uc-done-bg);color:var(--uc-done-text);font-weight:700}
+#recoveryStatus.is-found::before{content:'';width:10px;height:10px;border-radius:50%;background:var(--uc-done)}
+#timerDialog .timer-fields .timer-unit{flex:none}
+
+/* C01 화면 설정: 화면 구조 두 장 + 칸 표시와 글씨 크기 */
+.settings-group-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin:0}
+.settings-group-head strong{font-size:16px;color:var(--uc-text)}
+.settings-group-head span{font-size:14px;color:var(--uc-text-3)}
+.structure-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:-6px}
+.structure-card{display:flex;flex-direction:column;gap:12px;margin:0;padding:16px;border:1px solid var(--uc-line-strong);border-radius:16px;background:var(--uc-surface);font-weight:400;cursor:pointer}
+.structure-card.is-selected{border:2px solid var(--uc-primary);padding:15px;background:color-mix(in srgb,var(--uc-primary-soft) 40%,var(--uc-surface))}
+.structure-mini{display:grid;gap:6px;height:126px;padding:10px;border:1px solid var(--uc-line);border-radius:10px;background:var(--uc-surface-2)}
+.structure-mini i{display:block;min-width:0;min-height:0;border-radius:4px}
+.structure-mini .mini-info{background:var(--uc-surface);border:1px solid var(--uc-line-strong)}
+.structure-mini .mini-a{background:var(--uc-blue-tint)}.structure-mini .mini-b{background:var(--uc-pink-tint)}.structure-mini .mini-c{background:var(--uc-green-tint)}.structure-mini .mini-d{background:var(--uc-yellow-tint)}
+.structure-card--a .structure-mini{grid-template-columns:1fr 2fr 1fr;grid-template-rows:30px 1fr .5fr;grid-template-areas:"info info info" "a b c" "a b d"}
+.structure-card--b .structure-mini{grid-template-columns:1.2fr .7fr 1.4fr .7fr;grid-template-rows:1fr .5fr;grid-template-areas:"info a b c" "info a b d"}
+.structure-mini .mini-info{grid-area:info}.structure-mini .mini-a{grid-area:a}.structure-mini .mini-b{grid-area:b}.structure-mini .mini-c{grid-area:c}.structure-mini .mini-d{grid-area:d}
+.structure-choice{display:flex;align-items:center;gap:10px;font-family:var(--uc-font-main);font-size:20px;color:var(--uc-text)}
+.structure-desc{font-size:14px;line-height:1.55;color:var(--uc-text-2);word-break:keep-all}
+#screenDialog #boardPreferences{display:flex;flex-direction:column;margin-top:-8px;border-top:1px solid var(--uc-line-soft)}
+#screenDialog .preference-row{display:grid;grid-template-columns:minmax(0,1fr) 48px 64px 48px;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--uc-line-soft)}
+#screenDialog .preference-row label{margin:0}
+#screenDialog .preference-row button{width:48px;min-width:48px;height:44px;padding:0;font-size:16px}
+#screenDialog .preference-row output{min-width:0;text-align:center;font-size:15px;font-weight:700;color:var(--uc-text)}
+#boardVisibilityStatus:empty{display:none}

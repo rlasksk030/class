@@ -134,8 +134,34 @@ function openSettings(){if(window.dashboardLocked)return;$('grade').value=settin
 $('settings').onclick=openSettings;
 $('settingsForm').onsubmit=e=>{e.preventDefault();if(window.dashboardLocked)return;if(!validateClassSelection())return;settings={...settings,school:OKGU_SCHOOL,grade:$('grade').value,classroom:$('classroom').value};put('settings',settings);generation++;delete errors.meal;delete errors.timetable;$('settingsDialog').close();render();refreshSchool();refreshWeather();};
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
-document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{if(window.dashboardLocked)return;const kind=b.dataset.edit,automatic=['meal','timetable'].includes(kind);if(automatic&&!settings.school){openSettings();return;}editing={kind,date:day,key:automatic?Core.dataKey(settings,day,kind):null};const value=automatic?Core.display(overrides[editing.key],cache[editing.key]):kind==='morning'?morningText:notes[day]?.[kind];$('editTitle').textContent=({meal:'오늘의 급식 수정',timetable:'오늘 시간표 수정',morning:'아침활동 수정',notices:'안내사항 작성'})[kind];$('editHelp').textContent=automatic?'오늘 이 교실에만 적용됩니다. 한 줄에 하나씩 입력해 주세요. 외부 원본은 변경하지 않습니다.':kind==='morning'?'저장한 내용은 매일 자동으로 표시됩니다. 수정하면 다음 날에도 변경된 내용이 표시됩니다.':'오늘의 내용을 적어 주세요.';$('editText').value=automatic?(value||[]).map(v=>kind==='timetable'?`${v.period} | ${v.subject}`:v).join('\n'):value||'';$('restore').hidden=!automatic;$('restore').textContent=kind==='meal'?'원래 급식으로 되돌리기':'원래 시간표로 되돌리기';$('editDialog').showModal();});
-$('editForm').onsubmit=e=>{e.preventDefault();if(window.dashboardLocked)return;if(!editing)return;const {kind,key,date}=editing;if(key){overrides[key]=$('editText').value.split('\n').map(x=>x.trim()).filter(Boolean).map((x,i)=>{if(kind!=='timetable')return x;const m=x.match(/^(\d+)\s*\|\s*(.*)$/);return {period:m?m[1]:String(i+1),subject:m?m[2]:x};});put('overrides',overrides);}else if(kind==='morning'){morningText=$('editText').value;put('morningDefault',morningText);document.dispatchEvent(new CustomEvent('morning-saved',{detail:{date,value:morningText}}));}else{notes[date]={...notes[date],[kind]:$('editText').value};put('notes',notes);}$('editDialog').close();render();};
+// Edit dialogs (B01–B04): one frame; the timetable uses one field per period, the others a text box.
+const EDIT_TEXT={timetable:{title:'오늘 시간표 수정',desc:'오늘 이 교실에만 적용됩니다. 외부 원본(NEIS)은 바뀌지 않습니다.',hint:''},
+ morning:{title:'아침활동 수정',desc:'저장한 내용은 매일 자동으로 표시됩니다. 고치면 다음 날에도 고친 내용이 나옵니다.',hint:'한 줄에 하나씩 적으면 줄마다 나눠 보입니다.'},
+ notices:{title:'안내사항 작성',desc:'오늘의 안내를 적어 주세요. 학생 화면에 크게 표시됩니다.',hint:'한 줄에 하나씩 적어 주세요.'},
+ meal:{title:'오늘의 급식 수정',desc:'오늘 이 교실에만 적용됩니다. 외부 원본은 바뀌지 않습니다.',hint:'괄호 안 알레르기 번호는 대시보드에서 작고 연하게 보입니다.'}};
+function timetableRows(list){
+ const box=$('timetableRows'),numbers=(list||[]).map(v=>Number(v.period)).filter(n=>Number.isInteger(n)&&n>0),count=Math.min(12,Math.max(6,...numbers));
+ box.replaceChildren();
+ for(let p=1;p<=count;p++){
+  const row=document.createElement('label');row.className='timetable-row';
+  const name=document.createElement('span');name.className='timetable-row__name';name.textContent=p+'교시';
+  const input=document.createElement('input');input.type='text';input.dataset.period=String(p);input.className='uc-input--main';
+  input.value=(list||[]).find(v=>String(v.period)===String(p))?.subject||'';input.setAttribute('aria-label',p+'교시 과목');
+  row.append(name,input);box.append(row);
+ }
+}
+document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{if(window.dashboardLocked)return;const kind=b.dataset.edit,automatic=['meal','timetable'].includes(kind);if(automatic&&!settings.school){openSettings();return;}editing={kind,date:day,key:automatic?Core.dataKey(settings,day,kind):null};const value=automatic?Core.display(overrides[editing.key],cache[editing.key]):kind==='morning'?morningText:notes[day]?.[kind];
+ const text=EDIT_TEXT[kind],table=kind==='timetable';$('editDialog').dataset.kind=kind;
+ $('editTitle').textContent=text.title;$('editHelp').textContent=text.desc;$('editHint').textContent=text.hint;
+ $('timetableRows').hidden=!table;$('timetableNote').hidden=!table;$('editText').hidden=table;
+ if(table)timetableRows(value);$('editText').value=table?'':automatic?(value||[]).join('\n'):value||'';
+ $('restore').hidden=!automatic;$('restore').textContent=kind==='meal'?'원래 급식으로 되돌리기':'원래 시간표로 되돌리기';$('editDialog').showModal();
+ (table?$('timetableRows').querySelector('input'):$('editText'))?.focus();});
+$('editForm').onsubmit=e=>{e.preventDefault();if(window.dashboardLocked)return;if(!editing)return;const {kind,key,date}=editing;
+ // Timetable: one field per period; an empty field leaves that period off the dashboard.
+ if(kind==='timetable')overrides[key]=[...$('timetableRows').querySelectorAll('input')].map(i=>({period:i.dataset.period,subject:i.value.trim()})).filter(v=>v.subject);
+ else if(key)overrides[key]=$('editText').value.split('\n').map(x=>x.trim()).filter(Boolean);
+ if(key)put('overrides',overrides);else if(kind==='morning'){morningText=$('editText').value;put('morningDefault',morningText);document.dispatchEvent(new CustomEvent('morning-saved',{detail:{date,value:morningText}}));}else{notes[date]={...notes[date],[kind]:$('editText').value};put('notes',notes);}$('editDialog').close();render();};
 $('restore').onclick=()=>{if(window.dashboardLocked)return;delete overrides[editing.key];put('overrides',overrides);$('editDialog').close();render();};
 $('refresh').onclick=async()=>{$('refresh').disabled=true;await Promise.allSettled([refreshSchool(),refreshWeather()]);$('refresh').disabled=false;};
 $('fullscreen').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen();};
