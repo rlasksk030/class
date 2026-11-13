@@ -89,7 +89,7 @@ const refresh=async page=>{await page.click('#refresh');await page.waitForTimeou
  await page.keyboard.press('Control+z');ok('WB. 대시보드에서는 단축키 무시',JSON.stringify(await blocks())===JSON.stringify(persisted));
  // ---------- 백업 / 복원 ----------
  await app.evaluate(({dialog},file)=>{dialog.showSaveDialog=async()=>({canceled:false,filePath:file});dialog.showOpenDialog=async()=>({canceled:false,filePaths:[globalThis.__openFile||file]});},BK);
- await page.click('#settings');await page.waitForTimeout(300);await page.screenshot({path:OUT+'/v2-05-settings.png'});
+ await page.click('#settings');await page.click('#settingsNavBackup');await page.waitForTimeout(300);await page.screenshot({path:OUT+'/v2-05-settings.png'});
  await page.click('#backupCreate');await page.waitForTimeout(700);
  ok('BK. 백업 완료 메시지',(await txt(page,'backupStatus')).startsWith('백업이 완료되었습니다.'),await txt(page,'backupStatus'));
  const raw=fs.readFileSync(BK,'utf8'),bk=JSON.parse(raw);

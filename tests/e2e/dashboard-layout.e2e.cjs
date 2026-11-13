@@ -184,12 +184,12 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
 
  // ---------- Backup and restore ----------
  const custom=await saved();
- await page.click('#settings');await page.click('#backupCreate');await page.waitForTimeout(800);
+ await page.click('#settings');await page.click('#settingsNavBackup');await page.click('#backupCreate');await page.waitForTimeout(800);
  const file=JSON.parse(fs.readFileSync(BACKUP,'utf8'));
  ok('백업 파일에 배치 포함',L.equal(file.data.boardLayout,custom));
  await page.keyboard.press('Escape');
  await setLayout(L.defaults());
- const restore=async name=>{await app.evaluate(({},f)=>{globalThis.__openFile=f;},name);await page.click('#settings');await page.click('#backupRestore');await page.waitForSelector('#backupConfirmDialog[open]');await page.click('#backupConfirmDialog button[value=restore]');await page.waitForTimeout(2000);await page.waitForLoadState('domcontentloaded');await page.waitForTimeout(800);};
+ const restore=async name=>{await app.evaluate(({},f)=>{globalThis.__openFile=f;},name);await page.click('#settings');await page.click('#settingsNavBackup');await page.click('#backupRestore');await page.waitForSelector('#backupConfirmDialog[open]');await page.click('#backupConfirmDialog button[value=restore]');await page.waitForTimeout(2000);await page.waitForLoadState('domcontentloaded');await page.waitForTimeout(800);};
  await restore(BACKUP);
  ok('백업 복원 후 배치 유지',L.equal(await saved(),custom)&&L.equal(await current(),custom));
  const oldData={morningDefault:'예전 백업',boardPreferences:{notices:{visible:false,scale:1}}};

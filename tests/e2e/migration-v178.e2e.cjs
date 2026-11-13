@@ -58,7 +58,7 @@ const storage=page=>page.evaluate(()=>Object.fromEntries(Object.keys(localStorag
  await page.click('#whiteboardTab');ok('화이트보드 글상자·글씨 크기·판서 유지',(await page.inputValue('#whiteboardTextLayer textarea'))==='오늘 준비물: 색연필'&&JSON.parse(now.whiteboardContents).blocks[0].fontSize===40&&JSON.parse(now.whiteboardContents).strokes.length===1);
  ok('새 기능: 실행 취소/다시 실행 (기록 없음 상태로 시작)',await page.$eval('#whiteboardUndo',b=>b.disabled)&&await page.$eval('#whiteboardRedo',b=>b.disabled));
  await page.click('#diaryTab');ok('새 기능: 알림장 초안 기본값',(await page.inputValue('#diaryTitle')).endsWith('알림장')&&await page.isChecked('#diaryParents')&&await page.isChecked('#diaryStudents'));
- await page.click('#dashboardTab');await page.click('#settings');ok('새 기능: 설정의 백업/복원',await page.isVisible('#backupCreate')&&await page.isVisible('#backupRestore'));await page.keyboard.press('Escape');
+ await page.click('#dashboardTab');await page.click('#settings');await page.click('#settingsNavBackup');ok('새 기능: 설정의 백업/복원',await page.isVisible('#backupCreate')&&await page.isVisible('#backupRestore'));await page.keyboard.press('Escape');
  ok('새 기능: 제목 편집 버튼',await page.isVisible('.morning .board-title-edit'));
  await app.close();
  // Reopen once more: nothing drifts after a normal restart of the new version.

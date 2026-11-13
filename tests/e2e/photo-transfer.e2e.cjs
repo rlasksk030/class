@@ -5,7 +5,7 @@ const ROOT=path.resolve(__dirname,'../..'),OUT=require('../output.cjs');
 const PROFILE=fs.mkdtempSync(path.join(OUT,'profile-transfer-'));
 let app,page,count=0,failure;
 const pass=text=>{count++;console.log('PASS '+text);};
-const openSettings=async()=>{await page.click('#dashboardTab');await page.click('#settings');};
+const openSettings=async()=>{await page.click('#dashboardTab');await page.click('#settings');await page.click('#settingsNavBackup');};
 const closeSettings=async()=>{await page.keyboard.press('Escape');};
 const state=()=>app.evaluate(()=>({...globalThis.testDialogs}));
 (async()=>{try{
