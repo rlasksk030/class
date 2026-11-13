@@ -23,12 +23,14 @@ async function launch(){const app=await _electron.launch({executablePath:electro
  await page.reload();await page.waitForTimeout(900);
  // ---------- 시간표 ----------
  ok('시간표 자동 조회',(await page.locator('#timetable .lesson').count())===6);
- ok('현재 교시 자동 강조',(await page.locator('#timetable .lesson-current, #timetable .lesson-next').count())>=1);
+ ok('현재 교시 자동 강조(지금 교시만, 다음 교시 표시 없음)',(await page.locator('#timetable .lesson-current').count())===1&&(await page.locator('#timetable .lesson-next').count())===0&&!(await page.innerText('#timetable')).includes('다음')&&!(await page.innerText('header')).includes('다음'));
  await page.click('[data-edit=timetable]');await page.fill('#editText','1 | 국어\n2 | 영어');await page.click('#editForm .primary');
  ok('시간표 당일 직접 수정',(await page.innerText('#timetable')).includes('영어')&&(await page.innerText('#timetableStatus')).includes('직접 수정'));
  await page.click('[data-edit=timetable]');await page.click('#restore');ok('원래 시간표로 되돌리기',(await page.locator('#timetable .lesson').count())===6);
  // ---------- 안내사항: 어제 내용 ----------
- await page.click('[data-edit=notices]');await page.click('#loadYesterday');ok('안내사항 어제 내용 불러오기',(await page.inputValue('#editText'))==='어제 안내: 우산 챙기기');await page.fill('#editText','오늘 안내: 체육복');await page.click('#editForm .primary');
+ // An empty board shows one write button in a dashed box; its head [작성] is hidden (same action).
+ ok('빈 안내사항: 점선 상자 + [안내사항 작성], 머리 [작성] 숨김',await page.isVisible('#notices .board-empty')&&!(await page.isVisible('[data-edit=notices]'))&&(await page.textContent('[data-empty-edit=notices]')).includes('안내사항 작성'));
+ await page.click('[data-empty-edit=notices]');await page.click('#loadYesterday');ok('안내사항 어제 내용 불러오기',(await page.inputValue('#editText'))==='어제 안내: 우산 챙기기');await page.fill('#editText','오늘 안내: 체육복');await page.click('#editForm .primary');
  ok('안내사항 저장',(await page.innerText('#notices'))==='오늘 안내: 체육복');
  // ---------- D-Day ----------
  await page.click('#screenSettings');await page.click('#openDdaySettings');
@@ -50,7 +52,7 @@ async function launch(){const app=await _electron.launch({executablePath:electro
  // ---------- 타이머 ----------
  await page.click('#timerButton');for(const n of [1,3,5,10,15]){await page.click(`[data-minutes="${n}"]`);if((await page.textContent('#timerDisplay'))!==String(n).padStart(2,'0')+':00')ok('타이머 프리셋 '+n,false);}
  await page.fill('#timerMinutes','0');await page.fill('#timerSeconds','3');await page.click('#timerSet');await page.check('#timerSound');await page.click('#timerStart');await page.keyboard.press('Escape');
- await page.waitForFunction(()=>/⏱ 00:0[12]/.test(document.querySelector('#timerButton').textContent));const closedTimerLabel=await page.textContent('#timerButton');ok('팝업 닫아도 진행·버튼에 남은 시간',/⏱ 00:0[12]/.test(closedTimerLabel)&&await page.evaluate(()=>classroomTools.timer().state==='running'&&!document.querySelector('#timerDialog').open),closedTimerLabel);
+ await page.waitForFunction(()=>/^00:0[12]$/.test(document.querySelector('#timerButton').textContent));const closedTimerLabel=await page.textContent('#timerButton');ok('팝업 닫아도 진행·버튼에 남은 시간',/^00:0[12]$/.test(closedTimerLabel)&&await page.evaluate(()=>classroomTools.timer().state==='running'&&!document.querySelector('#timerDialog').open),closedTimerLabel);
  await page.waitForTimeout(2600);ok('타이머 완료 표시',(await page.textContent('#timerButton')).includes('종료')&&await page.isVisible('#timerFinished'));await page.click('#timerFinished button');
  await page.click('#timerButton');await page.click('#timerReset');ok('타이머 초기화',(await page.textContent('#timerDisplay'))==='00:03');await page.click('#timerStart');await page.click('#timerPause');ok('일시정지→계속하기',(await page.textContent('#timerStart'))==='계속하기');await page.click('#timerReset');await page.keyboard.press('Escape');
  // ---------- 랜덤 뽑기 ----------
@@ -77,8 +79,8 @@ async function launch(){const app=await _electron.launch({executablePath:electro
  await page.fill('#diaryDate',d);await page.dispatchEvent('#diaryDate','change');ok('기존 날짜 초안 복원',(await page.inputValue('#diaryBody'))==='내일 준비물: 리코더');
  // ---------- 화면 잠금 ----------
  await page.click('#dashboardTab');await page.click('#screenLock');
- ok('잠금 시 편집 버튼·설정 숨김',!(await page.isVisible('[data-edit=morning]'))&&!(await page.isVisible('#settings'))&&!(await page.isVisible('.morning .board-title-edit')));
- await page.click('#screenLock');ok('잠금 해제',await page.isVisible('[data-edit=morning]'));
+ ok('잠금 시 편집 버튼·설정 숨김',!(await page.isVisible('[data-edit=morning]'))&&!(await page.isVisible('[data-empty-edit]'))&&(await page.locator('.app-bar__right .uc-tool:visible').count())===5&&!(await page.isVisible('#settings'))&&!(await page.isVisible('.morning .board-title-edit')));
+ await page.click('#screenLock');ok('잠금 해제(수정 또는 빈 칸의 작성 버튼이 다시 보임)',await page.isVisible('[data-edit=morning]:visible, [data-empty-edit=morning]:visible')&&await page.isVisible('#settings'));
  await app.close();
  ({app,page}=await launch());
  await page.click('#randomTab');ok('재실행 후 명단 유지',(await page.innerText('#rosterList')).includes('바다'));

@@ -45,3 +45,21 @@ test('raw profile data without a layout gets one from its own settings',()=>{
  assert.equal(JSON.parse(entries.find(([k])=>k==='boardLayout')[1]).items.notices.visible,false);
  assert.deepEqual(B.fromRaw({cache:'{}'}).entries,[],'nothing to restore stays empty');
 });
+test('screen structure and the structure-B layout are backed up, checked and restored',async()=>{
+ const a=Layout.hide(Layout.defaults('A'),'meal').layout,b=Layout.move(Layout.defaults('B'),'timetable',10,1).layout;
+ const s=sample();s.setItem('boardLayout',JSON.stringify(a));s.setItem('boardLayoutB',JSON.stringify(b));s.setItem('layoutStructure',JSON.stringify('B'));
+ const backup=await B.create(s.getItem);
+ assert.ok(backup.keys.includes('boardLayoutB')&&backup.keys.includes('layoutStructure'));
+ const {entries}=await B.parse(JSON.stringify(backup)),get=k=>JSON.parse(entries.find(([key])=>key===k)[1]);
+ assert.deepEqual([get('layoutStructure'),get('boardLayout'),get('boardLayoutB')],['B',a,b]);
+ // Unknown structures and broken B layouts are never exported and make a restore file invalid.
+ const bad=sample();bad.setItem('layoutStructure',JSON.stringify('C'));bad.setItem('boardLayoutB',JSON.stringify({...b,columns:3}));
+ assert.equal(B.collect(bad.getItem).layoutStructure,undefined);assert.equal(B.collect(bad.getItem).boardLayoutB,undefined);
+ await assert.rejects(B.parse(await signed({morningDefault:'책',layoutStructure:'C'})),{message:B.INVALID});
+ await assert.rejects(B.parse(await signed({morningDefault:'책',boardLayoutB:{...b,rows:3}})),{message:B.INVALID});
+});
+test('a backup from before the A/B structures opens in A and leaves the structure-B layout alone',async()=>{
+ const {entries}=await B.parse(await signed({morningDefault:'책 읽기'}));
+ assert.equal(JSON.parse(entries.find(([k])=>k==='layoutStructure')[1]),'A');
+ assert.equal(entries.find(([k])=>k==='boardLayoutB'),undefined);
+});

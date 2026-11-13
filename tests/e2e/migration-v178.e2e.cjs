@@ -20,8 +20,8 @@ const storage=page=>page.evaluate(()=>Object.fromEntries(Object.keys(localStorag
  let {app,page}=await launch(OLD);
  ok('v1.7.8 실행',(await app.evaluate(({app})=>app.getVersion()))==='1.7.8');
  await page.waitForSelector('#settingsDialog[open]');await page.selectOption('#grade','6');await page.waitForTimeout(300);await page.fill('#classroom','1');await page.click('#settingsForm .primary');await page.waitForTimeout(500);
- await page.click('[data-edit=morning]');await page.fill('#editText','책 읽기 20분\n일기 쓰기');await page.click('#editForm .primary');
- await page.click('[data-edit=notices]');await page.fill('#editText','체육복 챙기기');await page.click('#editForm .primary');
+ await page.click('[data-edit=morning]:visible, [data-empty-edit=morning]:visible');await page.fill('#editText','책 읽기 20분\n일기 쓰기');await page.click('#editForm .primary');
+ await page.click('[data-edit=notices]:visible, [data-empty-edit=notices]:visible');await page.fill('#editText','체육복 챙기기');await page.click('#editForm .primary');
  await page.click('#screenSettings');await page.click('#openDdaySettings');await page.fill('#ddayTitle','수학여행');await page.fill('#ddayDate','2026-12-01');await page.click('#ddayForm .primary');await page.keyboard.press('Escape');
  await page.click('#screenSettings');await page.uncheck('[data-board-visible=meal]');const plus=page.locator('.preference-row',{has:page.locator('[data-board-visible=morning]')}).locator('button').nth(1);await plus.click();await plus.click();
  await page.click('#openPeriodSettings');await page.click('#periodForm .primary');await page.click('#enablePeriods');await page.keyboard.press('Escape');
@@ -46,7 +46,7 @@ const storage=page=>page.evaluate(()=>Object.fromEntries(Object.keys(localStorag
  ok('기존 저장값 그대로 유지(초기화·재작성 없음)',changed.length===0,changed.length?'변경: '+changed.join(','):kept.length+'개 키 동일');
  ok('설정 대화상자 재요청 없음(학년/반 유지)',!(await page.$('#settingsDialog[open]'))&&(await page.textContent('#classTitle')).includes('6학년 1반'));
  ok('아침활동·안내사항 유지',(await page.innerText('#morning'))==='책 읽기 20분\n일기 쓰기'&&(await page.innerText('#notices'))==='체육복 챙기기');
- ok('새 제목 기능: 값 없으면 기본 제목',(await page.textContent('.morning h2')).trim()==='☀ 아침활동'&&(await page.textContent('.notices h2')).trim()==='✳ 안내사항'&&now.boardTitles===undefined);
+ ok('새 제목 기능: 값 없으면 기본 제목',(await page.textContent('.morning h2')).trim()==='아침활동'&&(await page.textContent('.notices h2')).trim()==='안내사항'&&await page.isVisible('.morning h2 .uc-ico--morning-sun')&&await page.isVisible('.notices h2 .uc-ico--notice-star')&&now.boardTitles===undefined);
  ok('D-Day 유지',(await page.textContent('#ddayBadge')).includes('수학여행'));
  ok('보드 숨김·글씨 크기 유지(숨긴 칸은 자리 비움)',await page.$eval('.meal',e=>getComputedStyle(e).display==='none')&&(await page.evaluate(()=>window.boardFontScales.morning))===1.2);
  // The first run turns the old hidden flag and column/row fractions into the grid layout.

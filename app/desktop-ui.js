@@ -13,9 +13,12 @@
   input.onchange=()=>{pipOptions[key]=input.checked;put('dashboardPipOptions',pipOptions);publish();};row.append(input,document.createTextNode(label));pipSettings.append(row);
  }
  $('settingsForm').querySelector('.actions').before(pipSettings);
- for(const [kind,selector]of [['dashboard','header nav'],['random','.random-heading'],['whiteboard','.whiteboard-toolbar'],['activity','.activity-heading'],['timer','#timerDialog .extras-heading']]){
+ // The dashboard PIP is a tool in the bottom bar ([PIP]); the other screens keep [PIP로 보기] in their heading.
+ for(const [kind,selector]of [['dashboard','.app-bar__right'],['random','.random-heading'],['whiteboard','.whiteboard-toolbar'],['activity','.activity-heading'],['timer','#timerDialog .extras-heading']]){
   const button=document.createElement('button');button.type='button';button.className='pip-open';button.textContent='PIP로 보기';button.dataset.pip=kind;
-  button.onclick=()=>{publish();window.desktop.openPip(kind).catch(()=>{button.textContent='PIP 다시 열기'});};document.querySelector(selector).append(button);
+  let label=button;
+  if(kind==='dashboard'){button.id='dashboardPip';button.className='pip-open uc-tool';button.textContent='';const mark=document.createElement('span');mark.className='uc-ico uc-ico--pip';mark.setAttribute('aria-hidden','true');label=document.createElement('span');label.className='uc-tool__label';label.textContent='PIP';button.append(mark,label);button.setAttribute('aria-label','대시보드 PIP로 보기');}
+  button.onclick=()=>{publish();window.desktop.openPip(kind).catch(()=>{label.textContent='PIP 다시 열기'});};document.querySelector(selector).append(button);
  }
  const tools=window.classroomTools;
  function snapshot(){
