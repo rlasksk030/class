@@ -58,8 +58,10 @@ test('screen structure and the structure-B layout are backed up, checked and res
  await assert.rejects(B.parse(await signed({morningDefault:'책',layoutStructure:'C'})),{message:B.INVALID});
  await assert.rejects(B.parse(await signed({morningDefault:'책',boardLayoutB:{...b,rows:3}})),{message:B.INVALID});
 });
-test('a backup from before the A/B structures opens in A and leaves the structure-B layout alone',async()=>{
- const {entries}=await B.parse(await signed({morningDefault:'책 읽기'}));
- assert.equal(JSON.parse(entries.find(([k])=>k==='layoutStructure')[1]),'A');
- assert.equal(entries.find(([k])=>k==='boardLayoutB'),undefined);
+test('a backup from before the A/B structures opens in A, with structure B at its default board',async()=>{
+ const {entries}=await B.parse(await signed({morningDefault:'책 읽기',boardPreferences:{meal:{visible:false,scale:1}}}));
+ const get=k=>JSON.parse(entries.find(([key])=>key===k)[1]);
+ assert.equal(get('layoutStructure'),'A');
+ assert.equal(get('boardLayout').items.meal.visible,false,'A comes from the backup itself');
+ assert.ok(Layout.equal(get('boardLayoutB'),Layout.defaults('B')));
 });

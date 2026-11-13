@@ -14,12 +14,14 @@ function update(data){if(!data?.state)return;const changed=kind!==data.kind;kind
  if(kind==='whiteboard'){renderBoard(relevant,changed);return;}
  if(changed){root.replaceChildren();document.getElementById('pipActivityTitle')?.remove();}else if(!['dashboard','activity','timer'].includes(kind))root.replaceChildren();boardLayer=null;boardNodes.clear();
  if(kind==='dashboard'){
-  if(!root.querySelector('.current')){el('div','',root).className='current';const foot=el('div','',root);foot.className='pip-foot';el('div','',foot).className='clock';}
+  if(!root.querySelector('.current')){el('div','',root).className='current';el('div','',root).className='next';const foot=el('div','',root);foot.className='pip-foot';el('div','',foot).className='clock';}
   const options=relevant.options||{},visible=key=>options[key]!==false;
   const lesson=(which)=>[visible(which+'Period')&&relevant[which+'Period']?relevant[which+'Period']+'교시':'',visible(which+'Subject')?relevant[which+'Subject']:''].filter(Boolean).join(' · ');
-  const clock=root.querySelector('.clock'),current=root.querySelector('.current'),foot=root.querySelector('.pip-foot');
+  const clock=root.querySelector('.clock'),current=root.querySelector('.current'),next=root.querySelector('.next'),foot=root.querySelector('.pip-foot');
   clock.hidden=!visible('time');clock.textContent=relevant.time;
   current.hidden=!visible('currentPeriod')&&!visible('currentSubject');current.textContent=lesson('current')||(relevant.scheduleSet?'지금은 쉬는 시간':'교시 시간을 설정해 주세요');
+  // J01 (보완 지시서 2장): the next period stays in the PIP, as a smaller secondary line.
+  next.hidden=!visible('nextPeriod')&&!visible('nextSubject');next.textContent=lesson('next')?'다음 '+lesson('next'):'다음 수업 없음';
   let timer=root.querySelector('.pip-timer');if(relevant.timer&&visible('timer')){if(!timer){timer=button('',foot,()=>command({type:'timer'}));timer.className='pip-timer';}timer.textContent=relevant.timer+(relevant.timerState==='paused'?' · 일시정지':'');timer.setAttribute('aria-label','타이머 '+timer.textContent);}else timer?.remove();
   foot.hidden=clock.hidden&&!root.querySelector('.pip-timer');
  }else if(kind==='timer'){

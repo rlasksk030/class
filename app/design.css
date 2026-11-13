@@ -661,3 +661,5 @@ body:is(.whiteboard-active,.random-active,.activity-active,.diary-active)>footer
 .layout-editing main>.card>.cardhead h2.board-title .board-title-text{padding-right:48px}
 .schedule-no input[type="number"]{width:44px}
 .whiteboard-tools.uc-seg>button{height:44px;min-height:44px}
+.settings-row--fixed .settings-row__head{flex-wrap:wrap;gap:6px 12px}
+.settings-fixed-school{font-family:var(--uc-font-main);font-size:18px;font-weight:700}
