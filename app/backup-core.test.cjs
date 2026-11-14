@@ -65,3 +65,12 @@ test('a backup from before the A/B structures opens in A, with structure B at it
  assert.equal(get('boardLayout').items.meal.visible,false,'A comes from the backup itself');
  assert.ok(Layout.equal(get('boardLayoutB'),Layout.defaults('B')));
 });
+test('칠판 모드 settings are backed up, checked and default when an older backup has none',async()=>{
+ const s=sample();s.setItem('diaryChalkPreferences',JSON.stringify({fontScale:.75,showDate:false,extra:1}));
+ const backup=await B.create(s.getItem);assert.deepEqual(backup.data.diaryChalkPreferences,{fontScale:.75,showDate:false});
+ const {entries}=await B.parse(JSON.stringify(backup));assert.deepEqual(JSON.parse(entries.find(([k])=>k==='diaryChalkPreferences')[1]),{fontScale:.75,showDate:false});
+ for(const bad of [{fontScale:'big',showDate:true},{fontScale:null},{fontScale:9,showDate:true},[]]){const b=sample();b.setItem('diaryChalkPreferences',JSON.stringify(bad));assert.equal(B.collect(b.getItem).diaryChalkPreferences,undefined);}
+ await assert.rejects(B.parse(await signed({morningDefault:'책',diaryChalkPreferences:{fontScale:'x',showDate:true}})),{message:B.INVALID});
+ const old=await B.parse(await signed({morningDefault:'책'}));
+ assert.deepEqual(JSON.parse(old.entries.find(([k])=>k==='diaryChalkPreferences')[1]),{fontScale:null,showDate:true});
+});
