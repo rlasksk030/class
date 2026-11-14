@@ -318,6 +318,8 @@ main>.layout-preview[data-state="swap"]{border-color:var(--uc-dday-today-bg);bac
    ① 제목(고운바탕 28) ② [×] 오른쪽 위 ③ 안내 한 줄 ④ 내용 ⑤ [보조]   [취소][저장]
    ========================================================= */
 dialog[open]{display:flex;flex-direction:column;gap:16px;overflow:auto}
+/* 닫힌 대화 상자는 늘 숨김(.uc-dialog 부품의 display가 브라우저 기본 규칙을 덮지 않도록) */
+dialog:not([open]){display:none!important}
 dialog>form{display:flex;flex-direction:column;gap:16px;min-width:0}
 dialog .dialog-head,dialog .extras-heading{display:flex;align-items:flex-start;gap:10px;margin:0}
 dialog .dialog-head h2,dialog .extras-heading h2{flex:1 1 0;min-width:0;margin:0}
