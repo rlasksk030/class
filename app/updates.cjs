@@ -49,7 +49,7 @@ module.exports=function setupUpdates(getMain){
  updater.on('update-available',info=>{
   // nationwide2.yml must point at the version's own GitHub Release asset (update-feed-check.cjs).
   if(!require('./update-feed-check.cjs').nationwideFeedOk(info)){
-   emit({phase:'check-error',version:null,message:'전국용 설치파일을 확인하지 못했습니다. 나중에 다시 확인해 주세요.'});return;
+   emit({phase:'check-error',version:null,message:'설치 파일을 확인하지 못했습니다. 나중에 다시 확인해 주세요.'});return;
   }
   emit({phase:'available',version:info.version});
  });
