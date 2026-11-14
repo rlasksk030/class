@@ -1,0 +1,98 @@
+{
+  "date": "2026-11-09",
+  "baseCommit": "2adfcac042aeb2b9d12d6e1842376cbbd0bcbdbb",
+  "branch": "feature/schoolbell-diary-nationwide",
+  "realApp": {
+    "sessionAfterRestart": "PASS",
+    "connectionButton": "PASS",
+    "publicationButton": "VISIBLE, LOCKED",
+    "classGradeRoom": "PASS",
+    "emptyStudentParentRecipients": "PASS",
+    "schoolAcademicYearCurrentActorAndSoleAdmin": "BLOCKED",
+    "remoteInputAndUpload": "NOT RUN",
+    "newPublication": "NOT RUN",
+    "existingCFullListAndOriginalReadback": "PASS",
+    "originalCount": 2,
+    "orderedOriginalHashesMatchPriorEvidence": true,
+    "currentDraftPhotoComparison": false,
+    "currentDraftHasPhotos": false,
+    "successReceiptAndClear": "NOT RUN",
+    "draftPreservedAfterFailureReadbackAndRestart": "PASS"
+  },
+  "tests": {
+    "syntax": [
+      127,
+      127
+    ],
+    "nodeUnit": [
+      205,
+      205
+    ],
+    "schoolbellIsolatedUI": [
+      20,
+      20
+    ],
+    "hiclassOfflineSubmit": [
+      21,
+      21
+    ],
+    "hiclassOfflinePhotos": [
+      4,
+      4
+    ],
+    "diffCheck": "PASS"
+  },
+  "newPosts": 0,
+  "newUploads": 0,
+  "productionLock": true,
+  "release": "NO GO",
+  "windows": {
+    "initialState": "suspended",
+    "resume": "PASS",
+    "guestVersion": "10.0.26200.8655",
+    "guestVersionStatus": "PASS",
+    "nodeCommand": "NOT FOUND (exit 1)",
+    "firstNodeResultCapture": "UTF-8 decode failed on Korean stderr; rechecked as CP949",
+    "productTests": "NOT RUN",
+    "installUpdateRebootClipboard": "NOT RUN",
+    "finalState": "suspended",
+    "newVMs": 0,
+    "newBuilds": 0,
+    "installedTools": 0
+  },
+  "github": {
+    "actionsBefore": 19,
+    "latestRunBefore": 41977391612,
+    "workflowBlob": "58613481272e59545c0c910d5d6e033a65f0247a",
+    "newRunsRequested": 0,
+    "extraCostKRW": 0,
+    "draft": true,
+    "verifiedPushCommit": "f0e27ee09eb29f2b6592b3f4a9ea4696dff50efa",
+    "actionsAfter": 19,
+    "latestRunAfter": 41977391612,
+    "newRuns": 0,
+    "push": "PASS",
+    "draftAfterPush": true
+  },
+  "codeSHA256": {
+    "app/schoolbell.cjs": "e9c08a448361f420fccbc7f5b9163becc82f43462d73b8bb199321006762a443",
+    "app/schoolbell-observed-post.cjs": "c0db7ad7111d7d7b1482e8737f4ee41b3b3ea8594a77274f7b26590fdef4eb87",
+    "app/schoolbell-readback.cjs": "6cc8ecb32e18eb79e896a5c135171a9685229262503155678fe0d9c3bc730a82",
+    "app/diary-schoolbell.js": "55744febc7bfe55a84e7cc14b9f1160c535358c6a6b755f4f2d7488ecba6e2dd",
+    "app/preload.cjs": "73b885a3b1a70966385d3f7245ac355e3f68eb5eb6c5e9addf2cf5e3cd0bcb7c",
+    "app/schoolbell-readback.test.cjs": "294dc17dab49c3392ef68d250c7d14b974370c111c95136162b55ec2d453c0ac",
+    "app/schoolbell-observed-post.test.cjs": "081b06e85f749c1b3f5e04a353c873f4630c94c82471bb4405494f64439eddb5",
+    "tests/e2e/schoolbell.e2e.cjs": "58a6e2654ae38be500693ee3a53fedd7c29d74b99a85cfcaad1c26e891e435d7"
+  },
+  "artifactSHA256": {
+    "tests/validation/artifacts/2026-11-09-schoolbell-readback/hiclass-photos.log": "cde3b5f7c3e3a2ddda41ed68e2bc265642e92bd36bc9d3d3980452e45aea9ea4",
+    "tests/validation/artifacts/2026-11-09-schoolbell-readback/hiclass-submit.log": "1ef5c9e7959538d1a02bc8534af0dff4efcdd0a466f18cad18924b3176c5cba2",
+    "tests/validation/artifacts/2026-11-09-schoolbell-readback/live-after-label-fix.json": "9d0efb0d239e102a41577dbe8ecb6987b495f9098f07486e8a494d9dac11d33b",
+    "tests/validation/artifacts/2026-11-09-schoolbell-readback/live-before-label-fix.json": "5a3066ea10b19b92a1d45d25c10311f2692f4338a8db8819f09a7ccdd445e7f8",
+    "tests/validation/artifacts/2026-11-09-schoolbell-readback/syntax.log": "b6aa6e142531690136b2d88ee2afd6f8450a9f307d5679556781f9662924f6d0",
+    "tests/validation/artifacts/2026-11-09-schoolbell-readback/ui-regression.log": "9c864760c1b3c584509f203aa64043cf62b347c6a016d37678f5fc6462e2c00a",
+    "tests/validation/artifacts/2026-11-09-schoolbell-readback/unit.log": "30d341e7058d1402c539b2b8be21e0f7d73075931414890b2b02b21184a83eeb",
+    "tests/validation/artifacts/2026-11-09-schoolbell-readback/windows-environment.json": "1f5e8e89546ec6934c946ed2dfa607b72b05a99e0fa71c8e9e8bc409c2958475"
+  },
+  "codeCommit": "f0e27ee09eb29f2b6592b3f4a9ea4696dff50efa"
+}

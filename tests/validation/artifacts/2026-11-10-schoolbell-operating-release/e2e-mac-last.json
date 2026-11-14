@@ -1,0 +1,14 @@
+[
+  {
+    "test": "schoolbell-electron",
+    "exitCode": 0
+  },
+  {
+    "test": "schoolbell-final-integration-fixture",
+    "exitCode": 0
+  },
+  {
+    "test": "schoolbell-nonpublishing-fixture",
+    "exitCode": 0
+  }
+]

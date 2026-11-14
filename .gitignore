@@ -6,6 +6,7 @@ dist/
 latest.yml
 builder-debug.yml
 # Local test output, Electron profiles (may hold sessions/cookies), backups
+/.out/
 tests/e2e/.out/
 tests/windows/.out/
 *.profile/

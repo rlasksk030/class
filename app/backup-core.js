@@ -1,22 +1,28 @@
 // Settings backup file: user-made data only. Caches, location and every login credential stay out.
 (function(root){
+ const Layout=typeof module!=='undefined'?require('./layout-core.js'):root.LayoutCore;
  const FORMAT='classroom-dashboard-backup',SCHEMA_VERSION=2,MAX_BYTES=200*1024*1024;
  // Allowlist of localStorage keys written by the dashboard. Anything not listed is never exported or restored.
- const KEYS=['settings','classRosters','randomPicker','randomPickerSession','morningDefault','morningHistory','boardTitles','notes','ddayEvents','overrides','boardSizes','boardPreferences','dashboardLocked','dashboardPipOptions','periodSchedule','periodHighlightEnabled','classTimer','timerSound','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences'];
+ const KEYS=['settings','classRosters','randomPicker','randomPickerSession','morningDefault','morningHistory','boardTitles','notes','ddayEvents','overrides','boardSizes','boardPreferences','boardLayout','dashboardLocked','dashboardPipOptions','periodSchedule','periodHighlightEnabled','classTimer','timerSound','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences','layoutStructure','boardLayoutB','diaryChalkPreferences'];
  const SETTINGS_FIELDS=['grade','classroom','locationMode','manual'];
  const isObject=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
  // Keys whose stored value must be a plain object (others may be strings, booleans or arrays).
- const OBJECT_KEYS=new Set(['settings','classRosters','randomPicker','randomPickerSession','morningHistory','boardTitles','notes','overrides','boardSizes','boardPreferences','dashboardPipOptions','classTimer','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences']);
+ const OBJECT_KEYS=new Set(['settings','classRosters','randomPicker','randomPickerSession','morningHistory','boardTitles','notes','overrides','boardSizes','boardPreferences','boardLayout','dashboardPipOptions','classTimer','whiteboardContents','activityCompletion','diaryDrafts','diaryRegistrationHistory','diaryEditorPreferences','boardLayoutB','diaryChalkPreferences']);
  const INVALID='이 파일은 사용할 수 있는 학급 대시보드 백업 파일이 아닙니다.';
 
  function sanitize(key,value){
   if(key==='settings'){const s={};for(const f of SETTINGS_FIELDS)if(value[f]!==undefined)s[f]=value[f];return s;}
+  if(key==='diaryChalkPreferences')return {fontScale:value.fontScale,showDate:value.showDate};
   // A running timer is restored as a stopped timer with the same length, so it never rings on restore.
   if(key==='classTimer'){const d=Number(value.duration);return Number.isFinite(d)&&d>0?{duration:d,remaining:d,deadline:null,state:'idle'}:undefined;}
   return value;
  }
  function valid(key,value){
   if(value===undefined)return false;
+  if(key==='boardLayout'||key==='boardLayoutB')return Layout.isValid(value);
+  if(key==='layoutStructure')return Layout.STRUCTURES.includes(value);
+  // 칠판 모드: {fontScale: null | 0.15–3, showDate: boolean}
+  if(key==='diaryChalkPreferences')return isObject(value)&&(value.fontScale===null||(typeof value.fontScale==='number'&&Number.isFinite(value.fontScale)&&value.fontScale>=.15&&value.fontScale<=3))&&typeof value.showDate==='boolean';
   if(OBJECT_KEYS.has(key))return isObject(value);
   if(key==='morningDefault')return typeof value==='string';
   if(key==='ddayEvents'||key==='periodSchedule')return Array.isArray(value);
@@ -70,7 +76,20 @@
    entries.push([key,JSON.stringify(clean)]);
   }
   if(!entries.length)throw Error(INVALID);
-  return {backup,entries};
+  return {backup,entries:withLayout(backup.data,entries)};
+ }
+ // Backups and profiles from before the layout editor have no 'boardLayout': build it from their
+ // own hidden-board and size settings, so a restore never keeps this PC's arrangement instead.
+ // A backup from before the A/B screen structures only knew the top-header board: it opens in
+ // structure A with its own board, and structure B starts from its default board.
+ function withLayout(data,entries){
+  const has=key=>entries.some(([k])=>k===key),extra=[];
+  if(!has('boardLayout'))extra.push(['boardLayout',JSON.stringify(Layout.migrate({sizes:data.boardSizes,preferences:data.boardPreferences}))]);
+  if(!has('layoutStructure'))extra.push(['layoutStructure',JSON.stringify('A')]);
+  if(!has('boardLayoutB'))extra.push(['boardLayoutB',JSON.stringify(Layout.defaults('B'))]);
+  // 칠판 모드 settings missing from an older backup: back to the defaults (auto fit, date shown).
+  if(!has('diaryChalkPreferences'))extra.push(['diaryChalkPreferences',JSON.stringify({fontScale:null,showDate:true})]);
+  return [...entries,...extra];
  }
  // All-or-nothing write: on any failure every touched key is put back exactly as it was.
  function apply(storage,entries){
@@ -89,7 +108,8 @@
  function fromRaw(raw){
   if(!isObject(raw))throw Error(INVALID);
   const data=collect(k=>typeof raw[k]==='string'?raw[k]:null);
-  return {data,entries:Object.entries(data).map(([k,v])=>[k,JSON.stringify(v)])};
+  const entries=Object.entries(data).map(([k,v])=>[k,JSON.stringify(v)]);
+  return {data,entries:entries.length?withLayout(data,entries):entries};
  }
  const USER_KEYS=['settings','morningDefault','notes','classRosters','ddayEvents','whiteboardContents','boardTitles','diaryDrafts','activityCompletion'];
  // True when a store holds anything a teacher wrote (not just caches or screen defaults).

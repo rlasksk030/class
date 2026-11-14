@@ -1,0 +1,23 @@
+✔ observed Froala P/P-BR/P represents exactly two newlines, independent of layout (1.081708ms)
+✔ retains text, empty paragraphs, inline markup, literal HTML and exact whitespace (0.182291ms)
+✔ unknown/non-text editor content is not silently removed from the comparison (0.264958ms)
+✔ runtime denies before opening a window without a code-owned official grant (0.789334ms)
+✔ an official grant does not substitute for UI identity evidence (2.770291ms)
+✔ permission is tied to method, target, approved test class and requested action (0.200833ms)
+✔ file transport rejects paths, hash mismatch, malformed bytes and limits before DOM access (2.132542ms)
+✔ cancellation during window opening closes the pending class window (0.245833ms)
+✔ only official HTTPS hosts may be used (1.115667ms)
+✔ defaults deny before DOM inspection or mutation (3.571209ms)
+✔ reads match only unique observed controls without private account data (3.684417ms)
+✔ title and body text are passed as inert JSON, never HTML or source interpolation (5.753042ms)
+✔ denies disallowed binding, revoked permission, navigation, aborted signal (1.654708ms)
+✔ a main-process grant alone cannot replace atomic DOM identity evidence (1.23025ms)
+✔ closed or overlapping transports never queue stale input (3.031792ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 191.281625

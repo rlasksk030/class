@@ -1,0 +1,12 @@
+✔ registered ordinary binding distinguishes declarations from service identity and release gate (26.739292ms)
+✔ class, session, management and audience changes revoke the ordinary binding (11.950542ms)
+✔ only exact final content authorizes submit; official permission stays unconfirmed (8.09225ms)
+✔ ordinary receipts retain declaration provenance without inventing identity or member totals (7.961333ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 459.228541

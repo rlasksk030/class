@@ -7,7 +7,9 @@ assert.equal(process.platform,'win32');assert.equal(process.env.CLASSROOM_DISPOS
 const input=path.resolve(process.argv[2]),root=fs.mkdtempSync(path.join(process.env.TEMP,'class188-')),profile=path.join(root,'profile');
 const install=process.env.CLASSROOM_QA_EXISTING_FIXTURE||path.join(root,'app');
 if(!path.resolve(install).startsWith(path.join(process.env.TEMP,'class188-'))||path.basename(install)!=='app')throw Error('Unexpected installation fixture path');
-const version=/^version: (\d+\.\d+\.\d+)\s*$/m.exec(fs.readFileSync(path.join(input,'nationwide.yml'),'utf8'))[1];
+// The build writes nationwide2.yml; the v1.8.7 client below reads the same release in the file-name form.
+const feed=fs.readFileSync(path.join(input,'nationwide2.yml'),'utf8'),legacyFeed=require('../../scripts/make-nationwide-feeds.cjs').makeFeeds(feed).legacy;
+const version=/^version: (\d+\.\d+\.\d+)\s*$/m.exec(feed)[1];
 const exe=path.join(install,'우리 교실.exe'),old=path.join(input,'previous.exe'),candidate=`classroom-dashboard-nationwide-setup-${version}-x64.exe`;
 const log=[],pass=s=>{log.push(s);console.log('PASS '+s);},sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let proc,server;
@@ -77,7 +79,8 @@ async function updateThroughApp(){
   const name=new URL(req.url,'http://localhost').pathname.slice(1);
   if(!['latest.yml',candidate,candidate+'.blockmap'].includes(name)){res.writeHead(404).end();return;}
   // The official legacy client requests latest.yml on this isolated test server.
-  const file=path.join(input,name==='latest.yml'?'nationwide.yml':name);res.writeHead(200,{'Content-Length':fs.statSync(file).size,'Content-Type':'application/octet-stream'});fs.createReadStream(file).pipe(res);
+  if(name==='latest.yml'){res.writeHead(200,{'Content-Length':Buffer.byteLength(legacyFeed),'Content-Type':'application/octet-stream'});res.end(legacyFeed);return;}
+  const file=path.join(input,name);res.writeHead(200,{'Content-Length':fs.statSync(file).size,'Content-Type':'application/octet-stream'});fs.createReadStream(file).pipe(res);
  });
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const original=await proc.evaluate(({app,dialog},url)=>{

@@ -1,0 +1,22 @@
+✔ fixed nonpublishing preparation reuses inputs and originals without any send grant or draft reset (8.7355ms)
+✔ any existing title, body, or attachment is preserved without confirmation or input (0.88625ms)
+✔ class mismatch, absent cooperation, or navigation during approval prevents every write (0.579083ms)
+✔ changed recipients and unverified originals never produce a successful preparation (0.8825ms)
+✔ DOM guard refuses send-related actions before inspecting any document (0.213125ms)
+✔ only official HTTPS hosts may be used (1.878958ms)
+✔ defaults deny before DOM inspection or mutation (3.506333ms)
+✔ reads match only unique observed controls without private account data (5.578542ms)
+✔ title and body text are passed as inert JSON, never HTML or source interpolation (2.895709ms)
+✔ denies disallowed binding, revoked permission, navigation, aborted signal (1.542042ms)
+✔ a main-process grant alone cannot replace atomic DOM identity evidence (1.497667ms)
+✔ closed or overlapping transports never queue stale input (0.681375ms)
+✔ commit comparison has separate fixed codes, including title/body mismatch and cosmetic revision eligibility (0.362ms)
+✔ unclassified renderer exception never exposes the exception text or becomes a content mismatch (2.021209ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 105.793459

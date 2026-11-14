@@ -36,6 +36,8 @@ async function remove(entries,shell){
 }
 function create({app,shell,env=process.env,platform=process.platform,inspect=inventory,removeEntries=remove}){
  return async(enabled,explicit=false)=>{
+  // The separately installed validation artifact must not change any production login item.
+  if(require('./build-identity.cjs').validation)return {enabled:false,warning:'검증용 앱은 Windows 자동 실행을 등록하거나 변경하지 않습니다.'};
   // Development and every isolated test profile must never register a real Windows login item.
   if(platform!=='win32'||!app.isPackaged||env.CLASSROOM_TEST_PROFILE)return {enabled,warning:''};
   const entries=await inspect(shell,env),current=process.execPath;

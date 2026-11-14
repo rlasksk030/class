@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-09",
+  "productTests": "NOT RUN",
+  "installerUpdateRebootClipboard": "NOT RUN",
+  "priorGuestBlock": "TIMEOUT / PrlJob Invalid argument (previous audit)",
+  "currentHostStatusOnly": {
+    "firstAttempt": "sandbox ps denied; exit 7",
+    "approvedReadOnlyAttempt": {
+      "exit": 0,
+      "statuses": [
+        "suspended",
+        "invalid"
+      ]
+    }
+  },
+  "guestCommands": 0,
+  "stateChanges": 0,
+  "newVMs": 0,
+  "newBuilds": 0,
+  "conclusion": "No new guest recovery or product result claimed"
+}

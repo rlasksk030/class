@@ -1,0 +1,107 @@
+{
+  "date": "2026-11-09",
+  "baseCommit": "49d0ec1274dbc3b79b8bcab5f6b4e4fe6bc21b05",
+  "codeCommit": "24dc8677b872542a82b25841d1bf56004dbda80a",
+  "releaseDecision": "NO GO",
+  "productionEnabled": false,
+  "protectedPathsUnchanged": [
+    "app/schoolbell-capability.cjs",
+    "app/diary.js",
+    "app/diary-schoolbell.js",
+    "app/media-store.cjs",
+    "app/backup.cjs",
+    "app/backup-core.js",
+    "app/recovery.cjs",
+    "app/package.json",
+    "app/hiclass*",
+    ".github/workflows"
+  ],
+  "appLive": {
+    "currentUI": "school setup/search; no Schoolbell login window or register button observed",
+    "login": "BLOCKED / not verified",
+    "buttonToInput": "NOT RUN / BLOCKED",
+    "attachments": "NOT RUN / BLOCKED",
+    "publish": "NOT RUN / BLOCKED",
+    "serverReadback": "NOT RUN / BLOCKED",
+    "draftCompletion": "NOT RUN / BLOCKED",
+    "newLiveInputs": 0,
+    "newLiveUploads": 0,
+    "newLivePosts": 0,
+    "priorABCPreserved": true
+  },
+  "implemented": [
+    "default final DOM guard connected to scoped main evidence",
+    "original receipts bound to document revision",
+    "same-URL navigation invalidates evidence",
+    "audience fixed across transaction",
+    "mandatory self administrator notice requires independent UI proof and explicit scoped permission",
+    "app date must equal verified service publication date",
+    "single-send finalAction connected to prior observation"
+  ],
+  "remaining": [
+    "app-owned direct login",
+    "actual school/year/current teacher identity and class authority provider",
+    "actual administrator current-teacher-only notification evidence",
+    "service publication-date meaning/provider",
+    "app live prepublication original download and complete remote list collection",
+    "separately approved app-button-to-draft completion test",
+    "official operational permission/final activation approval"
+  ],
+  "local": {
+    "changedScriptSyntax": 16,
+    "packageJsonParsed": true,
+    "newProofPolicyUnits": 5,
+    "newNavigationEpochUnit": 1,
+    "newAudienceBindingUnit": 1,
+    "affectedEditorUnits": 2,
+    "nativeFinalIntegration": 3,
+    "nativeBoundary": "all HTTPS intercepted locally; synthetic identity/date ports; default production guard used",
+    "nativeInitialFailures": [
+      "fixture used wrong media constructor",
+      "fixture omitted decoder argument"
+    ],
+    "finalDisplayConditionClarification": "syntax checked after native run; no change to fixture cases",
+    "wholePriorSyntheticSuites": "NOT RUN",
+    "actualAppRendererDraftCompletion": "NOT RUN"
+  },
+  "windows": "NOT RUN; no VM commands/state changes this turn; previous guest environment block remains separate",
+  "sources": {
+    "app/schoolbell-audience.cjs": "e3d42ae76a868897a7df633adfd9f8e5ac6eed6383e279d3adbdb01d5b2cc6f5",
+    "app/schoolbell-driver-errors.cjs": "06d1c47198b557fcc92fe7c36d53e9325680ea630bf2e9903e5f03f1fcaf7732",
+    "app/schoolbell-electron-driver.cjs": "b07be9ba14fcb564c26c04532a95c4864548a903413b0c7045b7742d70924791",
+    "app/schoolbell-electron-driver.test.cjs": "b38bab0487d3eea05a0badac00e0e7964c7364102216a82b500f6677f13e13ba",
+    "app/schoolbell-final-guard.cjs": "1d7260dea2b6227a98d6cff7e7c23b53923d917e7445b169b7c4cc72bd8b0c91",
+    "app/schoolbell-final-guard.test.cjs": "c45249f2f50021e717715218b38c91741b158e875199b3c2fc5cf54afebcf011",
+    "app/schoolbell-live-context.cjs": "c2e81ce267e6a3c5c6b6de2d1fb84d447278dedb5c0125359edf8b30249ac36c",
+    "app/schoolbell-observed-composer.cjs": "c0dc3650be6d53739b40dc734766abb1d0fbb671639645b3a5e35c09e8a88f34",
+    "app/schoolbell-observed-composer.test.cjs": "8039b886a516d7202614a2d1f5ace1f1fee5626ee12e22e8145a3ecaa7d6bd88",
+    "app/schoolbell-prepared-driver.cjs": "f905f4a9f7b2871276e336caab070f2c3d96f65e58b02303a98dfa30db86348e",
+    "app/schoolbell-prepared-driver.test.cjs": "e622e755bb75bdb8a50eacfedae7b8fd71d0573bf0854ef6056bc6ca16294552",
+    "app/schoolbell-publish.cjs": "356c6ef4adedcd67ae376ce1dfe123a33368473f055412f15e7cd0b5226447c9",
+    "app/schoolbell-recipients.cjs": "6ea0076066aaabf9bf588306a10d248bf133f6f4ccc3aae94a8f8c1b03ee75ab",
+    "app/schoolbell.cjs": "264367be8c2dce74391f12dc3bc6733a31b9577f199a79ccf26b6bd6517acea2",
+    "package.json": "657fdd83e6b0bb9376f76ba53fab21b407233cad3b9ca7f73727544396eca511",
+    "tests/schoolbell-electron-fixture.cjs": "0c1e800bb193a96e03d488c65f71ad5ddeed982d13681851b68c515e4240d1c3",
+    "tests/schoolbell-final-integration-fixture.cjs": "b58d06d3e98eb6b4d259d30a56db02f0fcf1e93ac367c8b32485fa1e92ff63ea"
+  },
+  "artifacts": {
+    "tests/validation/artifacts/2026-11-09-schoolbell-final-connection/audience-binding-unit.log": "13a24dc2b7813132c77698faa134e04dc5416e8cf76c2a2f8b0c3c74b5ec5822",
+    "tests/validation/artifacts/2026-11-09-schoolbell-final-connection/document-revision-unit.log": "cfb7a8c07dfbeb8657d2f0879ff33cc09750a96d85bb0192c755e3097d792e2f",
+    "tests/validation/artifacts/2026-11-09-schoolbell-final-connection/final-proof-unit.log": "009b4102b9e71fab4939c25d5934011e2abe55e35ac16b8c414400e29272202a",
+    "tests/validation/artifacts/2026-11-09-schoolbell-final-connection/native-before-audience-binding.log": "79ddd0d913fc219c5116d282bbe685b2364146a471e8900114761b448537d91f",
+    "tests/validation/artifacts/2026-11-09-schoolbell-final-connection/native-before-notice-revocation.log": "79ddd0d913fc219c5116d282bbe685b2364146a471e8900114761b448537d91f",
+    "tests/validation/artifacts/2026-11-09-schoolbell-final-connection/native-final-integration-decoder-failure.log": "e7b5233853d905e80da7af9772eb1618b211846d4b9d8b2acfb8d6cc13ec5e14",
+    "tests/validation/artifacts/2026-11-09-schoolbell-final-connection/native-final-integration-initial-failure.log": "c65b76a1c755e39aafca90021f8ae72f2576a3d30e40331e84fd949ac3cf3442",
+    "tests/validation/artifacts/2026-11-09-schoolbell-final-connection/native-final-integration.log": "3f90d7a77c98bd65450dbbccf0ba84171bad99dd2734e8af2d80a604cdce3707",
+    "tests/validation/artifacts/2026-11-09-schoolbell-final-connection/session-epoch-unit.log": "47520a214f8ea8120998f420d78d8f6d75d108e892a72e5e7579fb5ebaa3d61d",
+    "tests/validation/artifacts/2026-11-09-schoolbell-final-connection/syntax.log": "0e8f4ec9f43a5f2602f12b2603f15f4b6cb78f7763a23a0fef300f5c15453ed8"
+  },
+  "github": {
+    "workflowBlob": "58613481272e59545c0c910d5d6e033a65f0247a",
+    "actionsBefore": 19,
+    "lastRunBefore": 41977391612,
+    "newRunRequests": 0,
+    "paidResourcesCreated": 0,
+    "pushState": "pending at audit commit; post-push state recorded on PR/Issue"
+  }
+}

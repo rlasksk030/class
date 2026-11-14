@@ -1,0 +1,13 @@
+✔ final proof requires scoped live authority and cannot promote partial observed context (10.394583ms)
+✔ draft date never substitutes for an unknown, stale, wrong-scope or different-meaning service date (0.406ms)
+✔ final photo proof is tied to downloaded bytes, their order, binding and document revision (0.594334ms)
+✔ atomic DOM check rejects target/modal/file/date/revision changes before the single send (0.426833ms)
+✔ mandatory administrator requires verified current-teacher-only evidence and matching explicit main-process approval (0.22125ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 96.652833

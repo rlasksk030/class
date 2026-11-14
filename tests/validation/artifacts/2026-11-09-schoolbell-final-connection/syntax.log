@@ -1,0 +1,20 @@
+Changed scripts only
+PASS app/schoolbell-driver-errors.cjs
+PASS app/schoolbell-electron-driver.cjs
+PASS app/schoolbell-electron-driver.test.cjs
+PASS app/schoolbell-live-context.cjs
+PASS app/schoolbell-observed-composer.cjs
+PASS app/schoolbell-observed-composer.test.cjs
+PASS app/schoolbell-prepared-driver.cjs
+PASS app/schoolbell-prepared-driver.test.cjs
+PASS app/schoolbell-publish.cjs
+PASS app/schoolbell-recipients.cjs
+PASS app/schoolbell.cjs
+PASS tests/schoolbell-electron-fixture.cjs
+PASS app/schoolbell-audience.cjs
+PASS app/schoolbell-final-guard.cjs
+PASS app/schoolbell-final-guard.test.cjs
+PASS tests/schoolbell-final-integration-fixture.cjs
+PASS package.json
+16/16 scripts parsed
+PASS final self-notification display-condition clarification: prepared driver syntax

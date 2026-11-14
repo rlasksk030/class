@@ -1,0 +1,6 @@
+PASS loading cover + delayed creation + hidden remnant: one open, verified empty recipients, asynchronous close
+PASS two rendered target dialogs are blocked even when one covers the other
+PASS display/visibility/opacity/inert/aria-hidden ancestors cannot establish recipient evidence
+PASS loading cover over the only dialog remains unknown
+PASS filtered and populated tables never pass empty-recipient validation
+5/5 focused local lifecycle checks PASS; no live upload or send

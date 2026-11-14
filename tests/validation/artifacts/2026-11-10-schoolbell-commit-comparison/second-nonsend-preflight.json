@@ -1,0 +1,62 @@
+{
+  "observedAt": 1794300123833,
+  "sendTarget": {
+    "visible": true,
+    "enabled": true,
+    "centerHitsButton": true,
+    "visiblePoints": 9,
+    "hitTag": "SPAN",
+    "hitDropdown": false,
+    "hitContainsButton": false,
+    "hitIsParent": false,
+    "pointerEvents": "enabled",
+    "hitIsBackdrop": false,
+    "hitSurfaceClasses": [
+      "btn-main-text"
+    ]
+  },
+  "immediate": {
+    "target": {
+      "visible": true,
+      "enabled": true,
+      "centerHitsButton": true,
+      "visiblePoints": 9,
+      "hitTag": "SPAN",
+      "hitDropdown": false,
+      "hitContainsButton": false,
+      "hitIsParent": false,
+      "pointerEvents": "enabled",
+      "hitIsBackdrop": false,
+      "hitSurfaceClasses": [
+        "btn-main-text"
+      ]
+    },
+    "mode": {
+      "known": true,
+      "mode": "immediate",
+      "dateSelectable": false
+    }
+  },
+  "settled": {
+    "target": {
+      "visible": true,
+      "enabled": true,
+      "centerHitsButton": true,
+      "visiblePoints": 9,
+      "hitTag": "SPAN",
+      "hitDropdown": false,
+      "hitContainsButton": false,
+      "hitIsParent": false,
+      "pointerEvents": "enabled",
+      "hitIsBackdrop": false,
+      "hitSurfaceClasses": [
+        "btn-main-text"
+      ]
+    },
+    "mode": {
+      "known": true,
+      "mode": "immediate",
+      "dateSelectable": false
+    }
+  }
+}

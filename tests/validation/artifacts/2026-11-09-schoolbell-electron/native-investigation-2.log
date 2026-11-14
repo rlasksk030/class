@@ -1,0 +1,7 @@
+electronApplication.evaluate: Error: content-unverified
+    at perform (<REPO>/app/schoolbell-observed-composer.cjs:121:30)
+    at async global.runSchoolbellElectronTests (<REPO>/tests/schoolbell-electron-fixture.cjs:120:3)
+    at async <anonymous>:337:30
+    at <REPO>/tests/e2e/schoolbell-electron.e2e.cjs:9:26 {
+  log: []
+}

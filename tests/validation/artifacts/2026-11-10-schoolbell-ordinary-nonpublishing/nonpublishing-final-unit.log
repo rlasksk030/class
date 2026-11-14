@@ -1,0 +1,13 @@
+✔ fixed nonpublishing preparation reuses inputs and originals without any send grant or draft reset (7.989584ms)
+✔ any existing title, body, or attachment is preserved without confirmation or input (1.227625ms)
+✔ class mismatch, absent cooperation, or navigation during approval prevents every write (0.805417ms)
+✔ changed recipients and unverified originals never produce a successful preparation (0.64475ms)
+✔ DOM guard refuses send-related actions before inspecting any document (0.207166ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 91.869041

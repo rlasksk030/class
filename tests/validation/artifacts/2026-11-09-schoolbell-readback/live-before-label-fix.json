@@ -1,0 +1,74 @@
+{
+  "complete": false,
+  "stage": "publication-unverified:hidden",
+  "locations": [
+    "schoolbell-observed-post.cjs:88:44",
+    "schoolbell-live-posts.cjs:117:18"
+  ],
+  "fileVisibility": [
+    [
+      {
+        "tag": "DIV",
+        "display": "block",
+        "visibility": "visible",
+        "rects": 0
+      },
+      {
+        "tag": "DIV",
+        "display": "none",
+        "visibility": "visible",
+        "rects": 0
+      },
+      {
+        "tag": "APP-LETTER-FILELIST",
+        "display": "inline",
+        "visibility": "visible",
+        "rects": 3
+      },
+      {
+        "tag": "DIV",
+        "display": "block",
+        "visibility": "visible",
+        "rects": 1
+      },
+      {
+        "tag": "DIV",
+        "display": "flex",
+        "visibility": "visible",
+        "rects": 1
+      }
+    ],
+    [
+      {
+        "tag": "DIV",
+        "display": "block",
+        "visibility": "visible",
+        "rects": 0
+      },
+      {
+        "tag": "DIV",
+        "display": "none",
+        "visibility": "visible",
+        "rects": 0
+      },
+      {
+        "tag": "APP-LETTER-FILELIST",
+        "display": "inline",
+        "visibility": "visible",
+        "rects": 3
+      },
+      {
+        "tag": "DIV",
+        "display": "block",
+        "visibility": "visible",
+        "rects": 1
+      },
+      {
+        "tag": "DIV",
+        "display": "flex",
+        "visibility": "visible",
+        "rects": 1
+      }
+    ]
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "codeCommit": "386f5b517d23d9121987018068f1ac934953def9",
+  "date": "2026-11-10",
+  "scope": "preserve, cancel unsent diagnostic composer, normal restart, non-publishing verification",
+  "preservation": {
+    "createdAt": "2026-11-10T03:19:17.936Z",
+    "appBackupParsed": true,
+    "mediaRestoreValidated": true,
+    "matchingDrafts": 1,
+    "date": "2026-11-09",
+    "titleExact": true,
+    "bodyExact": true,
+    "photoCount": 1,
+    "photos": [
+      {
+        "bytes": 97,
+        "sha256": "1d6f13d252fe9b29809f8d04f04872a5013025bf0e5fb34e57c16bc50381ccc3",
+        "matchesReference": true
+      }
+    ],
+    "diagnosticTitleExact": true,
+    "diagnosticBodyExact": true,
+    "diagnosticPhotoCount": 0
+  },
+  "normalExitVerified": true,
+  "sameProfileRestarted": true,
+  "appDraftRestored": {
+    "title": true,
+    "body": true,
+    "photoCount": 1
+  },
+  "appLoginSessionRetained": true,
+  "externalCookiesCopied": false,
+  "preparation": {
+    "status": "uncertain",
+    "reason": "context-unverified",
+    "inputSteps": [
+      {
+        "step": "writeTitle",
+        "state": "started"
+      },
+      {
+        "step": "writeTitle",
+        "state": "complete"
+      },
+      {
+        "step": "writeBodyText",
+        "state": "started"
+      },
+      {
+        "step": "writeBodyText",
+        "state": "complete"
+      }
+    ],
+    "attachFilesReached": false,
+    "commitOnceReached": false,
+    "nativeSendReached": false,
+    "exactLowerLevelCause": "not determined",
+    "newSendReadinessLiveTest": "NOT RUN"
+  },
+  "serverReadback": {
+    "complete": true,
+    "totalPosts": 4,
+    "matchingTitles": 0,
+    "posts": [],
+    "draftDate": "2026-11-09",
+    "observedAtUTC": "2026-11-10T03:30:29.881252+00:00"
+  },
+  "finalAppDraftPreserved": true,
+  "diagnosticComposerClosedAfterMatchingSavedText": true,
+  "newPublication": false,
+  "successReceiptCreated": false,
+  "draftCleared": false,
+  "actionsRequested": 0,
+  "additionalCost": 0,
+  "productionChanged": false
+}

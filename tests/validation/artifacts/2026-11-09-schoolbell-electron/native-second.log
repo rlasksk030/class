@@ -1,0 +1,11 @@
+electronApplication.evaluate: AssertionError: {"result":{"status":"uncertain","message":"학교종이 게시 결과를 확인하지 못했습니다. 초안과 사진은 유지됩니다. 자동으로 재전송하지 않으며 실제 게시물을 먼저 확인해 주세요."},"stage":"verifying","dom":{"title":"합성 제목 1","body":"한글 조합 완료 😊\n\n둘째 줄  공백 <b>일반 문자</b>\n끝","model":{"title":"합성 제목 1","body":"한글 조합 완료 😊\n\n둘째 줄  공백 <b>일반 문자</b>\n끝","titleEvents":["input","change"],"bodyEvents":[{"type":"input","trusted":true},{"type":"input","trusted":true},{"type":"input","trusted":true},{"type":"input","trusted":true},{"type":"input","trusted":true},{"type":"input","trusted":true}]}}}
++ actual - expected
+
++ 'uncertain'
+- 'success'
+
+    at global.runSchoolbellElectronTests (<REPO>/tests/schoolbell-electron-fixture.cjs:124:11)
+    at async <anonymous>:337:30
+    at <REPO>/tests/e2e/schoolbell-electron.e2e.cjs:9:26 {
+  log: []
+}

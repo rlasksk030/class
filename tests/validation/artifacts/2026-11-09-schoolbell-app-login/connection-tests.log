@@ -1,0 +1,23 @@
+✔ service choice, links and manual history survive restart, default HiClass and isolate classes/schools (32.239125ms)
+✔ uncertain handoff blocks duplicates and edited content, only explicit not-posted permits retry (48.331667ms)
+✔ photo identity and order affect duplicate checks without storing private text or names (16.627083ms)
+✔ sessions isolate services, schools, year and class; legacy session belongs to only one class (5.616542ms)
+✔ class matching and official-page rules reject mismatches, auth links and unsafe URLs (0.805042ms)
+✔ corrupt state fails closed and file is preserved; prototype-like class names stay ordinary data (6.352375ms)
+✔ observed v4 login returns are navigation-only, unknown redirects and credentials are denied (0.52175ms)
+✔ manual and automatic records block one another; unresolved restart cannot become success by user confirmation (60.143292ms)
+✔ malformed automatic state fails closed without overwriting audit data (14.975583ms)
+✔ successful records require a receipt; persist only whitelisted post and photo proof across restart (31.508042ms)
+✔ legacy successful records without receipt remain readable and block duplicates without fabricating proof (17.539708ms)
+✔ official entry stays HTTPS; Whale is navigation-only and callback is bound to the initiating service (2.386042ms)
+✔ uninitiated or foreign auth routes, callback changes, credentials and HTTP stay blocked (0.832041ms)
+✔ permitted scripted login redirect is not misreported as a network failure (1.745167ms)
+✔ network failure, denied redirect and timeout report safe causes; deliberate retry recovers (8.095375ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 335.486416

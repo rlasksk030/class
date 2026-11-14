@@ -1,0 +1,10 @@
+sandbox_extension_issue_file_to_process failed for <repository>/node_modules/electron/dist/Electron.app: 1 (Operation not permitted)
+PASS DOM click has no trusted mouse-down/up sequence (local comparison only)
+PASS focused native down/up at 125% zoom, trusted click delivered exactly once; repeat denied
+PASS content mutation between native down/up blocks final click
+PASS occluded target blocks all mouse input
+Error: Script failed to execute, this normally means an error was thrown. Check the renderer console for the error.
+    at node:electron/js2c/sandbox_bundle:2:127793
+    at IpcRendererInternal.<anonymous> (node:electron/js2c/sandbox_bundle:2:122297)
+    at IpcRendererInternal.emit (node:electron/js2c/sandbox_bundle:2:45754)
+    at Object.onMessage (node:electron/js2c/sandbox_bundle:2:121363)

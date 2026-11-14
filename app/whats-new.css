@@ -1,0 +1,9 @@
+/* "새로워진 점": 작은 창 공통 틀(.uc-dialog --sm, 폭 600). 틀(제목 · [×] · 안내 · 버튼 줄)은 design.css의 dialog 규칙을 따른다. */
+.whats-new-dialog{width:min(600px,calc(100vw - 48px));word-break:keep-all;overflow-wrap:anywhere}
+#whatsNewBody{display:flex;flex-direction:column;gap:14px}
+#whatsNewBody section{padding:16px 18px;border-radius:var(--uc-radius-lg);background:var(--uc-surface-2)}
+#whatsNewBody h3{margin:0 0 8px;font-family:var(--uc-font-main);font-size:18px;font-weight:700;color:var(--uc-text)}
+#whatsNewBody ul{margin:0;padding-left:22px;font-size:16px;line-height:1.65;color:var(--uc-text)}
+#whatsNewBody li{margin:4px 0}
+#whatsNewBody li::marker{color:var(--uc-text-3)}
+#updateDialog #whatsNewReplay{margin-right:auto;color:var(--uc-primary)}

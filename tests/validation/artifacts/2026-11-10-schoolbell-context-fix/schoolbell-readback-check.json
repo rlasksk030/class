@@ -1,0 +1,19 @@
+{
+  "complete": true,
+  "totalPosts": 5,
+  "matchingTitles": 1,
+  "posts": [
+    {
+      "date": "2026-11-10",
+      "bodyMatches": true,
+      "photos": [
+        {
+          "sha256": "1d6f13d252fe9b29809f8d04f04872a5013025bf0e5fb34e57c16bc50381ccc3",
+          "bytes": 97
+        }
+      ],
+      "photosMatch": true
+    }
+  ],
+  "draftDate": "2026-11-09"
+}

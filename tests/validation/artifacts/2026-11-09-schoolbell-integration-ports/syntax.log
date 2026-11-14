@@ -1,0 +1,15 @@
+Changed-file syntax checks only
+PASS app/schoolbell-electron-driver.cjs
+PASS app/schoolbell-live-context.cjs
+PASS app/schoolbell-live-evidence.test.cjs
+PASS app/schoolbell-live-posts.cjs
+PASS app/schoolbell-observed-post.cjs
+PASS app/schoolbell-prepared-driver.cjs
+PASS app/schoolbell-prepared-driver.test.cjs
+PASS app/schoolbell.cjs
+PASS app/schoolbell-composer-entry.cjs
+PASS app/schoolbell-download.cjs
+PASS app/schoolbell-preview-originals.cjs
+PASS app/schoolbell-recipients.cjs
+PASS tests/schoolbell-live-ports-fixture.cjs
+13/13 parsed

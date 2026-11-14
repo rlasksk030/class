@@ -1,0 +1,71 @@
+# 배치 편집 화면 다듬기 + 첫 실행 제목 (전국판, 2026-11-12)
+
+- 시작점: `feature/timer-pip-nationwide` `d4607fb`(1.8.14) → 브랜치 `fix/layout-edit-polish-nationwide`
+- 디자인은 바꾸지 않고, 편집 모드에서 서로 가리던 부분과 알아보기 어려운 부분만 정리했다. 평소 화면은 그대로다(아래 "평소 화면" 참고).
+- 옥구초판(`fix/layout-edit-polish-okgu`)에는 같은 커밋을 cherry-pick했다. `layout.css`·`layout-ui.js`·`resize.js`·`dashboard-layout.e2e.cjs`는 두 판이 똑같다.
+
+## 고친 것
+
+| 문제 | 고친 내용 |
+|---|---|
+| 2-1 도구 막대가 학급 제목을 가림 | 떠 있는 막대 대신 머리글과 대시보드 사이의 별도 줄로 옮김. 편집 모드 동안 보드 높이가 그만큼 줄고, 칸 폭은 그대로 |
+| 2-2 날씨 손잡이가 날씨 글자 위에 겹침 | 편집 모드에서 날씨 칸 바깥 6px에 점선 테두리를 두르고, 손잡이 표시를 그 선 위에 둠 |
+| 2-3 [숨기기]가 아래 상태 글자와 붙음 | 제목 줄 오른쪽, 편집 모드에서 감춘 [수정]·[작성] 자리 위로 옮김 |
+| 2-4 격자 점선이 카드 내용 위에 그려짐 | 격자를 카드 뒤(z-index 0)로 보냄. 놓을 자리 미리보기는 그대로 위 |
+| 2-5 옮길 곳이 안 보이고 손잡이가 무거움 | 제목 줄 왼쪽에 점 6개 옮기기 표시(CSS), 올리면 제목 줄이 살짝 진해짐. 크기 손잡이는 연한 4px 선·모서리 표시로 바꾸고, 잡는 영역은 투명한 44×44px 이상(보드 밖으로는 10px만 나감) |
+| 2-6 도구 막대가 작고 안내가 두 줄 | 버튼 높이 44px 이상·글씨 16px 이상, [완료]는 가장 굵게. 안내는 "칸 제목 줄을 끌어 옮기고, 가장자리를 끌어 크기를 바꿉니다." 한 줄. 맞바꾸기·숨긴 칸·키보드 안내는 [?] 안으로 옮김 |
+| 2-7 첫 실행 제목 "undefined학년 undefined반" | 학교·학년·반이 모두 있을 때만 "학교 ○학년 ○반". 학교만 있으면 학교 이름, 아무것도 없으면 "우리 교실". 다른 학년·반 조합(랜덤 뽑기·활동완료·백업)은 이미 '—' 등으로 처리돼 있고, 알림장 연결 문구는 학급이 연결됐을 때만 보임 |
+
+판단한 것
+- **도구 막대 자리:** 머리글과 대시보드 사이로 정했다. 아래쪽 탭 막대 위에 두면 보드 아래 손잡이와 상태 글자를 가린다.
+- **[숨기기] 배치:** 제목 폭 계산에 넣지 않고 [수정]·[작성] 자리 위에 겹쳐 둔다. 계산에 넣으면 편집 모드에 들어갈 때 급식 칸 폭이 245px에서 273px로 바뀌어, 기존 검사 "편집 모드에 들어가도 칸 크기는 그대로"를 어기게 된다.
+- **[숨기기] 크기:** 좁은 칸에서도 제목을 가리지 않도록 가장자리 쪽으로 붙이고 작게 했다(14px, 작은 화면 13px).
+
+## 평소 화면
+
+평소 화면(편집 모드가 아닐 때)을 1100·1440·1920 폭에서 비교했다. 보이는 요소 60개의 위치·크기·글씨·색이 고치기 전(1.8.14)과 모두 같다. 2-7 제목은 학년·반이 있으면 이전과 같다.
+
+## 테스트 (PASS / 미실행)
+
+| 항목 | 결과 |
+|---|---|
+| `npm run check` | PASS (107/107 파일) |
+| `npm test` | PASS (107/107) |
+| `npm run test:e2e` (20개 파일) | PASS: 배치 편집 71/71(새 검사 16개 포함), 첫 실행 8/8(제목 검사 2개 포함), 학교종이 73/73, 나머지 17개 파일도 모두 통과(FAIL 0) |
+| 새 검사가 고치기 전 코드에서 실패하는지 | 확인함. 옥구초판 1.8.14(`03473b4`) 코드에 새 테스트를 돌리면 겹침·격자·터치·안내 검사와 첫 실행 제목 검사가 실패함 |
+| `npm run test:migration` | 미실행: v1.7.8 압축 해제 폴더(`CLASSROOM_V178_APP`)가 없어 SKIP |
+| Windows 실기 확인 | 미실행: macOS에서 Electron으로 확인 |
+
+새 겹침 검사(`dashboard-layout.e2e.cjs`)는 1100×760, 1440×900, 1920×1080에서 편집 모드를 켜고 아래를 본다.
+- 도구 막대 ↔ 학급 제목·날짜·시계·날씨 글자·머리글 버튼·탭 막대
+- 날씨 손잡이 ↔ 시계·머리글 버튼, 날씨 손잡이 표시 ↔ 날씨 글자
+- [숨기기] ↔ 제목·아래 상태 글자·내용
+- 격자 칸을 잠시 클릭 대상으로 바꾼 뒤, 카드 내용 한가운데에서 카드가 잡히는지
+- 크기 손잡이·도구 막대 버튼의 잡는 영역 44×44 이상, 버튼 글씨 16px 이상
+- 그 밖에 안내 한 줄, 옮기기 표시, [?] 안내, 급식을 숨긴 상태, 1100에서 네 칸 나란히(가장 좁은 칸)
+
+## 빌드 1.8.15 (이 Mac, `npm run dist:win`)
+
+`app/package.json`만 1.8.14에서 1.8.15로 바꿨다(소스 `c1024a7`).
+
+| 항목 | 결과 |
+|---|---|
+| 1.8.15에서 다시 실행 | PASS: `check` 107/107, `npm test` 107/107, 버전을 읽는 E2E(v182-features 43/43, 배치 편집 71/71, 첫 실행 8/8) |
+| 설치 파일 | PASS: `classroom-dashboard-nationwide-setup-1.8.15-x64.exe` 99,369,330바이트, SHA-256 `1d080905d6c0b920ca5091b15d91e0629b5446226bfaf916e3e50d1b1dd1a63d` |
+| blockmap | `classroom-dashboard-nationwide-setup-1.8.15-x64.exe.blockmap` SHA-256 `ca4c56e22879fc4a00c36aa923671d77eedc4720b8c89188f728f197235abfcd` |
+| 업데이트 피드 | `nationwide.yml` SHA-256 `4db24f92f7d3638c13bca53287801d9dbaac054d8f422aab8aa8d2c7b23c89b8`. version 1.8.15, sha512·크기가 설치 파일과 일치 |
+| 설치 파일 속 업데이트 채널 | PASS: `update-config.json`(소스와 같음)과 `app-update.yml` 모두 generic `https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/`, channel `nationwide` |
+| 설치 파일 속 앱 | PASS: 버전 1.8.15, `app.asar` 파일 101/101 소스 `app/`와 같음 |
+| 배포 | 완료(2026-11-12). `downloads/nationwide` `70a75a6`→`0144803`: 설치 파일·blockmap·`nationwide.yml`·README·SHA-256·노트·검증 JSON, 예전 설치 파일은 그대로. 태그 `nationwide-v1.8.15`→`c1024a7`, Release는 Latest가 아님(Latest는 옥구초 v1.8.14 그대로), 자산 5개. 공개 raw 주소의 설치 파일·blockmap·피드와 Release 자산 5개의 SHA-256이 모두 일치. 새 Actions 실행 0회 |
+| Windows 설치·업데이트·실행 | 미실행 |
+
+## 스크린샷 (고치기 전 → 고친 뒤)
+
+`tests/validation/screenshots/`
+- 편집 모드 1440: `layout-edit-polish-before-edit-1440.jpg` → `layout-edit-polish-after-edit-1440.jpg`
+- 급식을 숨긴 편집 모드 1440: `layout-edit-polish-before-edit-1440-meal-hidden.jpg` → `layout-edit-polish-after-edit-1440-meal-hidden.jpg`
+- 편집 모드 1100: `layout-edit-polish-before-edit-1100.jpg` → `layout-edit-polish-after-edit-1100.jpg`
+- 편집 모드 1920: `layout-edit-polish-before-edit-1920.jpg` → `layout-edit-polish-after-edit-1920.jpg`
+- 첫 실행(새 프로필) 1440: `layout-edit-polish-before-first-run-1440.jpg` → `layout-edit-polish-after-first-run-1440.jpg`
+
+모든 화면은 격리 프로필과 가상 데이터(시간표·급식·날씨 응답 대체)로 찍었다.
