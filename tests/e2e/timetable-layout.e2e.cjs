@@ -37,6 +37,9 @@ async function geometry(page,label,{singleLine=false}={}){
  const page=await app.firstWindow();
  await app.evaluate(({ipcMain})=>{ipcMain.removeHandler('fetch');ipcMain.handle('fetch',async()=>{throw Error('offline test');});});
  await page.evaluate(()=>{localStorage.setItem('settings',JSON.stringify({grade:'6',classroom:'1'}));localStorage.setItem('dashboardLocked','false');});
+ // This profile already saw the running version's '새로워진 점' notice (whats-new.e2e tests the notice itself),
+ // so it does not open over the layout tools in the middle of these checks.
+ await page.evaluate(v=>localStorage.setItem('lastSeenVersion',JSON.stringify(v)),require(path.join(ROOT,'app/package.json')).version);
  await page.reload();await page.evaluate(()=>document.fonts.ready);
  await fillTimetable(page,subjects);
  await geometry(page,'default card');
