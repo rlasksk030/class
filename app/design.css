@@ -548,7 +548,9 @@ body:is(.whiteboard-active,.random-active,.activity-active,.diary-active)>footer
 #diaryScreen>.diary-footer{overflow:hidden}
 #diaryScreen>.diary-footer>.diary-send-title,#diaryScreen>.diary-footer>.diary-registration{flex:none}
 #diaryScreen>.diary-footer>.diary-recipients{flex:0 1 auto;min-height:0;overflow:auto}
-@media (max-height:560px){#diaryScreen{gap:8px var(--G,16px)}#diaryScreen>.diary-footer{padding:12px 14px;gap:8px}.diary-send-title{font-size:20px}#diaryPublish,#schoolbellPublish{height:52px;min-height:52px!important;font-size:20px!important}}
+#diaryScreen>.diary-footer>.diary-send-main{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:12px;overflow:auto}
+.diary-send-main>.diary-send-title,.diary-send-main>.diary-recipients{flex:none}
+@media (max-height:560px){#diaryScreen{gap:8px var(--G,16px)}#diaryScreen>.diary-footer{padding:12px 14px;gap:8px}.diary-send-title{display:none}#diaryStatus{max-height:3em;overflow:auto}#diaryPublish,#schoolbellPublish{height:52px;min-height:52px!important;font-size:20px!important}}
 
 /* =========================================================
    5단계: 설정 창 (I01–I03b) · 첫 실행 (I06)
@@ -663,3 +665,38 @@ body:is(.whiteboard-active,.random-active,.activity-active,.diary-active)>footer
 .whiteboard-tools.uc-seg>button{height:44px;min-height:44px}
 .settings-row--fixed .settings-row__head{flex-wrap:wrap;gap:6px 12px}
 .settings-fixed-school{font-family:var(--uc-font-main);font-size:18px;font-weight:700}
+
+/* =========================================================
+   4-1단계: 알림장 칠판 모드 (H05–H10) — 단색 칠판 + 얇은 나무 테두리 + 글씨만
+   ========================================================= */
+/* 보내기 칸 맨 위 '교실에 띄우기' */
+.diary-chalk-group{flex:none;display:flex;flex-direction:column;gap:10px;padding-bottom:16px;border-bottom:1px solid var(--uc-line-soft)}
+.diary-chalk-group__title{margin:0;font-family:var(--uc-font-main);font-size:24px;font-weight:700}
+#diaryScreen .diary-chalk-button{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;height:64px;min-height:64px;border:3px solid var(--uc-chalk-frame);border-radius:14px;background:var(--uc-chalk-bg);color:var(--uc-chalk-text);font-family:var(--uc-font-main);font-size:24px;font-weight:700}
+.diary-chalk-button .uc-ico{width:26px;height:26px}
+#diaryScreen .diary-chalk-button:disabled{border-color:var(--uc-line);background:var(--uc-surface-2);color:var(--uc-text-disabled)}
+.diary-chalk-hint{margin:-2px 0 0;font-size:14px;color:var(--uc-text-3)}
+.diary-chalk-hint.is-warning{color:var(--uc-warning)}
+/* 낮은 창: 칠판 버튼 묶음을 줄여 수신 대상과 [등록]이 들어갈 자리를 둡니다. 수신 대상은 한 줄로 쌓기만(옆으로 넘치지 않게) */
+@media (max-height:700px){.diary-chalk-group{gap:6px;padding-bottom:8px}.diary-chalk-group__title,.diary-chalk-hint{display:none}#diaryScreen .diary-chalk-button{height:48px;min-height:48px;font-size:20px}}
+#diaryScreen>.diary-footer .diary-actions{flex-wrap:nowrap}
+/* 칠판 화면: 앱 창 전체, 나무 테두리 clamp(12s, 10, 14) */
+.chalkboard{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;background:var(--uc-chalk-bg);border:clamp(10px,calc(12px * var(--s)),14px) solid var(--uc-chalk-frame);outline:none}
+.chalkboard[hidden]{display:none}
+.chalkboard__sheet{flex:1 1 auto;min-height:0;overflow:hidden;padding:clamp(28px,calc(48px * var(--s)),72px) clamp(36px,calc(64px * var(--s)),96px) calc(56px + 20px + 28px);font-family:var(--uc-font-main);font-weight:700;line-height:1.5;color:var(--uc-chalk-text);word-break:keep-all;overflow-wrap:anywhere;text-align:left}
+.chalkboard__date{margin:0 0 calc(var(--chalk-fs,48px) * .25);font-size:calc(var(--chalk-fs,48px) * .7);color:var(--uc-chalk-accent)}
+.chalkboard__title{margin:0 0 calc(var(--chalk-fs,48px) * .35);font-family:var(--uc-font-main);font-size:calc(var(--chalk-fs,48px) * 1.15);font-weight:700;line-height:1.5;color:var(--uc-chalk-accent)}
+.chalkboard__body{font-size:var(--chalk-fs,48px);white-space:pre-wrap}
+/* 도구 막대: 아래 가운데에 떠 있는 단색 반투명 막대 (흐림 없음), 3초 동안 움직임이 없으면 숨김 */
+.chalkboard__bar{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;width:max-content;max-width:calc(100% - 32px);padding:10px;border-radius:18px;background:var(--uc-chalk-bar);flex-wrap:wrap;justify-content:center}
+.chalkboard.bar-hidden .chalkboard__bar{visibility:hidden}
+.chalkboard.bar-hidden{cursor:none}
+.chalkboard__button{height:56px;min-height:56px;min-width:56px;padding:0 16px;border:1px solid var(--uc-chalk-btn-line);border-radius:12px;background:var(--uc-chalk-btn-bg);color:var(--uc-chalk-text);font-family:var(--uc-font-sub);font-size:18px;font-weight:700}
+.chalkboard__button:hover{background:var(--uc-chalk-btn-bg)}
+.chalkboard__button:disabled{border-color:var(--uc-chalk-btn-line);background:transparent;color:var(--uc-chalk-text);opacity:.4}
+.chalkboard__button:focus-visible{outline:3px solid var(--uc-chalk-accent);outline-offset:2px}
+.chalkboard__button--close{border-color:var(--uc-chalk-text);background:var(--uc-chalk-text);color:var(--uc-chalk-bg)}
+.chalkboard__button--close:hover{background:var(--uc-chalk-text)}
+.chalkboard__sep{width:1px;height:32px;background:var(--uc-chalk-text);opacity:.22}
+.chalkboard__page{min-width:64px;text-align:center;font-family:var(--uc-font-sub);font-size:18px;font-weight:700;color:var(--uc-chalk-text)}
+body.chalk-open .app-bar{display:none}
