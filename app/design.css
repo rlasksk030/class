@@ -665,6 +665,15 @@ body:is(.whiteboard-active,.random-active,.activity-active,.diary-active)>footer
 .whiteboard-tools.uc-seg>button{height:44px;min-height:44px}
 .settings-row--fixed .settings-row__head{flex-wrap:wrap;gap:6px 12px}
 .settings-fixed-school{font-family:var(--uc-font-main);font-size:18px;font-weight:700}
+/* 옥구초판 I01: 회색 학교 줄 + 학년 · 반 칸마다 이름 */
+.settings-card--fixed{border:0;border-radius:0;gap:20px}
+.settings-card--fixed .settings-row{padding:0;border:0}
+.settings-card--fixed .settings-row--fixed{padding:16px 18px;border-radius:14px;background:var(--uc-surface-2)}
+.settings-card--fixed .settings-row--fixed .settings-row__label{font-weight:400;color:var(--uc-text-2)}
+.settings-card--fixed .settings-row--fixed .settings-row__state{font-size:14px}
+.settings-card--fixed .settings-row--class>.settings-row__label{display:none}
+.settings-card--fixed .settings-row--class .fields{gap:14px}
+.settings-card--fixed .settings-row--class .fields label{display:flex;flex-direction:column;gap:8px;font-size:15px;font-weight:700;color:var(--uc-text)}
 
 /* =========================================================
    4-1단계: 알림장 칠판 모드 (H05–H10) — 단색 칠판 + 얇은 나무 테두리 + 글씨만
