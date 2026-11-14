@@ -1,6 +1,6 @@
 # 우리 교실 전국용 Windows 설치파일
 
-[전국용 v1.8.16 다운로드](https://github.com/rlasksk030/class/releases/download/nationwide-v1.8.16/classroom-dashboard-nationwide-setup-1.8.16-x64.exe)
+[v1.8.17 다운로드](https://github.com/rlasksk030/class/releases/download/nationwide-v1.8.17/classroom-dashboard-nationwide-setup-1.8.17-x64.exe)
 
 타이머 창에서 **PIP**를 누르면 작은 창을 항상 위에 표시할 수 있습니다. PIP에서 시작·일시정지·계속하기·다시 시작·초기화·완료 확인을 할 수 있고, 창을 닫아도 진행 중인 타이머는 유지됩니다. **시간 설정**을 누르면 본창으로 돌아갑니다.
 
@@ -10,6 +10,20 @@
 - 업데이트 전에 **설정 → 백업**을 한 번 해 두시면 안전합니다.
 
 옥구초 전용판은 별도 GitHub Release에서 업데이트됩니다. [옥구초 전용판 다운로드](https://github.com/rlasksk030/class/releases/latest)
+
+## v1.8.17 화면 디자인 다듬기
+
+**업데이트 전에 설정 → 백업을 한 번 해 두세요.** 화면 설정 저장 값(화면 구조 A·B와 구조별 칸 배치)이 늘어납니다. 기존 학급 자료와 배치는 그대로 이어집니다.
+
+- 대시보드 · 작은 창 · 설정 창의 글씨, 색, 버튼 모양을 하나로 맞추고, 도구는 화면 아래 막대에 모았습니다.
+- [화면 설정]에서 대시보드 구조를 A(위쪽 머리글)와 B(왼쪽 정보 기둥) 중에 고를 수 있습니다.
+- 랜덤 뽑기에 [발표 화면으로 크게], 알림장에 [칠판 모드]가 생겼습니다(하이클래스 · 학교종이 모두).
+- 업데이트한 뒤 처음 켜면 달라진 점을 한 번 보여 드립니다. 다른 창이 열려 있으면 그 창을 닫은 뒤에 보여 드립니다.
+- v1.8.16은 **설정 → 업데이트**에서 바로 받습니다. v1.8.9~v1.8.15는 먼저 v1.8.16을 받은 뒤 이어서 받습니다.
+
+[Release 및 SHA-256](https://github.com/rlasksk030/class/releases/tag/nationwide-v1.8.17) · [검증 범위](v1.8.17-release-validation.json) · [릴리스 안내](v1.8.17-release-notes.md)
+
+이 버전의 Windows 실행·설치·업데이트 검사는 아직 하지 않았습니다(NOT RUN).
 
 ## v1.8.16 업데이트 경로 정리 (기능은 v1.8.15와 같음)
 

@@ -1,0 +1,59 @@
+{
+ "source": "47a698bce8d1691d1fc3c47b9909ddad5271316a",
+ "base": "b45781a20d54d4a2acfa8558af912323836a6a7d",
+ "branch": "feature/design-refresh-nationwide",
+ "version": "1.8.17",
+ "edition": "nationwide",
+ "role": "first version whose installer is published only as a Release asset; nationwide.yml stays frozen at 1.8.16",
+ "appId": "org.school.classroomdashboard",
+ "validationBuild": false,
+ "builtOn": "teacher's Mac, npm run dist:win (electron-builder 26.15.3, Electron 40.10.6) + scripts/make-nationwide-feeds.cjs",
+ "updateChannel": {
+  "provider": "generic",
+  "url": "https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/",
+  "channel": "nationwide2"
+ },
+ "feeds": {
+  "nationwide2.yml": "v1.8.16 and later; url/path = https://github.com/rlasksk030/class/releases/download/nationwide-v1.8.17/classroom-dashboard-nationwide-setup-1.8.17-x64.exe",
+  "nationwide.yml": "not written; frozen at 1.8.16"
+ },
+ "checks": {
+  "syntax": "PASS (122/122)",
+  "unit": "PASS (136/136)",
+  "e2eAll": "PASS (23 files: board-titles 26, v182-features 43, regression 41, hiclass-link 16, recovery 18, timetable-layout 8, diary-drafts 17, hiclass-recipients 38, hiclass-submit 21, timer-startup 21, diary-layout 15, diary-chalkboard 41, hiclass-window 11, multischool 10, schoolbell 73 synthetic site, dashboard-layout 88, first-run 8, update-feeds 9, whats-new 9, photos 22, hiclass-photos 4, photo-boundaries 6, photo-transfer 5)",
+  "e2eNote": "an earlier full run had one schoolbell failure (synthetic schoolbell window clicked before its page loaded); schoolbell passed alone twice and the whole suite was then rerun with every file passing",
+  "designChecklist": "PASS (A/B at 1100x760/1440x900/1920x1080, fonts Gowun Batang + Nanum Barun Gothic only and loaded, 44px touch targets, no emoji/blur/gradient effects, screen lock 5 tools, PIP J03/J04, CSP console 0)",
+  "whatsNewFix": "PASS (notice remembered only after it is on screen; waits with no time limit while another dialog is open; 31 s first-run settings case; the new check fails on the old code)",
+  "migrationV178": "NOT RUN (needs the v1.7.8 app)",
+  "installerUnder100MiB": "PASS",
+  "windowsExecution": "NOT RUN",
+  "windowsInstallUpdateReboot": "NOT RUN",
+  "iconsE2E": "PASS (10/10; new: app bar, card heads, dialog [x], D-Day dialog and layout-edit mask icons have drawn pixels in the Electron app, no blocked-load console message; fails when the icon path is broken)",
+  "packagedFilesMatchSource": "PASS (147/147 files in app.asar identical to app/, no extra files)",
+  "packagedUpdateChannel": "PASS (update-config.json and app-update.yml: generic, downloads/nationwide, channel nationwide2)",
+  "feedMatchesInstaller": "PASS (nationwide2.yml version 1.8.17, Release asset URL, sha512 and size equal to the installer)"
+ },
+ "testedOn": "macOS (Apple Silicon), Electron 40.10.6, isolated profiles, offline NEIS/weather",
+ "actionsNewRuns": 0,
+ "additionalCost": 0,
+ "releaseTag": "nationwide-v1.8.17",
+ "releaseLatest": false,
+ "artifacts": [
+  {
+   "name": "classroom-dashboard-nationwide-setup-1.8.17-x64.exe",
+   "bytes": 99408437,
+   "sha256": "027f24b4bdbf871ae8972d2e8a56a2dabd75046f57fde666f7e81b7bb65b8748",
+   "sha512": "Q9FXbRWjCX0J4UmXFd2jmM9Rk2vEt0RkPHZOYBaRiVlLgTfQgB+dP2ItgXH7whicCvWPdfMVX4+K7m+KcwEu4Q=="
+  },
+  {
+   "name": "classroom-dashboard-nationwide-setup-1.8.17-x64.exe.blockmap",
+   "bytes": 104895,
+   "sha256": "74ff8141ab86fe0528f89f2f05f861ae610b450e44930d1beb7a07210c0e9885"
+  },
+  {
+   "name": "nationwide2.yml",
+   "bytes": 545,
+   "sha256": "53e7eb0b21f76f028a236c09478ae0a47c0c93024ee7ce4f79908b0a4a0a2fd7"
+  }
+ ]
+}
