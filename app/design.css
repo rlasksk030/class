@@ -564,6 +564,7 @@ body:is(.whiteboard-active,.random-active,.activity-active,.diary-active)>footer
 .settings-head{flex:none;padding:28px 96px 18px 32px;border-bottom:1px solid var(--uc-line)}
 .settings-head h2{margin:0}
 .settings-sub{margin:4px 0 0;font-size:15px;color:var(--uc-text-2)}
+.settings-sub:empty{display:none}
 .settings-kicker,.settings-intro,.settings-steps{display:none}
 .settings-body{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:230px minmax(0,1fr)}
 .settings-nav{display:flex;flex-direction:column;gap:6px;padding:18px 14px;border-right:1px solid var(--uc-line);background:var(--uc-surface)}

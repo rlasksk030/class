@@ -9,14 +9,14 @@
  const make=(tag,props={},parent)=>{const el=document.createElement(tag);Object.assign(el,props);if(parent)parent.append(el);return el;};
  const $=id=>document.getElementById(id);
  // 전국판 has the NEIS helper and the school search; 옥구초판 has a fixed school (I01).
- const nationwide=!!$('neisGuide'),edition=nationwide?'전국판':'옥구초판';let appVersion='';
+ const nationwide=!!$('neisGuide'),edition=nationwide?'':'옥구초'; // On screen: 옥구초 shows '옥구초'; 전국판 shows no edition name at all.let appVersion='';
  const fixedSchool=()=>window.OKGU_SCHOOL?.SCHUL_NM||settings.school?.SCHUL_NM||'옥구초등학교';
  window.desktop?.updateState?.().then(s=>{appVersion=s?.currentVersion||'';refresh();}).catch(()=>{});
  const title=form.querySelector(':scope>h2'),eyebrow=form.querySelector(':scope>.eyebrow'),actions=form.querySelector(':scope>.actions');
  const loose=[...form.children].filter(el=>el!==title&&el!==eyebrow&&el!==actions);
  // Head
  const head=make('div',{className:'settings-head'});form.prepend(head);
- const kicker=make('p',{className:'settings-kicker',textContent:'우리 교실 · 처음 설정 ('+edition+')'});
+ const kicker=make('p',{className:'settings-kicker',textContent:'우리 교실 · 처음 설정'});
  head.append(kicker,title);const sub=make('p',{className:'settings-sub'},head);if(eyebrow)eyebrow.remove();
  const intro=make('p',{className:'settings-intro',textContent:'한 번만 하면 됩니다. 나중에 [설정]에서 바꿀 수 있습니다.'},head);
  // First-run steps (I06): ① NEIS 인증키 ② 학교 검색 ③ 학년 · 반
@@ -36,7 +36,7 @@
  const card=make('div',{className:'settings-card'},school.pane);
  const row=(cls,parent=card)=>make('div',{className:'settings-row '+cls},parent);
  // 옥구초판 (I01): the fixed school is a grey line, then 학년 and 반 each with its own label (no card frame).
- if(!nationwide){card.classList.add('settings-card--fixed');const fixed=row('settings-row--fixed'),fh=make('div',{className:'settings-row__head'},fixed);make('strong',{className:'settings-row__label',textContent:'학교'},fh);make('span',{className:'settings-fixed-school',textContent:fixedSchool()},fh);make('span',{className:'settings-row__state',textContent:'옥구초판은 학교가 정해져 있습니다.'},fh);}
+ if(!nationwide){card.classList.add('settings-card--fixed');const fixed=row('settings-row--fixed'),fh=make('div',{className:'settings-row__head'},fixed);make('strong',{className:'settings-row__label',textContent:'학교'},fh);make('span',{className:'settings-fixed-school',textContent:fixedSchool()},fh);make('span',{className:'settings-row__state',textContent:'옥구초는 학교가 정해져 있습니다.'},fh);}
  const neisRow=row('settings-row--neis'),neisHead=make('div',{className:'settings-row__head'},neisRow);
  const neisMark=make('span',{className:'settings-check'},neisHead),neisText=make('span',{className:'settings-row__text'},neisHead);
  make('strong',{textContent:'① NEIS 인증키'},neisText);const neisState=make('span',{className:'settings-row__state'},neisText);
@@ -80,8 +80,8 @@
   // 백업 · 복원 under 학교 · 학급 (전국판 does it in the first-run card above).
   dialog.classList.toggle('settings-no-class',!classDone);
   title.textContent=first?'학교와 학급을 골라 주세요':'우리 교실 설정';
-  const label=nationwide?(settings.school&&classDone?`${settings.school.SCHUL_NM} ${settings.grade}학년 ${settings.classroom}반 · ${edition}`:edition):`${fixedSchool()} · ${edition}`;
-  sub.textContent=nationwide&&(dialog.dataset.pane==='School'||first)?edition+' · 학교와 학급을 고른 뒤 저장해 주세요':label;
+  const label=nationwide?(settings.school&&classDone?`${settings.school.SCHUL_NM} ${settings.grade}학년 ${settings.classroom}반`:''):`${fixedSchool()} · ${edition}`;
+  sub.textContent=nationwide&&(dialog.dataset.pane==='School'||first)?'학교와 학급을 고른 뒤 저장해 주세요':label;
   version.textContent=appVersion?'버전 '+appVersion:'';for(const v of backup.pane.querySelectorAll('.update-settings__version'))v.textContent=appVersion?'지금 버전 '+appVersion:'';
   const step=!key&&$('neisGuide')?.open?0:!chosen?1:2;
   stepItems.forEach((state,i)=>{const li=state.closest('li');li.classList.toggle('is-done',i<step||(i===0&&key));li.classList.toggle('is-current',i===step);state.textContent=i===0&&key?'연결됨':i<step?'완료':i===step?'지금 단계':'다음 단계';});
