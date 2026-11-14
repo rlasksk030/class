@@ -131,3 +131,12 @@
 - `update-config.json`과 `app-update.yml`은 github · rlasksk030/class다. 버전은 1.8.16이다.
 - 화면 문자열에 '옥구초판' · '전국판' · '전국용'이 없다.
 - Windows 실행 · 설치 · 업데이트 검사는 미실행(NOT RUN)이다.
+
+## 1.8.16 배포 완료 (선생님 승인: "진행해 줘", 2026-11-14)
+
+- 작업 브랜치 push: `feature/design-refresh-okgu` → `f51dbe3`.
+- 가벼운 태그 `v1.8.16` → `60db82a`(빌드 소스).
+- Release [v1.8.16](https://github.com/rlasksk030/class/releases/tag/v1.8.16) "우리 교실 옥구초 전용 v1.8.16 — 화면 디자인 다듬기"를 **Latest**로 올렸다. 자산 5개(설치 파일, blockmap, latest.yml, release-validation.json, SHA256SUMS.txt)가 모두 uploaded 상태다. 안내 첫 줄은 "업데이트 전에 설정 → 백업을 한 번 해 두세요"다.
+- 공개 확인: 로그인 없이 공개 주소로 5개를 내려받았다. 바이트 수와 SHA-256이 모두 빌드 결과와 같다. `releases/latest`는 v1.8.16이고, `releases/latest/download/latest.yml`은 version 1.8.16이다.
+- v1.8.15 Release의 자산 5개는 그대로다. GitHub Actions 신규 실행은 0회다.
+- 남은 것: 기준 브랜치 `feature/timer-pip-okgu`에 합치기(PR, 승인 후), Windows 실기 확인(NOT RUN).
