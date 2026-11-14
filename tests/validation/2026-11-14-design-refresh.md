@@ -92,3 +92,41 @@
 ## 스크린샷
 
 `tests/validation/screenshots/design-refresh-*.jpg`(1440×900): 대시보드 A · B, 화면 잠금, H02 · H03 알림장, I02 설정, I06 첫 실행, H06 칠판 모드, J01 PIP, 새로워진 점 창.
+
+## 1.8.17 배포 (2026-11-14)
+
+| 커밋 | 내용 |
+|---|---|
+| 916e8df, b3ed2b2, 1007268 | E2E 준비만 고침(검사 항목 그대로) |
+| ce8c0e6, de145d1, 757a954 | 선생님 지시로 전국 배포용 화면에서 판 이름을 모두 뺌 |
+| 7e1181e | 버전 1.8.16 → 1.8.17. 배포 절차 문서의 오류 문구도 화면과 같게 고침 |
+| bbd9756 | NOTES 1.8.17을 실제 변경 내용으로 씀(선생님 확인) |
+| 9ec3c36 | 새로워진 점 수정(아래 참고) |
+| 47a698b | E2E `icons.e2e.cjs`: 선 아이콘이 실제 Electron 앱에서 그려지는지 확인 |
+
+- **E2E 준비 고침(916e8df, b3ed2b2, 1007268):** 대상은 whats-new, timetable-layout, v182-features다. 앱 버전에 안내 문구가 생기면 첫 로드가 '본 버전'을 미리 기억하거나 안내 창이 시험 도중 떠서, 이 시험들이 실패하거나 가끔 흔들렸다.
+- **판 이름 빼기(ce8c0e6, de145d1, 757a954):** 설정 창 부제목 · 첫 실행 머리말 · 업데이트 창 버전 옆 표시 · 설치 파일 확인 오류 문구가 대상이다. 757a954는 ce8c0e6에서 주석 때문에 사라진 `appVersion` 선언을 되살린 것이다.
+- **새로워진 점 수정(9ec3c36):**
+  - 안내가 실제로 뜬 뒤에만 '본 버전'을 저장한다.
+  - 다른 창이 열려 있으면 시간 제한 없이 기다린다.
+  - 기억한 버전이 없으면 지금 버전까지의 안내를 모두(최대 3개) 보여 준다.
+  - 31초 대기 E2E를 더했다. 고치기 전 코드에서는 실패한다.
+- **아이콘(47a698b):** 실제 Electron 앱(file://)에서는 CORS로 막히지 않아 앱 코드는 바꾸지 않았다. 확인 시험만 더했고, 아이콘 경로를 깨면 실패한다.
+
+### 검사 · 빌드
+- 구문 122/122, 단위 136/136이다.
+- E2E 23개 파일 전체 PASS이고, icons 10/10을 따로 확인했다.
+  - 앞선 전체 실행 한 번에서 schoolbell 1개가 실패했다. 합성 학교종이 창이 다 뜨기 전에 눌렀기 때문이다. 단독 2회 통과 뒤 전체를 다시 돌려 모두 통과했다.
+- 빌드 소스는 `47a698b`다.
+- 설치 파일 `classroom-dashboard-nationwide-setup-1.8.17-x64.exe`: 99,408,437바이트, SHA-256 `027f24b4bdbf871ae8972d2e8a56a2dabd75046f57fde666f7e81b7bb65b8748`.
+- nationwide2.yml(Release 주소)의 sha512 · size가 설치 파일과 같다. nationwide.yml은 만들지 않았다.
+- app.asar 147/147 파일이 소스와 같다. update-config는 generic + channel nationwide2다.
+
+### 배포 · 공개 확인 (docs/전국판_배포_절차.md 순서)
+1. 태그 `nationwide-v1.8.17` → `47a698b`.
+2. Release [nationwide-v1.8.17](https://github.com/rlasksk030/class/releases/tag/nationwide-v1.8.17)은 Latest가 아니다. 제목에 판 이름을 넣지 않았다. 자산 5개가 uploaded 상태이고, 공개 주소 5개의 해시가 같다.
+3. 피드 주소로 redirect를 따라 받은 설치 파일의 sha512가 피드 값과 같다. Latest는 옥구초 `v1.8.17` 그대로다.
+4. 그다음 `downloads/nationwide`를 `a7f600b`로 올렸다. 바꾼 파일은 nationwide2.yml · README · v1.8.17 문서 3개다. 설치 파일은 커밋하지 않았고 nationwide.yml은 그대로다.
+5. raw nationwide2.yml은 1.8.17이고 Release 자산과 같다. raw nationwide.yml은 1.8.16이다.
+
+GitHub Actions 신규 실행 0회. Windows 실기 확인은 미실행(NOT RUN).
