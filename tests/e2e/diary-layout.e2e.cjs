@@ -20,7 +20,7 @@ const measure=page=>page.evaluate(()=>{
    await page.evaluate(()=>{document.getElementById('diaryLinkState').textContent='● 하이클래스 연결됨 · 아주 긴 학급 연결 상태 '.repeat(15);document.getElementById('diaryStatus').textContent='연결 오류가 발생했습니다. 초안을 유지합니다. '.repeat(30);});
    const m=await measure(page);assert.ok(Math.abs(m.dpr-scale)<.02,JSON.stringify(m));assert.ok(m.rootOverflow<=1,JSON.stringify(m));assert.ok(m.body.height>=80&&m.bodyOverflow>0,JSON.stringify(m));
    for(const r of [m.button,m.parents,m.students,m.status])assert.ok(r.y>=0&&r.bottom<=m.root.bottom+1&&r.right<=m.width,JSON.stringify(m));
-   assert.ok(m.button.y>=m.parents.bottom&&m.root.bottom<=m.tabs.y,JSON.stringify(m));assert.ok(m.status.right<=m.button.x,JSON.stringify(m));
+   assert.ok(m.button.y>=m.parents.bottom&&m.root.bottom<=m.tabs.y,JSON.stringify(m));assert.ok(m.status.bottom<=m.button.y+1&&m.status.x>=m.button.x-1,JSON.stringify(m)); // 보내기 칸: 저장 상태는 [등록] 바로 위
    const prior=m.button;await page.locator('#diaryBody').press('End');await page.locator('#diaryBody').press('Enter');await page.locator('#diaryBody').press('A');const after=await measure(page);assert.equal(after.button.y,prior.y);assert.equal(after.button.bottom,prior.bottom);
    await page.screenshot({path:path.join(OUT,`${width}x${height}-${scale}.png`)});pass(`${width}x${height} scale ${scale}: button/recipients visible; fields and editor scroll internally; long messages stable`);
   }

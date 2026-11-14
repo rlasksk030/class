@@ -57,7 +57,7 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
  await reload();
 
  // ---------- Default board ----------
- ok('기본 배치 = 시간표 1-3열 · 아침활동/안내사항 4-10열(4:2행) · 급식 11-12열',L.equal(await current(),L.defaults())&&L.equal(await saved(),L.defaults()));
+ ok('기본 배치(A) = 시간표 1-3열 · 아침활동/안내사항 4-9열(4:2행) · 급식 10-12열',L.equal(await current(),L.defaults())&&L.equal(await saved(),L.defaults()));
  let g=await geometry();ok('기본 배치: 겹침·잘림 없음',!g.issues.length,JSON.stringify(g));
  ok('평소에는 격자선·빈 칸·편집 도구가 보이지 않음',!(await page.isVisible('#layoutToolbar'))&&!(await page.locator('main>.layout-cell').first().isVisible())&&!(await page.isVisible('.layout-hide')));
  await page.screenshot({path:path.join(OUT,'layout-default.png')});
@@ -76,7 +76,7 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
  await page.click('main>.meal .layout-hide');await frames();
  ok('급식 숨기기: 칸이 사라지고 빈 칸 표시',!(await page.isVisible('main>.meal'))&&(await page.locator('main>.layout-empty').count())===1&&(await page.textContent('#layoutTray')).includes('급식'));
  const emptyBox=await box('main>.layout-empty'),mainBox=await box('main');
- ok('빈 칸은 오른쪽 끝 두 열 전체',Math.abs(emptyBox.x+emptyBox.width-(mainBox.x+mainBox.width))<=1&&Math.abs(emptyBox.height-mainBox.height)<=1);
+ ok('빈 칸은 오른쪽 끝 세 열 전체',Math.abs(emptyBox.x+emptyBox.width-(mainBox.x+mainBox.width))<=1&&Math.abs(emptyBox.height-mainBox.height)<=1);
  // Stretch notices to the right edge with its side handle.
  const morningFont=await page.$eval('#morning',e=>parseFloat(e.style.fontSize));
  const handle=await box('main>.notices .layout-resize-e'),edge=await cell(12,6);
@@ -118,12 +118,12 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
 
  // ---------- Moving and swapping (mouse) ----------
  await page.click('#layoutToggle');
- let from=await head('timetable',2),to=await cell(12,3);
+ let from=await head('timetable',2),to=await cell(7,2);
  await press(from);await moveTo(from,to);
  ok('다른 칸 위로 끌면 맞바꾸기 미리보기',(await previewState())==='swap');
  await page.mouse.up();await frames();
  let l=await current();
- ok('시간표↔급식 자리 맞바꾸기(크기가 달라도)',at(l,'timetable')==='11,1,2,6,true'&&at(l,'meal')==='1,1,3,6,true',at(l,'timetable')+' / '+at(l,'meal'));
+ ok('시간표↔아침활동 자리 맞바꾸기(크기가 달라도)',at(l,'timetable')==='4,1,6,4,true'&&at(l,'morning')==='1,1,3,6,true',at(l,'timetable')+' / '+at(l,'morning'));
  g=await geometry();ok('맞바꾼 뒤 겹침·잘림 없음',!g.issues.length,JSON.stringify(g));
  await page.click('#layoutCancel');await frames();
  ok('[취소]로 맞바꾸기 되돌림',L.equal(await current(),L.defaults()));
@@ -131,9 +131,9 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
  await page.click('#layoutToggle');await page.click('main>.notices .layout-hide');
  from=await head('morning',5);to=await cell(5,3);
  await press(from);await moveTo(from,to);ok('빈 자리로 옮기기 미리보기',(await previewState())==='ok');await page.mouse.up();await frames();
- ok('아침활동을 아래 빈 자리로 옮김',at(await current(),'morning')==='4,3,7,4,true',at(await current(),'morning'));
+ ok('아침활동을 아래 빈 자리로 옮김',at(await current(),'morning')==='4,3,6,4,true',at(await current(),'morning'));
  await page.click('#layoutReset');await page.click('main>.meal .layout-hide');await frames();
- from=await head('timetable',2);to=await cell(11,2);
+ from=await head('timetable',2);to=await cell(10,2);
  await press(from);await moveTo(from,to);
  ok('칸 두 개에 걸치는 자리는 빨간색',(await previewState())==='bad');
  await page.mouse.up();await frames();
@@ -143,19 +143,19 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
  const cp={x:chip.x+chip.width/2,y:chip.y+chip.height/2};await press(cp);await moveTo(cp,slot);
  ok('숨긴 칸을 빈 칸으로 끌면 놓일 자리 미리보기',(await previewState())==='ok');
  await page.mouse.up();await frames();
- ok('보관함에서 끌어다 놓아 다시 표시',at(await current(),'meal')==='11,1,2,6,true'&&(await page.textContent('#layoutTray')).includes('없음'));
+ ok('보관함에서 끌어다 놓아 다시 표시',at(await current(),'meal')==='10,1,3,6,true'&&(await page.textContent('#layoutTray')).includes('없음'));
  await page.click('main>.meal .layout-hide');await page.click('#layoutTray [data-layout-show=meal]');await frames();
- ok('[다시 표시] 버튼',at(await current(),'meal')==='11,1,2,6,true');
+ ok('[+ 칸 이름] 다시 표시 버튼',at(await current(),'meal')==='10,1,3,6,true');
 
  // ---------- Keyboard ----------
  await page.focus('main>.notices');await page.keyboard.press('Shift+ArrowLeft');
- ok('Shift+←: 크기 줄이기',at(await current(),'notices')==='4,5,6,2,true');
+ ok('Shift+←: 크기 줄이기',at(await current(),'notices')==='4,5,5,2,true');
  await page.keyboard.press('ArrowRight');
- ok('→: 빈 자리로 한 칸 이동',at(await current(),'notices')==='5,5,6,2,true');
+ ok('→: 빈 자리로 한 칸 이동',at(await current(),'notices')==='5,5,5,2,true');
  await page.focus('main>.timetable');await page.keyboard.press('ArrowRight');
- ok('→: 옆 칸과 자리 맞바꾸기',at(await current(),'timetable')==='4,1,7,4,true'&&at(await current(),'morning')==='1,1,3,6,true');
+ ok('→: 옆 칸과 자리 맞바꾸기',at(await current(),'timetable')==='4,1,6,4,true'&&at(await current(),'morning')==='1,1,3,6,true');
  await page.keyboard.press('Shift+ArrowDown');
- ok('Shift+↓: 겹치면 크기 바꾸지 않음',at(await current(),'timetable')==='4,1,7,4,true'&&(await message()).includes('더 늘이거나'));
+ ok('Shift+↓: 겹치면 크기 바꾸지 않음',at(await current(),'timetable')==='4,1,6,4,true'&&(await message()).includes('더 늘이거나'));
  await page.keyboard.press('Escape');await frames();
  ok('Esc: 편집 취소',!(await page.isVisible('#layoutToolbar'))&&L.equal(await current(),L.defaults()));
 
@@ -170,25 +170,26 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await frames();
  await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:false});
  l=await current();
- ok('터치(pointerType touch)로 끌어 맞바꾸기',(await page.evaluate(()=>window.__pointerTypes)).includes('touch')&&at(l,'meal')==='1,1,3,6,true'&&at(l,'timetable')==='11,1,2,6,true',JSON.stringify(await page.evaluate(()=>window.__pointerTypes)));
+ ok('터치(pointerType touch)로 끌어 맞바꾸기',(await page.evaluate(()=>window.__pointerTypes)).includes('touch')&&at(l,'meal')==='1,1,3,6,true'&&at(l,'timetable')==='10,1,3,6,true',JSON.stringify(await page.evaluate(()=>window.__pointerTypes)));
  await page.click('#layoutDone');
 
  // ---------- Lock ----------
  await page.click('#screenLock');
  ok('대시보드 잠금 시 [배치 편집] 비활성',await page.isDisabled('#layoutToggle')&&(await page.evaluate(()=>{window.boardLayout.begin();return window.boardLayout.editing();}))===false);
  await page.click('#screenLock');await frames();
- await page.click('#layoutToggle');await page.click('main>.notices .layout-hide');await page.click('#screenLock');await frames();
+ await page.click('#layoutToggle');ok('편집 중에는 아래 막대 자리에 편집 막대만',await page.isVisible('#layoutToolbar')&&!(await page.isVisible('#screenLock'))&&!(await page.isVisible('.screen-tabs')));
+ await page.click('main>.notices .layout-hide');await page.evaluate(()=>document.getElementById('screenLock').click());await frames();
  ok('편집 중 잠그면 지금까지 배치를 저장하고 편집 종료',!(await page.evaluate(()=>window.boardLayout.editing()))&&at(await saved(),'notices').endsWith('false'));
  await page.click('#screenLock');await frames();
 
  // ---------- Backup and restore ----------
  const custom=await saved();
- await page.click('#settings');await page.click('#backupCreate');await page.waitForTimeout(800);
+ await page.click('#settings');await page.click('#settingsNavBackup');await page.click('#backupCreate');await page.waitForTimeout(800);
  const file=JSON.parse(fs.readFileSync(BACKUP,'utf8'));
  ok('백업 파일에 배치 포함',L.equal(file.data.boardLayout,custom));
  await page.keyboard.press('Escape');
  await setLayout(L.defaults());
- const restore=async name=>{await app.evaluate(({},f)=>{globalThis.__openFile=f;},name);await page.click('#settings');await page.click('#backupRestore');await page.waitForSelector('#backupConfirmDialog[open]');await page.click('#backupConfirmDialog button[value=restore]');await page.waitForTimeout(2000);await page.waitForLoadState('domcontentloaded');await page.waitForTimeout(800);};
+ const restore=async name=>{await app.evaluate(({},f)=>{globalThis.__openFile=f;},name);await page.click('#settings');await page.click('#settingsNavBackup');await page.click('#backupRestore');await page.waitForSelector('#backupConfirmDialog[open]');await page.click('#backupConfirmDialog button[value=restore]');await page.waitForTimeout(2000);await page.waitForLoadState('domcontentloaded');await page.waitForTimeout(800);};
  await restore(BACKUP);
  ok('백업 복원 후 배치 유지',L.equal(await saved(),custom)&&L.equal(await current(),custom));
  const oldData={morningDefault:'예전 백업',boardPreferences:{notices:{visible:false,scale:1}}};
@@ -260,7 +261,7 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
   ok(`${w}×${h} 편집 모드: 도구 막대·날씨 손잡이·[숨기기]가 머리글·카드 글자를 가리지 않음`,!r.cover.length,JSON.stringify(r.cover));
   ok(`${w}×${h} 편집 모드: 격자선은 카드 뒤(내용 한가운데에서 카드가 잡힘)`,!r.centre.length,JSON.stringify(r.centre));
   ok(`${w}×${h} 크기 손잡이·도구 막대 버튼: 잡는 영역 44×44 이상, 버튼 글씨 16px 이상`,!r.small.length,JSON.stringify(r.small));
-  ok(`${w}×${h} 기본 안내 한 줄 · 제목 줄 옮기기 표시`,r.lines===1&&r.message==='칸 제목 줄을 끌어 옮기고, 가장자리를 끌어 크기를 바꿉니다.'&&r.grip!=='none',JSON.stringify([r.lines,r.message,r.grip]));
+  ok(`${w}×${h} 기본 안내 한 줄 · 끌기 손잡이(점 6개) 표시`,r.lines===1&&r.message==='점 6개를 끌어 옮기고, 오른쪽 아래 모서리를 끌어 크기를 바꿉니다.'&&r.grip!=='none',JSON.stringify([r.lines,r.message,r.grip]));
   if(w===1440){
    await page.click('#layoutHelp');
    ok('[?]: 키보드·맞바꾸기 안내를 펼침',await page.isVisible('#layoutKeys')&&(await page.textContent('#layoutKeys')).includes('Shift+방향키')&&await page.getAttribute('#layoutHelp','aria-expanded')==='true');
@@ -278,6 +279,55 @@ const setLayout=async layout=>{await page.evaluate(l=>localStorage.setItem('boar
  ok('1100×760 네 칸 나란히(가장 좁은 칸) 편집 모드: [숨기기]가 제목·상태 글자를 가리지 않음',!narrow.cover.length,JSON.stringify(narrow.cover));
  ok('평소 화면에는 옮기기 표시 없음',await page.click('#layoutCancel').then(()=>page.evaluate(()=>getComputedStyle(document.querySelector('main>.card .cardhead'),'::before').content))==='none');
  await setLayout(L.defaults());
+
+ // ---------- Screen structure A / B (화면 설정): each keeps its own arrangement, also after a restart ----------
+ await page.setViewportSize({width:1440,height:900});await frames();
+ const aBefore=await saved();
+ await page.click('#screenSettings');await page.check('#screenDialog input[name=layoutStructure][value=B]');await frames();
+ ok('화면 구조 B: 왼쪽 정보 기둥 + B 기본 배치',await page.evaluate(()=>document.body.classList.contains('structure-b'))&&L.equal(await current(),L.defaults('B'))&&(await page.evaluate(()=>localStorage.getItem('layoutStructure')))==='"B"');
+ g=await geometry();ok('B 기본 배치: 겹침·잘림 없음',!g.issues.length,JSON.stringify(g));
+ const column=await box('body>header'),firstBoard=await box('main');ok('B: 정보 기둥은 칸 영역 왼쪽',column.x+column.width<=firstBoard.x+1&&column.height>firstBoard.height*.9);
+ ok('B: 기둥에 시계 · 날짜, 위쪽 머리글 없음',await page.isVisible('header #clock')&&await page.isVisible('header #date')&&Math.abs((await box('body>header')).y-(await box('main')).y)<=2);
+ await page.keyboard.press('Escape');
+ await page.click('#layoutToggle');await page.click('main>.meal .layout-hide');await page.click('#layoutDone');await frames();
+ ok('B에서 바꾼 배치는 B에만 저장',at(await page.evaluate(()=>JSON.parse(localStorage.getItem('boardLayoutB'))),'meal').endsWith('false')&&L.equal(await saved(),aBefore));
+ await page.click('#screenSettings');await page.check('#screenDialog input[name=layoutStructure][value=A]');await frames();await page.keyboard.press('Escape');
+ ok('A로 돌아오면 A 배치 그대로(급식 보임)',!(await page.evaluate(()=>document.body.classList.contains('structure-b')))&&L.equal(await current(),aBefore)&&await page.isVisible('main>.meal'));
+ await page.click('#screenSettings');await page.check('#screenDialog input[name=layoutStructure][value=B]');await page.keyboard.press('Escape');
+ await app.close();await launch();
+ ok('앱을 다시 켜도 구조 B와 B 배치 유지',await page.evaluate(()=>document.body.classList.contains('structure-b'))&&!(await page.isVisible('main>.meal'))&&L.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('boardLayout'))),aBefore));
+ for(const [w,h] of [[1100,760],[1920,1080]]){await page.setViewportSize({width:w,height:h});await frames();await page.waitForTimeout(200);g=await geometry();ok(`B ${w}×${h}: 겹침·잘림 없음`,!g.issues.length,JSON.stringify(g));}
+ await page.setViewportSize({width:1440,height:900});
+ await page.click('#settings');await page.click('#settingsNavRun');
+ const pipItems=await page.$$eval('[data-pip-option]',els=>els.map(e=>e.closest('label').textContent.trim()));
+ // 보완 지시서 2장: the PIP keeps all six items, including the next period.
+ ok('설정의 PIP 항목 6개 그대로(다음 교시 · 다음 과목 포함, 2열 × 3줄)',JSON.stringify(pipItems)===JSON.stringify(['현재 교시','현재 과목','다음 교시','다음 과목','현재 시각','타이머']),JSON.stringify(pipItems));
+ // Backup → restore keeps structure B and its own arrangement.
+ await page.click('#settingsNavBackup');await page.click('#backupCreate');await page.waitForTimeout(800);
+ const withB=JSON.parse(fs.readFileSync(BACKUP,'utf8'));ok('백업 파일에 구조 · B 배치 포함',withB.data.layoutStructure==='B'&&at(withB.data.boardLayoutB,'meal').endsWith('false'));
+ await page.keyboard.press('Escape');
+ await page.evaluate(d=>{localStorage.setItem('layoutStructure','"A"');localStorage.setItem('boardLayoutB',JSON.stringify(d));},L.defaults('B'));await reload();
+ await restore(BACKUP);
+ ok('백업 복원 후 구조 B와 B 배치 복원',await page.evaluate(()=>document.body.classList.contains('structure-b'))&&at(await page.evaluate(()=>JSON.parse(localStorage.getItem('boardLayoutB'))),'meal').endsWith('false'));
+ await app.evaluate(({},f)=>{globalThis.__openFile=null;});
+ await page.click('#screenSettings');await page.check('#screenDialog input[name=layoutStructure][value=A]');await page.keyboard.press('Escape');
+
+ // ---------- Fonts (보완 지시서 3-1) and the notices size (5-1) ----------
+ await setLayout(L.defaults());await page.setViewportSize({width:1440,height:900});await frames();
+ await page.evaluate(()=>{const d=Core.dateKey(),n=JSON.parse(localStorage.getItem('notes')||'{}');n[d]={...n[d],notices:'체육복 챙기기\n우유 급식 신청서 금요일까지 제출\n5교시 강당 이동'};localStorage.setItem('notes',JSON.stringify(n));});
+ await reload();await page.waitForTimeout(300);
+ const noticeSize=await page.$eval('#notices',e=>parseFloat(getComputedStyle(e).fontSize));
+ ok('안내사항 3줄 · 1440×900 기본 배치: 글씨 18px 이상',noticeSize>=18,noticeSize+'px');
+ const fontsUsed=await page.evaluate(()=>{const first=e=>getComputedStyle(e).fontFamily.split(',')[0].replace(/["']/g,'').trim();
+  return {clock:first(document.getElementById('clock')),title:first(document.querySelector('main>.timetable h2')),tab:first(document.querySelector('.screen-tabs button')),button:first(document.querySelector('[data-edit=morning],[data-empty-edit=morning]')),tool:first(document.querySelector('#settings .uc-tool__label')),
+   loaded:['Gowun Batang','Nanum Barun Gothic'].every(f=>document.fonts.check('16px "'+f+'"')&&document.fonts.check('bold 16px "'+f+'"'))};});
+ ok('주요 요소 글꼴은 고운바탕 · 나눔바른고딕이고 실제로 로드됨',fontsUsed.loaded&&fontsUsed.clock==='Gowun Batang'&&fontsUsed.title==='Gowun Batang'&&fontsUsed.tab==='Gowun Batang'&&fontsUsed.button==='Nanum Barun Gothic'&&fontsUsed.tool==='Nanum Barun Gothic',JSON.stringify(fontsUsed));
+ await page.click('#timerButton');const timerFont=await page.$eval('#timerDisplay',e=>getComputedStyle(e).fontFamily.split(',')[0].replace(/["']/g,'').trim());await page.keyboard.press('Escape');
+ ok('타이머 숫자도 고운바탕',timerFont==='Gowun Batang',timerFont);
+ const pipReady=app.waitForEvent('window');await page.evaluate(()=>desktop.openPip('timer'));const pip=await pipReady;await pip.waitForLoadState('domcontentloaded');await pip.waitForSelector('#pipTimerDisplay');await pip.evaluate(()=>document.fonts.ready);
+ const pipFont=await pip.evaluate(()=>({display:getComputedStyle(document.getElementById('pipTimerDisplay')).fontFamily.split(',')[0].replace(/["']/g,'').trim(),button:getComputedStyle(document.querySelector('.pip-timer-controls button')).fontFamily.split(',')[0].replace(/["']/g,'').trim(),loaded:document.fonts.check('bold 16px "Gowun Batang"')&&document.fonts.check('16px "Nanum Barun Gothic"')}));
+ ok('PIP 타이머 숫자 고운바탕 · 버튼 나눔바른고딕(시스템 글꼴 아님)',pipFont.display==='Gowun Batang'&&pipFont.button==='Nanum Barun Gothic'&&pipFont.loaded,JSON.stringify(pipFont));
+ await pip.close();
  ok('페이지 오류 없음',!errors.length,errors.join(' | '));
 }catch(e){console.error(e);results.push(false);}finally{if(app)await app.close().catch(()=>{});}
  const passed=results.filter(Boolean).length;

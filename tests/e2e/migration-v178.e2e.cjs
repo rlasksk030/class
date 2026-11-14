@@ -20,11 +20,11 @@ const storage=page=>page.evaluate(()=>Object.fromEntries(Object.keys(localStorag
  let {app,page}=await launch(OLD);
  ok('v1.7.8 실행',(await app.evaluate(({app})=>app.getVersion()))==='1.7.8');
  await page.waitForSelector('#settingsDialog[open]');await page.selectOption('#grade','6');await page.waitForTimeout(300);await page.fill('#classroom','1');await page.click('#settingsForm .primary');await page.waitForTimeout(500);
- await page.click('[data-edit=morning]');await page.fill('#editText','책 읽기 20분\n일기 쓰기');await page.click('#editForm .primary');
- await page.click('[data-edit=notices]');await page.fill('#editText','체육복 챙기기');await page.click('#editForm .primary');
+ await page.click('[data-edit=morning]:visible, [data-empty-edit=morning]:visible');await page.fill('#editText','책 읽기 20분\n일기 쓰기');await page.click('#editForm .primary');
+ await page.click('[data-edit=notices]:visible, [data-empty-edit=notices]:visible');await page.fill('#editText','체육복 챙기기');await page.click('#editForm .primary');
  await page.click('#screenSettings');await page.click('#openDdaySettings');await page.fill('#ddayTitle','수학여행');await page.fill('#ddayDate','2026-12-01');await page.click('#ddayForm .primary');await page.keyboard.press('Escape');
  await page.click('#screenSettings');await page.uncheck('[data-board-visible=meal]');const plus=page.locator('.preference-row',{has:page.locator('[data-board-visible=morning]')}).locator('button').nth(1);await plus.click();await plus.click();
- await page.click('#openPeriodSettings');await page.click('#periodForm .primary');await page.click('#enablePeriods');await page.keyboard.press('Escape');
+ await page.click('#openPeriodSettings');await page.click('#periodForm .primary');await page.check('#periodHighlight');await page.keyboard.press('Escape');
  await page.click('#resizeToggle');await page.focus('[data-resize=middle-column]');for(let i=0;i<3;i++)await page.keyboard.press('ArrowRight');await page.click('#resizeToggle');
  await page.click('#timerButton');await page.click('[data-minutes="3"]');await page.check('#timerSound');await page.keyboard.press('Escape');
  await page.click('#randomTab');await page.$eval('#rosterEditor',d=>d.open=true);await page.fill('#rosterText','김하늘\n이바다\n박구름\n최별\n정해');await page.click('#saveRoster');await page.$eval('#exclusionDetails',d=>d.open=true).catch(()=>{});await page.locator('#excludeList input').first().check();await page.click('#drawOne');await page.waitForTimeout(2500);
@@ -46,7 +46,7 @@ const storage=page=>page.evaluate(()=>Object.fromEntries(Object.keys(localStorag
  ok('기존 저장값 그대로 유지(초기화·재작성 없음)',changed.length===0,changed.length?'변경: '+changed.join(','):kept.length+'개 키 동일');
  ok('설정 대화상자 재요청 없음(학년/반 유지)',!(await page.$('#settingsDialog[open]'))&&(await page.textContent('#classTitle')).includes('6학년 1반'));
  ok('아침활동·안내사항 유지',(await page.innerText('#morning'))==='책 읽기 20분\n일기 쓰기'&&(await page.innerText('#notices'))==='체육복 챙기기');
- ok('새 제목 기능: 값 없으면 기본 제목',(await page.textContent('.morning h2')).trim()==='☀ 아침활동'&&(await page.textContent('.notices h2')).trim()==='✳ 안내사항'&&now.boardTitles===undefined);
+ ok('새 제목 기능: 값 없으면 기본 제목',(await page.textContent('.morning h2')).trim()==='아침활동'&&(await page.textContent('.notices h2')).trim()==='안내사항'&&await page.isVisible('.morning h2 .uc-ico--morning-sun')&&await page.isVisible('.notices h2 .uc-ico--notice-star')&&now.boardTitles===undefined);
  ok('D-Day 유지',(await page.textContent('#ddayBadge')).includes('수학여행'));
  ok('보드 숨김·글씨 크기 유지(숨긴 칸은 자리 비움)',await page.$eval('.meal',e=>getComputedStyle(e).display==='none')&&(await page.evaluate(()=>window.boardFontScales.morning))===1.2);
  // The first run turns the old hidden flag and column/row fractions into the grid layout.
@@ -58,7 +58,7 @@ const storage=page=>page.evaluate(()=>Object.fromEntries(Object.keys(localStorag
  await page.click('#whiteboardTab');ok('화이트보드 글상자·글씨 크기·판서 유지',(await page.inputValue('#whiteboardTextLayer textarea'))==='오늘 준비물: 색연필'&&JSON.parse(now.whiteboardContents).blocks[0].fontSize===40&&JSON.parse(now.whiteboardContents).strokes.length===1);
  ok('새 기능: 실행 취소/다시 실행 (기록 없음 상태로 시작)',await page.$eval('#whiteboardUndo',b=>b.disabled)&&await page.$eval('#whiteboardRedo',b=>b.disabled));
  await page.click('#diaryTab');ok('새 기능: 알림장 초안 기본값',(await page.inputValue('#diaryTitle')).endsWith('알림장')&&await page.isChecked('#diaryParents')&&await page.isChecked('#diaryStudents'));
- await page.click('#dashboardTab');await page.click('#settings');ok('새 기능: 설정의 백업/복원',await page.isVisible('#backupCreate')&&await page.isVisible('#backupRestore'));await page.keyboard.press('Escape');
+ await page.click('#dashboardTab');await page.click('#settings');await page.click('#settingsNavBackup');ok('새 기능: 설정의 백업/복원',await page.isVisible('#backupCreate')&&await page.isVisible('#backupRestore'));await page.keyboard.press('Escape');
  ok('새 기능: 제목 편집 버튼',await page.isVisible('.morning .board-title-edit'));
  await app.close();
  // Reopen once more: nothing drifts after a normal restart of the new version.

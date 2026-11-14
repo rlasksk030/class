@@ -45,3 +45,32 @@ test('raw profile data without a layout gets one from its own settings',()=>{
  assert.equal(JSON.parse(entries.find(([k])=>k==='boardLayout')[1]).items.notices.visible,false);
  assert.deepEqual(B.fromRaw({cache:'{}'}).entries,[],'nothing to restore stays empty');
 });
+test('screen structure and the structure-B layout are backed up, checked and restored',async()=>{
+ const a=Layout.hide(Layout.defaults('A'),'meal').layout,b=Layout.move(Layout.defaults('B'),'timetable',10,1).layout;
+ const s=sample();s.setItem('boardLayout',JSON.stringify(a));s.setItem('boardLayoutB',JSON.stringify(b));s.setItem('layoutStructure',JSON.stringify('B'));
+ const backup=await B.create(s.getItem);
+ assert.ok(backup.keys.includes('boardLayoutB')&&backup.keys.includes('layoutStructure'));
+ const {entries}=await B.parse(JSON.stringify(backup)),get=k=>JSON.parse(entries.find(([key])=>key===k)[1]);
+ assert.deepEqual([get('layoutStructure'),get('boardLayout'),get('boardLayoutB')],['B',a,b]);
+ // Unknown structures and broken B layouts are never exported and make a restore file invalid.
+ const bad=sample();bad.setItem('layoutStructure',JSON.stringify('C'));bad.setItem('boardLayoutB',JSON.stringify({...b,columns:3}));
+ assert.equal(B.collect(bad.getItem).layoutStructure,undefined);assert.equal(B.collect(bad.getItem).boardLayoutB,undefined);
+ await assert.rejects(B.parse(await signed({morningDefault:'책',layoutStructure:'C'})),{message:B.INVALID});
+ await assert.rejects(B.parse(await signed({morningDefault:'책',boardLayoutB:{...b,rows:3}})),{message:B.INVALID});
+});
+test('a backup from before the A/B structures opens in A, with structure B at its default board',async()=>{
+ const {entries}=await B.parse(await signed({morningDefault:'책 읽기',boardPreferences:{meal:{visible:false,scale:1}}}));
+ const get=k=>JSON.parse(entries.find(([key])=>key===k)[1]);
+ assert.equal(get('layoutStructure'),'A');
+ assert.equal(get('boardLayout').items.meal.visible,false,'A comes from the backup itself');
+ assert.ok(Layout.equal(get('boardLayoutB'),Layout.defaults('B')));
+});
+test('칠판 모드 settings are backed up, checked and default when an older backup has none',async()=>{
+ const s=sample();s.setItem('diaryChalkPreferences',JSON.stringify({fontScale:.75,showDate:false,extra:1}));
+ const backup=await B.create(s.getItem);assert.deepEqual(backup.data.diaryChalkPreferences,{fontScale:.75,showDate:false});
+ const {entries}=await B.parse(JSON.stringify(backup));assert.deepEqual(JSON.parse(entries.find(([k])=>k==='diaryChalkPreferences')[1]),{fontScale:.75,showDate:false});
+ for(const bad of [{fontScale:'big',showDate:true},{fontScale:null},{fontScale:9,showDate:true},[]]){const b=sample();b.setItem('diaryChalkPreferences',JSON.stringify(bad));assert.equal(B.collect(b.getItem).diaryChalkPreferences,undefined);}
+ await assert.rejects(B.parse(await signed({morningDefault:'책',diaryChalkPreferences:{fontScale:'x',showDate:true}})),{message:B.INVALID});
+ const old=await B.parse(await signed({morningDefault:'책'}));
+ assert.deepEqual(JSON.parse(old.entries.find(([k])=>k==='diaryChalkPreferences')[1]),{fontScale:null,showDate:true});
+});
