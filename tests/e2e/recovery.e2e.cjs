@@ -40,7 +40,7 @@ const USER={settings:{grade:'5',classroom:'3'},morningDefault:'복구 확인: �
  const before=hashDir(path.join(P('A'),'Local Storage'));
  ({app,page}=await launch(P('D'),P('A')));
  // A fresh profile opens the class settings dialog by itself; the recovery button is inside it.
- await page.waitForSelector('#settingsDialog[open]');ok('첫 실행 창에서도 백업 · 복원 묶음이 보임(옥구초판: 학교 · 학급 아래)',await page.isVisible('#settingsDialog.settings-no-class #recoveryFind')&&await page.isVisible('#settingsPaneSchool #grade')&&!(await page.$('#settingsDialog.settings-first')));await page.click('#recoveryFind');await page.waitForTimeout(500);await page.click('#recoveryFolder');await page.waitForSelector('#recoveryList .recovery-item');
+ await page.waitForSelector('#settingsDialog[open]');ok('첫 실행 창에서도 백업 · 복원 묶음이 보임(옥구초: 학교 · 학급 아래)',await page.isVisible('#settingsDialog.settings-no-class #recoveryFind')&&await page.isVisible('#settingsPaneSchool #grade')&&!(await page.$('#settingsDialog.settings-first')));await page.click('#recoveryFind');await page.waitForTimeout(500);await page.click('#recoveryFolder');await page.waitForSelector('#recoveryList .recovery-item');
  ok('다른 폴더(Local Storage) 읽기·요약',(await page.innerText('#recoveryList')).includes('선택한 폴더')&&(await page.innerText('#recoveryList')).includes('5학년 3반'));
  await page.click('#recoveryList .recovery-item button');await page.waitForSelector('#backupConfirmDialog[open]');await page.click('#backupConfirmDialog button[value=restore]');
  await page.waitForTimeout(2500);await page.waitForLoadState('domcontentloaded');await page.waitForTimeout(800);
