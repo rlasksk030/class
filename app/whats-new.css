@@ -1,0 +1,8 @@
+/* One-time "what's new" notice after an update. */
+.whats-new-dialog{width:560px;word-break:keep-all;overflow-wrap:anywhere}
+.whats-new-dialog h2{font-size:24px;margin:8px 0 14px}
+.whats-new-dialog h3{font-size:16px;margin:16px 0 6px;color:#354d74}
+.whats-new-dialog .whats-new-lead{font-size:16px;color:#354d74;font-weight:700;margin:0 0 8px}
+.whats-new-dialog ul{margin:0;padding-left:22px;font-size:17px;line-height:1.65;color:#303640}
+.whats-new-dialog li{margin:6px 0}
+.whats-new-dialog .actions button{font-size:16px;min-height:44px;padding:8px 22px}
