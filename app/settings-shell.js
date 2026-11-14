@@ -9,7 +9,8 @@
  const make=(tag,props={},parent)=>{const el=document.createElement(tag);Object.assign(el,props);if(parent)parent.append(el);return el;};
  const $=id=>document.getElementById(id);
  // 전국판 has the NEIS helper and the school search; 옥구초판 has a fixed school (I01).
- const nationwide=!!$('neisGuide'),edition=nationwide?'':'옥구초'; // On screen: 옥구초 shows '옥구초'; 전국판 shows no edition name at all.let appVersion='';
+ // On screen: 옥구초 shows '옥구초'; 전국판 shows no edition name at all.
+ const nationwide=!!$('neisGuide'),edition=nationwide?'':'옥구초';let appVersion='';
  const fixedSchool=()=>window.OKGU_SCHOOL?.SCHUL_NM||settings.school?.SCHUL_NM||'옥구초등학교';
  window.desktop?.updateState?.().then(s=>{appVersion=s?.currentVersion||'';refresh();}).catch(()=>{});
  const title=form.querySelector(':scope>h2'),eyebrow=form.querySelector(':scope>.eyebrow'),actions=form.querySelector(':scope>.actions');
