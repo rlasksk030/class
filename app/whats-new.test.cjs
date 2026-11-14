@@ -8,9 +8,15 @@ test('version compare',()=>{
 test('new install remembers the version and shows nothing',()=>{
  assert.deepEqual(W.decide({seen:null,current:'1.8.17',hasData:false,notes}),{show:[],remember:'1.8.17'});
 });
-test('first update with this feature shows only the current notes',()=>{
+test('first update with this feature shows every version with notes up to the current one',()=>{
  assert.deepEqual(W.decide({seen:null,current:'1.8.17',hasData:true,notes}).show,['1.8.17']);
- assert.deepEqual(W.decide({seen:null,current:'1.8.19',hasData:true,notes}).show,[],'no notes for this version');
+ assert.deepEqual(W.decide({seen:null,current:'1.8.19',hasData:true,notes}).show,['1.8.18','1.8.17'],'skipped versions with notes, newest first');
+ assert.deepEqual(W.decide({seen:null,current:'1.8.16',hasData:true,notes}).show,[],'no notes up to this version');
+});
+test('coming straight from a version before this notice (no lastSeenVersion) also shows the skipped notice',()=>{
+ const two={'1.8.16':{title:'design',items:['d']},'1.8.17':{title:'fix',items:['f']}};
+ assert.deepEqual(W.decide({seen:null,current:'1.8.17',hasData:true,notes:two}),{show:['1.8.17','1.8.16'],remember:'1.8.17'});
+ assert.deepEqual(W.decide({seen:'1.8.16',current:'1.8.17',hasData:true,notes:two}).show,['1.8.17'],'1.8.16 → 1.8.17 shows only the new one');
 });
 test('later updates show every skipped version with notes, newest first',()=>{
  assert.deepEqual(W.decide({seen:'1.8.17',current:'1.8.20',hasData:true,notes}).show,['1.8.20','1.8.18']);

@@ -38,8 +38,9 @@ const seen=page=>page.evaluate(()=>JSON.parse(localStorage.getItem('lastSeenVers
  ({app,page}=await launch(updated,'1.8.17'));
  await page.waitForFunction(()=>document.getElementById('whatsNewDialog')?.open===true,null,{timeout:15000});
  const shown=await page.evaluate(()=>({title:document.getElementById('whatsNewTitle').textContent,items:[...document.querySelectorAll('#whatsNewBody li')].map(li=>li.textContent)}));
- const expected=require('../../app/whats-new.js').NOTES['1.8.17'];
- assert.equal(shown.title,'우리 교실 1.8.17에서 달라진 점');assert.deepEqual(shown.items,expected.items);
+ // Without a remembered version (an update from before this notice) every version with notes up to this one is listed.
+ const W=require('../../app/whats-new.js'),expected=W.pending(null,'1.8.17').flatMap(v=>W.NOTES[v].items);
+ assert.equal(shown.title,'우리 교실 1.8.17에서 달라진 점');assert.deepEqual(shown.items,expected);
  pass('after update: notice lists this version\'s notes');
  await page.screenshot({path:path.join(OUT,'whats-new.png')});
  await page.click('#whatsNewClose');assert.equal(await open(page),false);assert.equal(await seen(page),'1.8.17');pass('[확인] closes it and remembers the version');
@@ -66,6 +67,31 @@ const seen=page=>page.evaluate(()=>JSON.parse(localStorage.getItem('lastSeenVers
  await page.waitForTimeout(2500);assert.equal(await open(page),false);
  await page.evaluate(()=>document.getElementById('settingsDialog').close());
  await page.waitForFunction(()=>document.getElementById('whatsNewDialog')?.open===true,null,{timeout:5000});pass('waits until another open dialog is closed');
+ await close();
+
+ // 5b. Another dialog stays open for more than 30 s (first-run class settings after an update from before this notice):
+ //     the notice waits with no time limit, is remembered only once it is on screen, and is not shown again.
+ const longWait=fs.mkdtempSync(path.join(OUT,'profile-whatsnew-longwait-'));
+ ({app,page}=await launch(longWait,'1.8.16'));
+ await page.evaluate(()=>{localStorage.removeItem('settings');localStorage.setItem('morningDefault',JSON.stringify('책 읽기'));localStorage.removeItem('lastSeenVersion');});
+ await close();
+ ({app,page}=await launch(longWait,'1.8.17'));
+ await page.waitForSelector('#settingsDialog[open]',{timeout:15000});
+ await page.waitForTimeout(31000);
+ assert.equal(await open(page),false,'notice must not cover the open settings dialog');
+ assert.equal(await page.evaluate(()=>document.getElementById('settingsDialog').open),true,'settings dialog still open after 31 s');
+ assert.equal(await seen(page),null,'nothing remembered while the notice is still waiting');
+ await page.click('#settingsDialog [data-close="settingsDialog"]');
+ await page.waitForFunction(()=>document.getElementById('whatsNewDialog')?.open===true,null,{timeout:5000});
+ assert.equal(await seen(page),'1.8.17','remembered once the notice is on screen');
+ pass('another dialog open for 31 s: notice appears after it closes, remembered only then');
+ await page.click('#whatsNewClose');assert.equal(await open(page),false);
+ await close();
+ ({app,page}=await launch(longWait,'1.8.17'));
+ await page.waitForSelector('#settingsDialog[open]',{timeout:15000});
+ await page.click('#settingsDialog [data-close="settingsDialog"]');
+ await page.waitForTimeout(2500);assert.equal(await open(page),false);assert.equal(await seen(page),'1.8.17');
+ pass('after it was seen once it does not appear again');
  await close();
 
  // 6. Version without notes: nothing shown, version still remembered.
