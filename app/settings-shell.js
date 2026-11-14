@@ -76,6 +76,9 @@
   schoolRow.classList.toggle('is-done',chosen);neisOpen.textContent=$('neisGuide')?.open?'도우미 닫기':'연결 도우미 열기';
   // The first-run card (I06) belongs to 전국판, which still has to pick a school.
   const first=nationwide&&!classDone;dialog.classList.toggle('settings-first',first);
+  // Before a class is saved (both editions) old data must be reachable right away: 옥구초판 shows
+  // 백업 · 복원 under 학교 · 학급 (전국판 does it in the first-run card above).
+  dialog.classList.toggle('settings-no-class',!classDone);
   title.textContent=first?'학교와 학급을 골라 주세요':'우리 교실 설정';
   const label=nationwide?(settings.school&&classDone?`${settings.school.SCHUL_NM} ${settings.grade}학년 ${settings.classroom}반 · ${edition}`:edition):`${fixedSchool()} · ${edition}`;
   sub.textContent=nationwide&&(dialog.dataset.pane==='School'||first)?edition+' · 학교와 학급을 고른 뒤 저장해 주세요':label;

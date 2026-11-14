@@ -674,6 +674,10 @@ body:is(.whiteboard-active,.random-active,.activity-active,.diary-active)>footer
 .settings-card--fixed .settings-row--class>.settings-row__label{display:none}
 .settings-card--fixed .settings-row--class .fields{gap:14px}
 .settings-card--fixed .settings-row--class .fields label{display:flex;flex-direction:column;gap:8px;font-size:15px;font-weight:700;color:var(--uc-text)}
+/* 옥구초판 첫 실행(학년 · 반 저장 전): 학교 · 학급 아래에 백업 · 복원 묶음도 보임 */
+#settingsDialog.settings-no-class:not(.settings-first)[data-pane="School"] #settingsPaneBackup{display:flex!important;margin-top:24px}
+#settingsDialog.settings-no-class:not(.settings-first)[data-pane="School"] #settingsPaneBackup>.settings-pane__title,
+#settingsDialog.settings-no-class:not(.settings-first)[data-pane="School"] #settingsPaneBackup>.update-settings{display:none}
 
 /* =========================================================
    4-1단계: 알림장 칠판 모드 (H05–H10) — 단색 칠판 + 얇은 나무 테두리 + 글씨만
