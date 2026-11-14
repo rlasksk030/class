@@ -35,7 +35,8 @@
  // 학교 · 학급: one card with three rows; the NEIS helper and the school search stay the same details elements.
  const card=make('div',{className:'settings-card'},school.pane);
  const row=(cls,parent=card)=>make('div',{className:'settings-row '+cls},parent);
- if(!nationwide){const fixed=row('settings-row--fixed'),fh=make('div',{className:'settings-row__head'},fixed);make('strong',{className:'settings-row__label',textContent:'학교'},fh);make('span',{className:'settings-fixed-school',textContent:fixedSchool()},fh);make('span',{className:'settings-row__state',textContent:'옥구초판은 학교가 정해져 있습니다'},fh);}
+ // 옥구초판 (I01): the fixed school is a grey line, then 학년 and 반 each with its own label (no card frame).
+ if(!nationwide){card.classList.add('settings-card--fixed');const fixed=row('settings-row--fixed'),fh=make('div',{className:'settings-row__head'},fixed);make('strong',{className:'settings-row__label',textContent:'학교'},fh);make('span',{className:'settings-fixed-school',textContent:fixedSchool()},fh);make('span',{className:'settings-row__state',textContent:'옥구초판은 학교가 정해져 있습니다.'},fh);}
  const neisRow=row('settings-row--neis'),neisHead=make('div',{className:'settings-row__head'},neisRow);
  const neisMark=make('span',{className:'settings-check'},neisHead),neisText=make('span',{className:'settings-row__text'},neisHead);
  make('strong',{textContent:'① NEIS 인증키'},neisText);const neisState=make('span',{className:'settings-row__state'},neisText);
