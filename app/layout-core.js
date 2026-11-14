@@ -4,13 +4,20 @@
 (function(root){
  const IDS=['timetable','morning','notices','meal'];
  const COLUMNS=12,ROWS=6,MIN={w:2,h:2},VERSION=1;
- // Closest to the previous fixed board: columns 21:61:18, rows 1.45:.65.
- const DEFAULT={timetable:{x:1,y:1,w:3,h:6},morning:{x:4,y:1,w:7,h:4},notices:{x:4,y:5,w:7,h:2},meal:{x:11,y:1,w:2,h:6}};
+ // Two screen structures (화면 설정): A = class information in a top header, B = in a left column.
+ // Each structure keeps its own arrangement ('boardLayout' for A, as before; 'boardLayoutB' for B).
+ const STRUCTURES=['A','B'],STORAGE={A:'boardLayout',B:'boardLayoutB'};
+ const DEFAULTS={
+  A:{timetable:{x:1,y:1,w:3,h:6},morning:{x:4,y:1,w:6,h:4},notices:{x:4,y:5,w:6,h:2},meal:{x:10,y:1,w:3,h:6}},
+  B:{timetable:{x:1,y:1,w:3,h:6},morning:{x:4,y:1,w:9,h:3},notices:{x:4,y:4,w:5,h:3},meal:{x:9,y:4,w:4,h:3}}
+ };
+ const DEFAULT=DEFAULTS.A;
+ const structureOf=value=>STRUCTURES.includes(value)?value:'A';
  const isObject=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
  const clamp=(n,min,max)=>Math.min(Math.max(n,min),max);
  const rect=r=>({x:r.x,y:r.y,w:r.w,h:r.h});
 
- function defaults(){return {version:VERSION,columns:COLUMNS,rows:ROWS,items:Object.fromEntries(IDS.map(id=>[id,{...DEFAULT[id],visible:true}]))};}
+ function defaults(structure){const base=DEFAULTS[structureOf(structure)];return {version:VERSION,columns:COLUMNS,rows:ROWS,items:Object.fromEntries(IDS.map(id=>[id,{...base[id],visible:true}]))};}
  function clone(layout){return {version:VERSION,columns:COLUMNS,rows:ROWS,items:Object.fromEntries(IDS.map(id=>[id,{...rect(layout.items[id]),visible:layout.items[id].visible}]))};}
  function inBounds(r){return [r.x,r.y,r.w,r.h].every(Number.isInteger)&&r.x>=1&&r.y>=1&&r.w>=MIN.w&&r.h>=MIN.h&&r.x+r.w-1<=COLUMNS&&r.y+r.h-1<=ROWS;}
  const overlaps=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;
@@ -63,12 +70,14 @@
   return layout;
  }
 
- // Saved value first; with nothing saved, carry the old settings over; anything broken
- // falls back to the default board so the dashboard always renders.
- function resolve(saved,legacy){
-  if(saved===undefined||saved===null)return {layout:migrate(legacy),source:'migrated'};
+ // Saved value first; with nothing saved, carry the old settings over (structure A only: the
+ // old settings describe the top-header board); anything broken falls back to the default
+ // board of that structure so the dashboard always renders.
+ function resolve(saved,legacy,structure){
+  const s=structureOf(structure);
+  if(saved===undefined||saved===null)return s==='A'?{layout:migrate(legacy),source:'migrated'}:{layout:defaults(s),source:'default'};
   if(isValid(saved))return {layout:clone(saved),source:'saved'};
-  return {layout:defaults(),source:'invalid'};
+  return {layout:defaults(s),source:'invalid'};
  }
 
  const result=(ok,layout,extra={})=>({ok,layout,...extra});
@@ -212,6 +221,6 @@
 
  const equal=(a,b)=>IDS.every(id=>['x','y','w','h','visible'].every(k=>a.items[id][k]===b.items[id][k]));
 
- const api={IDS,COLUMNS,ROWS,MIN,VERSION,DEFAULT,defaults,clone,inBounds,overlaps,validate,isValid,migrate,resolve,swap,move,drop,nudge,resize,hide,show,placeAt,fill,emptyRegions,equal};
+ const api={IDS,COLUMNS,ROWS,MIN,VERSION,DEFAULT,DEFAULTS,STRUCTURES,STORAGE,structureOf,defaults,clone,inBounds,overlaps,validate,isValid,migrate,resolve,swap,move,drop,nudge,resize,hide,show,placeAt,fill,emptyRegions,equal};
  if(typeof module!=='undefined')module.exports=api;else root.LayoutCore=api;
 })(globalThis);

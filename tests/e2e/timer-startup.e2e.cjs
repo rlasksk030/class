@@ -11,12 +11,12 @@ async function launch(){
 }
 async function preset(seconds){if(!await page.locator('#timerDialog').evaluate(e=>e.open))await page.click('#timerButton');await page.fill('#timerMinutes',String(Math.floor(seconds/60)));await page.fill('#timerSeconds',String(seconds%60));await page.click('#timerSet');}
 async function finished(){await preset(1);await page.check('#timerSound');await page.click('#timerStart');await page.waitForFunction(()=>classroomTools.timer().state==='finished');}
-async function idle(){await page.waitForFunction(()=>classroomTools.timer().state==='idle');const t=await state();assert.equal(t.remaining,t.duration);assert.equal(t.deadline,null);assert.equal(await page.textContent('#timerButton'),'⏱ 타이머');assert.equal(await page.isVisible('#timerFinished'),false);}
+async function idle(){await page.waitForFunction(()=>classroomTools.timer().state==='idle');const t=await state();assert.equal(t.remaining,t.duration);assert.equal(t.deadline,null);assert.equal(await page.textContent('#timerButton'),'타이머');assert.equal(await page.isVisible('#timerFinished'),false);}
 (async()=>{try{
  await launch();
  const registrations=async()=>app.evaluate(async({shell},module)=>process.mainModule.require(module).inventory(shell,process.env),path.join(ROOT,'app/startup-manager.cjs'));
  const startupBefore=process.platform==='win32'?await registrations():[];
- await preset(10);await page.click('#timerStart');const deadline=(await state()).deadline;await page.click('#timerDialog .close-extra');await page.waitForTimeout(1200);assert.equal((await state()).state,'running');assert.equal((await state()).deadline,deadline);assert.match(await page.textContent('#timerButton'),/⏱ 00:0[89]/);pass('running close preserves deadline and countdown');
+ await preset(10);await page.click('#timerStart');const deadline=(await state()).deadline;await page.click('#timerDialog .close-extra');await page.waitForTimeout(1200);assert.equal((await state()).state,'running');assert.equal((await state()).deadline,deadline);assert.match(await page.textContent('#timerButton'),/^00:0[89]$/);pass('running close preserves deadline and countdown');
  await page.click('#timerButton');await page.click('#timerPause');const paused=await state();await page.keyboard.press('Escape');await page.waitForTimeout(400);assert.deepEqual(await state(),paused);await page.click('#timerButton');assert.equal(await page.textContent('#timerStart'),'계속하기');pass('paused Escape preserves remaining time and resume');
  await page.click('#timerReset');await page.keyboard.press('Escape');await idle();
  // Exercise the completion/close path in a short renderer, independent of host work area.
@@ -33,7 +33,7 @@ async function idle(){await page.waitForFunction(()=>classroomTools.timer().stat
  await app.close();await launch();await idle();pass('acknowledged completion remains idle after relaunch');
  // Keep an unacknowledged completion visible across reload instead of silently discarding the alert.
  await finished();await page.reload();await page.waitForLoadState('domcontentloaded');assert.equal((await state()).state,'finished');assert.ok(await page.isVisible('#timerFinished'));await page.click('#timerFinished button');await idle();pass('unacknowledged alert survives reload, acknowledgement is persisted');
- await preset(20);await page.click('#timerStart');await page.keyboard.press('Escape');await page.evaluate(()=>desktop.openPip('dashboard'));let pip;for(let i=0;i<50;i++){pip=app.windows().find(p=>p.url().endsWith('/pip.html'));if(pip)break;await page.waitForTimeout(100);}assert.ok(pip,'PIP renderer opened');await pip.waitForSelector('.pip-timer');assert.match(await pip.textContent('.pip-timer'),/⏱ 00:/);pass('PIP running timer visible');
+ await preset(20);await page.click('#timerStart');await page.keyboard.press('Escape');await page.evaluate(()=>desktop.openPip('dashboard'));let pip;for(let i=0;i<50;i++){pip=app.windows().find(p=>p.url().endsWith('/pip.html'));if(pip)break;await page.waitForTimeout(100);}assert.ok(pip,'PIP renderer opened');await pip.waitForSelector('.pip-timer');assert.match(await pip.textContent('.pip-timer'),/^00:/);pass('PIP running timer visible');
  await page.click('#timerButton');await page.click('#timerPause');await page.keyboard.press('Escape');await pip.waitForFunction(()=>document.querySelector('.pip-timer')?.textContent.includes('일시정지'));pass('PIP paused timer preserved');
  await finished();await page.click('#timerFinished button');await idle();await pip.waitForFunction(()=>!document.querySelector('.pip-timer'));pass('PIP completion clears after acknowledgement');
  // Wait for the native closed event, not merely Playwright's renderer-close notification.

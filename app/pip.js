@@ -9,19 +9,21 @@ function el(tag,text,parent){const node=document.createElement(tag);if(text!==un
 function button(text,parent,action){const node=el('button',text,parent);node.type='button';node.onclick=action;return node;}
 function update(data){if(!data?.state)return;const changed=kind!==data.kind;kind=data.kind;state=data.state;const relevant=state[kind],next=JSON.stringify(relevant);if(!changed&&signature===next)return;signature=next;
  if(changed)resizeContent();
- title.textContent={dashboard:'우리교실',activity:'활동완료',random:'랜덤 뽑기',whiteboard:'화이트보드',timer:'타이머'}[kind];
- document.getElementById('expand').textContent=kind==='timer'?'시간 설정':'↗ 크게 보기';
+ title.textContent={dashboard:'우리 교실',activity:'활동완료',random:'랜덤 뽑기',whiteboard:'화이트보드',timer:'타이머'}[kind];document.body.dataset.kind=kind;document.getElementById('pipBarInfo').textContent='';
+ document.getElementById('expand').textContent=kind==='timer'?'시간 설정':'크게 보기';
  if(kind==='whiteboard'){renderBoard(relevant,changed);return;}
- if(changed||!['dashboard','activity','timer'].includes(kind))root.replaceChildren();boardLayer=null;boardNodes.clear();
+ if(changed){root.replaceChildren();document.getElementById('pipActivityTitle')?.remove();}else if(!['dashboard','activity','timer'].includes(kind))root.replaceChildren();boardLayer=null;boardNodes.clear();
  if(kind==='dashboard'){
-  for(const cls of ['clock','current','next'])if(!root.querySelector('.'+cls))el('div','',root).className=cls;
+  if(!root.querySelector('.current')){el('div','',root).className='current';el('div','',root).className='next';const foot=el('div','',root);foot.className='pip-foot';el('div','',foot).className='clock';}
   const options=relevant.options||{},visible=key=>options[key]!==false;
   const lesson=(which)=>[visible(which+'Period')&&relevant[which+'Period']?relevant[which+'Period']+'교시':'',visible(which+'Subject')?relevant[which+'Subject']:''].filter(Boolean).join(' · ');
-  const clock=root.querySelector('.clock'),current=root.querySelector('.current'),next=root.querySelector('.next');
+  const clock=root.querySelector('.clock'),current=root.querySelector('.current'),next=root.querySelector('.next'),foot=root.querySelector('.pip-foot');
   clock.hidden=!visible('time');clock.textContent=relevant.time;
   current.hidden=!visible('currentPeriod')&&!visible('currentSubject');current.textContent=lesson('current')||(relevant.scheduleSet?'지금은 쉬는 시간':'교시 시간을 설정해 주세요');
+  // J01 (보완 지시서 2장): the next period stays in the PIP, as a smaller secondary line.
   next.hidden=!visible('nextPeriod')&&!visible('nextSubject');next.textContent=lesson('next')?'다음 '+lesson('next'):'다음 수업 없음';
-  let timer=root.querySelector('.pip-timer');if(relevant.timer&&visible('timer')){if(!timer){timer=button('',root,()=>command({type:'timer'}));timer.className='pip-timer';}timer.textContent='⏱ '+relevant.timer+(relevant.timerState==='paused'?' · 일시정지':'');}else timer?.remove();
+  let timer=root.querySelector('.pip-timer');if(relevant.timer&&visible('timer')){if(!timer){timer=button('',foot,()=>command({type:'timer'}));timer.className='pip-timer';}timer.textContent=relevant.timer+(relevant.timerState==='paused'?' · 일시정지':'');timer.setAttribute('aria-label','타이머 '+timer.textContent);}else timer?.remove();
+  foot.hidden=clock.hidden&&!root.querySelector('.pip-timer');
  }else if(kind==='timer'){
   let wrap=root.querySelector('.timer-pip');
   if(!wrap){
@@ -39,7 +41,7 @@ function update(data){if(!data?.state)return;const changed=kind!==data.kind;kind
   wrap.querySelector('#pipTimerDisplay').textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
   const message=wrap.querySelector('#pipTimerMessage'),label={idle:'시작을 눌러 주세요',running:'진행 중',paused:'일시정지',finished:'시간이 다 되었습니다!'}[relevant.state];
   if(message.textContent!==label)message.textContent=label;
-  const start=wrap.querySelector('[data-timer-action="start"]');start.disabled=relevant.state==='running';start.textContent=relevant.state==='paused'?'계속하기':'시작';
+  const start=wrap.querySelector('[data-timer-action="start"]');start.disabled=relevant.state==='running';start.classList.toggle('primary',relevant.state!=='running');wrap.querySelector('[data-timer-action="pause"]').classList.toggle('primary',relevant.state==='running');start.textContent=relevant.state==='paused'?'계속하기':'시작';
   wrap.querySelector('[data-timer-action="pause"]').disabled=relevant.state!=='running';
   wrap.querySelector('[data-timer-action="pause"]').hidden=relevant.state==='finished';
   wrap.querySelector('#pipTimerDismiss').hidden=relevant.state!=='finished';
@@ -52,26 +54,28 @@ function update(data){if(!data?.state)return;const changed=kind!==data.kind;kind
    input.oninput=()=>{if(!composingActivityTitle)sendTitle();};
    input.onblur=()=>{if(composingActivityTitle){composingActivityTitle=false;sendTitle();}};
    el('div',undefined,wrap).className='pip-activity-body';
+   // J04: the activity name sits in the title bar (still editable, as before).
+   document.getElementById('pipBarInfo').before(input);
   }
-  const input=wrap.querySelector('input');
+  const input=document.getElementById('pipActivityTitle');
   if(activityTitleKey!==relevant.key){activityTitleKey=relevant.key;pendingActivityTitle=null;composingActivityTitle=false;input.value=relevant.title||'';}
   if(pendingActivityTitle===relevant.title)pendingActivityTitle=null;
   if(!composingActivityTitle&&pendingActivityTitle===null&&input.value!==relevant.title)input.value=relevant.title||'';
   wrap=wrap.querySelector('.pip-activity-body');wrap.replaceChildren();
   const done=new Set(relevant.done),count=relevant.students.filter(s=>done.has(s.id)).length;
-  el('div',`미완료 ${relevant.students.length-count}명 | 완료 ${count}명`,wrap).className='pip-counts';
+  const info=document.getElementById('pipBarInfo');info.replaceChildren();if(relevant.students.length){el('b',String(count),info);info.append(` / ${relevant.students.length}명`);}
   if(relevant.students.length&&count===relevant.students.length)el('div','✓ 모두 완료했어요!',wrap).className='all-done';
   if(!relevant.students.length)el('p','랜덤 뽑기에서 학급 명단을 등록해 주세요.',wrap).className='hint';
-  const cols=el('div',undefined,wrap);cols.className='pip-columns';
-  for(const finished of [false,true]){const col=el('section',undefined,cols);col.className='pip-column'+(finished?' complete':'');el('h2',finished?'완료':'미완료',col);const cards=el('div',undefined,col);cards.className='pip-cards';
-   for(const student of relevant.students.filter(s=>done.has(s.id)===finished)){const b=button(student.name+(finished?' ✓':''),cards,()=>command({type:'activity-toggle',id:student.id,key:relevant.key}));b.dataset.studentId=student.id;}
-  }
+  // Pressing a name never moves it: the roster order stays, only its look changes.
+  const cards=el('div',undefined,wrap);cards.className='pip-cards';
+  for(const student of relevant.students){const finished=done.has(student.id),b=button(student.name,cards,()=>command({type:'activity-toggle',id:student.id,key:relevant.key}));b.dataset.studentId=student.id;b.classList.toggle('is-done',finished);b.setAttribute('aria-pressed',String(finished));}
  }else if(kind==='random'){
   const wrap=el('div',undefined,root);wrap.className='random-pip';el('div',relevant.result||'누가 뽑힐까요?',wrap).className='random-result';
-  const draw=button('한 명 뽑기',wrap,()=>command({type:'random-draw',key:relevant.key}));draw.className='primary';draw.disabled=relevant.busy||!relevant.remaining;
-  el('p',`남은 학생 ${relevant.remaining}명`,wrap);
-  const repeat=button('중복 없이 뽑기 '+(relevant.noRepeat?'ON':'OFF'),wrap,()=>command({type:'random-repeat',key:relevant.key,value:!relevant.noRepeat}));repeat.setAttribute('aria-pressed',String(relevant.noRepeat));
+  el('p',`남은 학생 ${relevant.remaining}명`,wrap).className='random-left';
   el('p',relevant.status,wrap).className='hint';
+  const row=el('div',undefined,wrap);row.className='random-pip-row';
+  const repeat=button(relevant.noRepeat?'✓ 중복 없이':'중복 없이',row,()=>command({type:'random-repeat',key:relevant.key,value:!relevant.noRepeat}));repeat.className='random-repeat';repeat.setAttribute('aria-pressed',String(relevant.noRepeat));repeat.setAttribute('aria-label','한 바퀴 돌 때까지 중복 없이 뽑기 '+(relevant.noRepeat?'켜짐':'꺼짐'));
+  const draw=button('한 명 뽑기',row,()=>command({type:'random-draw',key:relevant.key}));draw.className='primary';draw.disabled=relevant.busy||!relevant.remaining;
  }
 }
 function renderBoard(board,reset){

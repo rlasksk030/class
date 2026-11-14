@@ -25,7 +25,7 @@ main>.layout-preview[data-state="bad"]{border-color:#d23c3c;background:#d23c3c24
 .layout-editing main>.card .cardhead{cursor:grab;touch-action:none}
 /* Move grip: six dots in the title row's left padding (drawn with CSS, no symbol font needed),
    and a slightly darker title row under the pointer. */
-.layout-editing main>.card .cardhead::before{content:'';position:absolute;left:5px;top:50%;width:10px;height:15px;transform:translateY(-50%);background:radial-gradient(circle,currentColor 1.5px,transparent 1.8px) 0 0/5px 5px;opacity:.5;pointer-events:none}
+.layout-editing main>.card .cardhead::before{content:'';position:absolute;left:12px;top:50%;width:22px;height:22px;transform:translateY(-50%);background:currentColor;opacity:.75;-webkit-mask:url(ui/icons/grip.svg) center/contain no-repeat;mask:url(ui/icons/grip.svg) center/contain no-repeat;pointer-events:none}
 .layout-editing main>.card .cardhead:hover{box-shadow:inset 0 0 0 100vmax #18233512}
 .layout-editing main>.card .cardhead:hover::before{opacity:.85}
 .layout-dragging-active,.layout-dragging-active *{cursor:grabbing!important}
@@ -51,8 +51,8 @@ main>.layout-preview[data-state="bad"]{border-color:#d23c3c;background:#d23c3c24
 .layout-resize-se>.handle-mark{right:8px;bottom:8px;width:14px;height:14px;border-radius:0 0 7px 0;background:none;border:solid #93a4bf;border-width:0 4px 4px 0}
 .layout-editing .layout-resize-se:hover>.handle-mark,.layout-editing .layout-resize-se:focus-visible>.handle-mark{background:none;border-color:#59677c}
 
-/* Its own body grid row between the header and the boards while editing (layout-ui.js inserts it there). */
-body.layout-editing{grid-template-rows:auto auto minmax(0,1fr) auto}
+/* The edit bar takes the place of the bottom tool bar (layout-ui.js puts it in .app-bar). */
+
 .layout-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;min-width:0;padding:8px 12px;background:#f6f8fb;border:1px solid #cbd4e0;border-radius:12px}
 .layout-toolbar[hidden]{display:none}
 .layout-heading{font-size:17px;color:#354d74;white-space:nowrap}
@@ -71,7 +71,7 @@ body.layout-editing{grid-template-rows:auto auto minmax(0,1fr) auto}
 .layout-keys{flex-basis:100%;margin:0;font-size:15px;line-height:1.5;color:#4b5563}
 .layout-keys[hidden]{display:none}
 .layout-ghost{position:fixed;z-index:50;pointer-events:none;transform:translate(-50%,-120%);padding:8px 14px;border:2px solid #2f6fd6;border-radius:99px;background:#fff;color:#1f4f9e;font-weight:700;box-shadow:0 6px 20px #18233533}
-.layout-editing .size-controls{visibility:hidden}
+
 /* Weather size: a dashed frame just outside the weather card, with the handles on the frame
    (outside the text, clear of the clock and the header buttons). */
 .layout-editing header>.weather{outline:2px dashed #9aaecb;outline-offset:6px}

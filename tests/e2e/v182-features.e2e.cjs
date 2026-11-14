@@ -16,6 +16,9 @@ const refresh=async page=>{await page.click('#refresh');await page.waitForTimeou
  fs.rmSync(PROFILE,{recursive:true,force:true});fs.rmSync(BK,{force:true});
  let {app,page}=await launch();
  await page.evaluate(()=>{localStorage.setItem('settings',JSON.stringify({grade:'6',classroom:'1',apiKey:'SECRET-KEY-123'}));localStorage.setItem('morningDefault',JSON.stringify('책 읽기 20분'));localStorage.setItem('boardTitles',JSON.stringify({morning:'오늘 할 일'}));localStorage.setItem('dashboardLocked','false');localStorage.setItem('ddayEvents',JSON.stringify([{title:'수학여행',date:'2026-12-01'}]));localStorage.setItem('lastLocation',JSON.stringify({lat:35.9,lon:126.7}));localStorage.setItem('boardSizes',JSON.stringify({row:.6}));});
+ // This profile already saw the running version's '새로워진 점' notice (whats-new.e2e tests the notice itself),
+ // so it cannot open over the whiteboard or dialogs in the middle of these checks.
+ await page.evaluate(v=>localStorage.setItem('lastSeenVersion',JSON.stringify(v)),require(path.join(ROOT,'app/package.json')).version);
  await neis(app,'normal');await page.reload();await page.waitForTimeout(900);
  // ---------- 시간표/급식 상태 ----------
  ok('A. 정상 수업일 시간표',(await txt(page,'timetable')).includes('국어')&&(await txt(page,'timetable')).includes('체육'));
@@ -89,7 +92,7 @@ const refresh=async page=>{await page.click('#refresh');await page.waitForTimeou
  await page.keyboard.press('Control+z');ok('WB. 대시보드에서는 단축키 무시',JSON.stringify(await blocks())===JSON.stringify(persisted));
  // ---------- 백업 / 복원 ----------
  await app.evaluate(({dialog},file)=>{dialog.showSaveDialog=async()=>({canceled:false,filePath:file});dialog.showOpenDialog=async()=>({canceled:false,filePaths:[globalThis.__openFile||file]});},BK);
- await page.click('#settings');await page.waitForTimeout(300);await page.screenshot({path:OUT+'/v2-05-settings.png'});
+ await page.click('#settings');await page.click('#settingsNavBackup');await page.waitForTimeout(300);await page.screenshot({path:OUT+'/v2-05-settings.png'});
  await page.click('#backupCreate');await page.waitForTimeout(700);
  ok('BK. 백업 완료 메시지',(await txt(page,'backupStatus')).startsWith('백업이 완료되었습니다.'),await txt(page,'backupStatus'));
  const raw=fs.readFileSync(BK,'utf8'),bk=JSON.parse(raw);

@@ -58,7 +58,7 @@ test('timer actions require the current timer PIP sender, kind and a supported a
 
 // Small DOM adapter for renderer behavior; actual layout/native-window checks live in E2E.
 class Element{
- constructor(tag='div'){this.tagName=tag;this.children=[];this.dataset={};this.style={};this.attributes={};this.textContent='';}
+ constructor(tag='div'){this.tagName=tag;this.children=[];this.dataset={};this.style={};this.attributes={};this.textContent='';const el=this,names=()=>(el.className||'').split(' ').filter(Boolean);this.classList={contains:c=>names().includes(c),add:c=>{if(!names().includes(c))el.className=[...names(),c].join(' ');},remove:c=>{el.className=names().filter(n=>n!==c).join(' ');},toggle:(c,on=!names().includes(c))=>{on?el.classList.add(c):el.classList.remove(c);return on;}};}
  append(...nodes){for(const n of nodes){this.children.push(n);if(typeof n==='object')n.parent=this;}}
  before(){} after(){} setAttribute(k,v){this.attributes[k]=v;}
  replaceChildren(...nodes){this.children=[];this.append(...nodes);}
@@ -68,9 +68,10 @@ class Element{
  click(){if(!this.disabled)this.onclick?.();}
 }
 function pipRenderer(){
- const nodes=Object.fromEntries(['content','pipTitle','expand'].map(id=>[id,Object.assign(new Element(),{id})]));
+ // pip.html: title bar (title, bar info, [크게 보기]) and the content area; body carries data-kind.
+ const nodes=Object.fromEntries(['content','pipTitle','pipBarInfo','expand'].map(id=>[id,Object.assign(new Element(),{id})]));
  const commands=[];let listener;
- const document={getElementById:id=>nodes[id],createElement:tag=>new Element(tag),documentElement:new Element()};
+ const document={getElementById:id=>nodes[id],createElement:tag=>new Element(tag),documentElement:new Element(),body:new Element()};
  const window={addEventListener(){},pip:{command:c=>commands.push(c),onState:fn=>listener=fn,get:()=>Promise.resolve(null)}};
  vm.runInNewContext(source('pip.js'),{document,window,innerWidth:400,innerHeight:300});
  return {nodes,commands,update:(state,seconds=60)=>listener({kind:'timer',state:{timer:{state,seconds}}}),listener:()=>listener};
@@ -78,6 +79,8 @@ function pipRenderer(){
 
 test('timer PIP renders all states, preserves buttons during ticks and sends controls',()=>{
  const p=pipRenderer();p.update('idle');const root=p.nodes.content;
+ const find0=q=>{const walk=n=>n.matches?.(q)?n:(n.children||[]).map(walk).find(Boolean);return walk(root);};
+ assert.ok(find0('[data-timer-action="start"]').classList.contains('primary')&&!find0('[data-timer-action="pause"]').classList.contains('primary'));
  const find=q=>root.querySelector(q),start=find('[data-timer-action="start"]');
  assert.equal(p.nodes.pipTitle.textContent,'타이머');assert.equal(p.nodes.expand.textContent,'시간 설정');
  assert.equal(find('#pipTimerDisplay').textContent,'01:00');assert.equal(find('[data-timer-action="pause"]').disabled,true);
@@ -91,14 +94,14 @@ test('timer PIP renders all states, preserves buttons during ticks and sends con
  assert.equal(find('#pipTimerDismiss').hidden,false);assert.equal(find('[data-timer-action="pause"]').hidden,true);find('#pipTimerDismiss').click();assert.equal(p.commands.at(-1).action,'dismiss');
  p.update('idle',10859);assert.equal(find('#pipTimerDisplay').textContent,'180:59');assert.equal(find('#pipTimerDismiss').hidden,true);
  p.nodes.expand.click();assert.equal(p.commands.at(-1).type,'expand');
- p.listener()({kind:'dashboard',state:{dashboard:{options:{},time:'12:00'}}});assert.equal(root.querySelector('.timer-pip'),null);assert.equal(p.nodes.expand.textContent,'↗ 크게 보기');
+ p.listener()({kind:'dashboard',state:{dashboard:{options:{},time:'12:00'}}});assert.equal(root.querySelector('.timer-pip'),null);assert.equal(p.nodes.expand.textContent,'크게 보기');
  p.update('paused',9);assert.equal(find('#pipTimerDisplay').textContent,'00:09');
 });
 
 test('main renderer publishes the same timer to both PIPs and routes expand to the timer dialog',()=>{
  const forms=new Element(),actions=Object.assign(new Element(),{className:'actions'});forms.append(actions);
  const timerButton=new Element();let openedTimer=0;timerButton.onclick=()=>openedTimer++;
- const targets=Object.fromEntries(['header nav','.random-heading','.whiteboard-toolbar','.activity-heading','#timerDialog .extras-heading'].map(q=>[q,new Element()]));
+ const targets=Object.fromEntries(['.app-bar__right','.random-heading','.whiteboard-toolbar','.activity-heading','#timerDialog .extras-heading'].map(q=>[q,new Element()]));
  const document={createElement:t=>new Element(t),createTextNode:s=>s,querySelector:q=>targets[q]};
  const published=[],opened=[],screenCalls=[],calls=[];let onCommand,timer=X.timerAction({},'preset',0,65000);
  const tools={schedule:()=>[],timer:()=>timer,activity:{snapshot:()=>({})},random:{snapshot:()=>({})},whiteboard:{snapshot:()=>({})},screen:i=>screenCalls.push(i),controlTimer:action=>{calls.push(action);timer=X.timerAction(timer,action,Date.now());}};
@@ -114,7 +117,7 @@ test('main renderer publishes the same timer to both PIPs and routes expand to t
 
 test('main renderer publishes PIP state before a nationwide school is selected',()=>{
  const forms=new Element(),actions=Object.assign(new Element(),{className:'actions'});forms.append(actions);
- const targets=Object.fromEntries(['header nav','.random-heading','.whiteboard-toolbar','.activity-heading','#timerDialog .extras-heading'].map(q=>[q,new Element()]));
+ const targets=Object.fromEntries(['.app-bar__right','.random-heading','.whiteboard-toolbar','.activity-heading','#timerDialog .extras-heading'].map(q=>[q,new Element()]));
  const document={createElement:t=>new Element(t),createTextNode:s=>s,querySelector:q=>targets[q]};
  const published=[];let keyCalls=0;
  const tools={schedule:()=>[{period:'1',start:'09:00',end:'09:40'}],timer:()=>X.timerAction({},'preset',0,60000),activity:{snapshot:()=>({})},random:{snapshot:()=>({})},whiteboard:{snapshot:()=>({})}};
@@ -131,4 +134,12 @@ test('timer bounds recover from removed monitors and clamp to the available work
  const b=safeBounds({x:5000,y:2000,width:900,height:700},[area],area,'timer');
  assert.deepEqual(b,{x:0,y:0,width:800,height:600});
  assert.deepEqual(safeBounds(null,[area],area,'timer'),{x:40,y:40,width:400,height:340});
+});
+
+test('dashboard PIP keeps the next period as a secondary line; its two options still hide it',()=>{
+ const p=pipRenderer(),root=p.nodes.content,walk=(n,q)=>n.matches?.(q)?n:(n.children||[]).map(c=>walk(c,q)).find(Boolean);
+ const send=options=>p.listener()({kind:'dashboard',state:{dashboard:{options,time:'10:20',currentPeriod:'2',currentSubject:'수학',nextPeriod:'3',nextSubject:'사회',scheduleSet:true,timer:null}}});
+ send({});assert.equal(walk(root,'.current').textContent,'2교시 · 수학');assert.equal(walk(root,'.next').textContent,'다음 3교시 · 사회');assert.equal(walk(root,'.next').hidden,false);
+ send({nextPeriod:false,nextSubject:false});assert.equal(walk(root,'.next').hidden,true);
+ send({nextPeriod:false});assert.equal(walk(root,'.next').textContent,'다음 사회');
 });

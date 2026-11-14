@@ -2,34 +2,43 @@
 // 'boardLayout'; [배치 편집] moves, swaps, resizes, hides and re-shows them. Contents stay as they are.
 (() => {
  const L=LayoutCore,main=document.querySelector('main');
- const names={timetable:'시간표',morning:'아침활동',notices:'안내사항',meal:'급식'};
+ // Board names follow the board titles (a custom title from 'boardTitles' wins).
+ const fallbackNames={timetable:'오늘 시간표',morning:'아침활동',notices:'안내사항',meal:'오늘의 급식'};
+ const names=new Proxy(fallbackNames,{get:(base,id)=>cards[id]?.querySelector('.cardhead h2')?.textContent.trim()||base[id]});
  const cards=Object.fromEntries(L.IDS.map(id=>[id,main.querySelector(':scope>.'+id)]));
  const idOf=card=>L.IDS.find(id=>cards[id]===card);
  const make=(tag,props={},parent)=>{const el=document.createElement(tag);Object.assign(el,props);if(parent)parent.append(el);return el;};
- const HELP='칸 제목 줄을 끌어 옮기고, 가장자리를 끌어 크기를 바꿉니다.';
- const MORE='다른 칸 위에 놓으면 자리를 맞바꿉니다. 숨긴 칸은 빈 칸으로 끌어다 놓거나 [다시 표시]를 누릅니다. 키보드: Tab 칸 선택 · 방향키 이동 · Shift+방향키 크기 · Esc 취소';
+ const HELP='점 6개를 끌어 옮기고, 오른쪽 아래 모서리를 끌어 크기를 바꿉니다.';
+ const MORE='다른 칸 위에 놓으면 자리를 맞바꿉니다. 숨긴 칸은 빈 칸으로 끌어다 놓거나 [+ 칸 이름]을 누릅니다. 칸 제목은 제목 옆 연필을 눌러 바꿉니다. 키보드: Tab 칸 선택 · 방향키 이동 · Shift+방향키 크기 · Esc 취소';
 
  // A missing value carries the old settings over once; broken JSON counts as broken.
- function stored(){let raw=null;try{raw=localStorage.getItem('boardLayout');}catch{}if(raw===null)return undefined;try{return JSON.parse(raw);}catch{return '';}}
- const initial=L.resolve(stored(),{sizes:read('boardSizes',null),preferences:read('boardPreferences',null)});
- let saved=initial.layout,layout=L.clone(saved),editing=false,drag=null,weatherBefore=null,titleFrame=0;
- if(initial.source!=='saved')put('boardLayout',saved);
+ // Each screen structure (A: top header, B: left column) keeps its own saved arrangement.
+ function stored(key){let raw=null;try{raw=localStorage.getItem(key);}catch{}if(raw===null)return undefined;try{return JSON.parse(raw);}catch{return '';}}
+ let structure=L.structureOf(read('layoutStructure','A'));
+ const storageKey=()=>L.STORAGE[structure];
+ function load(){const r=L.resolve(stored(storageKey()),{sizes:read('boardSizes',null),preferences:read('boardPreferences',null)},structure);if(r.source!=='saved')put(storageKey(),r.layout);return r.layout;}
+ const markStructure=()=>{document.body.classList.toggle('structure-a',structure==='A');document.body.classList.toggle('structure-b',structure==='B');document.body.dataset.structure=structure;};
+ markStructure();
+ let saved=load(),layout=L.clone(saved),editing=false,drag=null,weatherBefore=null,titleFrame=0;
 
  // Bottom-left entry point (the old [크기 조절] spot keeps its .size-controls placement rules).
- const controls=make('div',{className:'size-controls'},document.body);
- const toggle=make('button',{id:'layoutToggle',type:'button',textContent:'배치 편집'},controls);
+ // [배치 편집] is the first tool on the left of the bottom bar (index.html .app-bar).
+ const controls=make('div',{className:'size-controls'},document.querySelector('.app-bar__left'));
+ const toggle=make('button',{id:'layoutToggle',type:'button',className:'uc-tool'},controls);
+ toggle.append(ucIcon('layout'));make('span',{className:'uc-tool__label',textContent:'배치 편집'},toggle);
  toggle.setAttribute('aria-pressed','false');
 
  // A row of its own between the header and the boards, so it never covers the class title,
  // the clock, the weather or the screen tabs; the boards give up that height while editing.
  const bar=make('div',{id:'layoutToolbar',className:'layout-toolbar',hidden:true});
- document.querySelector('body>header').after(bar);
+ // It takes the place of the bottom tool bar while editing, so it never covers the boards.
+ document.querySelector('.app-bar').append(bar);
  bar.setAttribute('role','toolbar');bar.setAttribute('aria-label','배치 편집');
- make('strong',{className:'layout-heading',textContent:'배치 편집'},bar);
- const tray=make('div',{id:'layoutTray',className:'layout-tray'},bar);tray.setAttribute('aria-label','숨긴 칸');
+ const heading=make('strong',{className:'layout-heading'},bar);heading.append(ucIcon('layout'),document.createTextNode('배치 편집 중'));
  // One short line of help (or the latest result); the rest of the guide sits behind [?].
  const message=make('p',{id:'layoutMessage',className:'layout-message'},bar);message.setAttribute('role','status');
- const helpButton=make('button',{id:'layoutHelp',type:'button',className:'layout-help',textContent:'?',title:'더 알아보기 · 키보드로 배치하기'},bar);
+ const tray=make('div',{id:'layoutTray',className:'layout-tray'},bar);tray.setAttribute('aria-label','숨긴 칸');
+ const helpButton=make('button',{id:'layoutHelp',type:'button',className:'layout-help',title:'더 알아보기 · 키보드로 배치하기'},bar);helpButton.append(ucIcon('help'));
  helpButton.setAttribute('aria-label','배치 편집 도움말');helpButton.setAttribute('aria-expanded','false');helpButton.setAttribute('aria-controls','layoutKeys');
  const actions=make('div',{className:'layout-actions'},bar);
  const fillButton=make('button',{id:'layoutFill',type:'button',textContent:'빈 칸 채우기'},actions);
@@ -55,50 +64,22 @@
   const card=cards[id];
   // In the title row, where [수정]/[작성] sit (they are hidden while editing); it counts toward
   // the board's title width, so it never covers the title or the status line at the bottom.
-  const hide=make('button',{type:'button',className:'layout-hide',textContent:'숨기기'},card.querySelector('.cardhead'));
+  const hide=make('button',{type:'button',className:'layout-hide'},card.querySelector('.cardhead'));
+  hide.append(ucIcon('eye-off'));make('span',{className:'layout-hide__label',textContent:'숨기기'},hide); // the label shows on boards wider than 400px
   hide.dataset.layoutHide=id;hide.setAttribute('aria-label',names[id]+' 숨기기');
   for(const dir of ['e','s','se']){
    const handle=make('button',{type:'button',className:'layout-resize layout-resize-'+dir,tabIndex:-1},card);
    handle.dataset.layoutResize=dir;handle.setAttribute('aria-label',names[id]+' 크기 조절');handle.title='끌어서 크기 조절 · Shift+방향키로도 됩니다';
    make('span',{className:'handle-mark'},handle); // the visible mark; the button around it is the touch area
+   if(dir==='se')handle.append(ucIcon('resize'));
   }
+  // Size label "9 × 2" in the bottom-left corner (edit mode keeps that strip free of board text).
+  make('span',{className:'layout-size','aria-hidden':'true'},card);
  }
 
- // Each board needs at least its title width. The grid's flexible tracks grow to give it that
- // width; when titles side by side cannot all fit, the width is shared and long titles shrink.
- const pen=document.createElement('canvas').getContext('2d');
- function textWidth(h2){
-  const cs=getComputedStyle(h2);pen.font=`${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-  pen.letterSpacing=cs.letterSpacing==='normal'?'0px':cs.letterSpacing;
-  return pen.measureText(h2.dataset.defaultTitle??h2.textContent).width;
- }
- function minimumWidth(card){
-  const head=card.querySelector('.cardhead'),hs=getComputedStyle(head),cs=getComputedStyle(card);
-  const parts=[...head.children].filter(el=>!el.hidden&&getComputedStyle(el).display!=='none'&&getComputedStyle(el).position!=='absolute');
-  let need=parseFloat(hs.paddingLeft)+parseFloat(hs.paddingRight)+parseFloat(cs.borderLeftWidth)+parseFloat(cs.borderRightWidth)+Math.max(0,parts.length-1)*(parseFloat(hs.columnGap)||0);
-  for(const el of parts)need+=el.matches('h2')?textWidth(el):el.getBoundingClientRect().width;
-  return Math.ceil(need)+4;
- }
- function fitTitles(){
-  const shown=L.IDS.filter(id=>layout.items[id].visible).map(id=>cards[id]);
-  main.classList.remove('layout-tight');
-  for(const card of shown){
-   const h2=card.querySelector('.cardhead h2');if(h2)h2.style.removeProperty('font-size');
-   // While a title is being typed the header holds an input; keep the last measurement.
-   if(!card.querySelector('.cardhead.title-editing')||!card.dataset.minWidth)card.dataset.minWidth=minimumWidth(card);
-   card.style.minWidth=card.dataset.minWidth+'px';
-  }
-  // Compare the boards themselves with <main> (edit handles poke out on purpose and do not count).
-  const right=main.getBoundingClientRect().right;
-  if(shown.every(card=>card.getBoundingClientRect().right<=right+1))return;
-  main.classList.add('layout-tight');
-  for(const card of shown){
-   card.style.minWidth='';
-   const h2=card.querySelector('.cardhead h2');if(!h2)continue;
-   let size=parseFloat(getComputedStyle(h2).fontSize);
-   while(size>14&&h2.scrollWidth>h2.clientWidth+1){size-=1;h2.style.fontSize=size+'px';}
-  }
- }
+ // The 12 columns stay equal; each board's title size follows its own width and height
+ // (design.js: smaller font first, then an ellipsis), so a long title never moves other boards.
+ function fitTitles(){window.dashboardDesign?.measure();}
  const scheduleTitles=()=>{cancelAnimationFrame(titleFrame);titleFrame=requestAnimationFrame(fitTitles);};
 
  function place(){
@@ -106,6 +87,7 @@
    const r=layout.items[id],card=cards[id];
    card.style.gridArea=area(r);
    card.classList.toggle('layout-hidden',!r.visible);
+   card.querySelector(':scope>.layout-size').textContent=`${r.w} × ${r.h}`;
    if(r.visible)card.removeAttribute('aria-hidden');else card.setAttribute('aria-hidden','true');
   }
  }
@@ -120,9 +102,11 @@
   const hidden=L.IDS.filter(id=>!layout.items[id].visible);
   if(!hidden.length){make('span',{className:'layout-tray-empty',textContent:'없음'},tray);return;}
   for(const id of hidden){
-   const chip=make('div',{className:'layout-chip',title:'빈 칸으로 끌어다 놓거나 [다시 표시]를 누르세요'},tray);chip.dataset.board=id;
-   make('span',{textContent:names[id]},chip);
-   const back=make('button',{type:'button',textContent:'다시 표시'},chip);back.dataset.layoutShow=id;back.setAttribute('aria-label',names[id]+' 다시 표시');
+   // "[+ 오늘의 급식]": the + button shows the board again; the name can also be dragged onto an empty slot.
+   const chip=make('div',{className:'layout-chip',title:'눌러서 다시 표시하거나, 빈 칸으로 끌어다 놓으세요'},tray);chip.dataset.board=id;
+   const back=make('button',{type:'button'},chip);back.dataset.layoutShow=id;back.setAttribute('aria-label',names[id]+' 다시 표시');
+   back.append(Object.assign(document.createElement('i'),{className:'uc-ico uc-ico--plus'}));
+   make('span',{className:'layout-chip__name',textContent:names[id]},chip);
   }
  }
  function render(){
@@ -147,7 +131,7 @@
  function end(commit){
   if(!editing)return;
   cancelDrag();
-  if(commit){saved=L.clone(layout);put('boardLayout',saved);}
+  if(commit){saved=L.clone(layout);put(storageKey(),saved);}
   else{layout=L.clone(saved);if(weatherBefore)window.weatherSize?.set(weatherBefore);}
   editing=false;
   document.body.classList.remove('layout-editing');bar.hidden=true;toggle.hidden=false;toggle.setAttribute('aria-pressed','false');
@@ -161,12 +145,13 @@
  doneButton.onclick=()=>end(true);
  cancelButton.onclick=()=>end(false);
  fillButton.onclick=()=>{const r=L.fill(layout);if(!r.changed){say('이웃 칸이 늘어나 채울 수 있는 빈 칸이 없습니다.');return;}use(r,'빈 칸을 이웃 칸으로 채웠습니다. [완료]를 눌러야 저장됩니다.');};
- resetButton.onclick=()=>{layout=L.defaults();window.weatherSize?.reset();render();say('기본 배치로 되돌렸습니다. [완료]를 눌러야 저장됩니다.');};
+ resetButton.onclick=()=>{layout=L.defaults(structure);window.weatherSize?.reset();render();say('기본 배치로 되돌렸습니다. [완료]를 눌러야 저장됩니다.');};
  main.addEventListener('click',e=>{
   const hide=e.target.closest('.layout-hide');
   if(editing&&hide){use(L.hide(layout,hide.dataset.layoutHide),`${names[hide.dataset.layoutHide]} 칸을 숨겼습니다. 위 '숨긴 칸'에서 다시 꺼낼 수 있습니다.`);return;}
   // Board buttons ([수정], [작성], title pencil) must not fire while boards are being arranged.
-  if(editing&&e.target.closest('main>.card')){e.preventDefault();e.stopImmediatePropagation();}
+  // The title pencil and the title field keep working (titles are changed in this mode only).
+  if(editing&&e.target.closest('main>.card')&&!e.target.closest('.board-title-edit,.board-title-editor')){e.preventDefault();e.stopImmediatePropagation();}
  },true);
  main.addEventListener('dblclick',e=>{if(editing&&e.target.closest('main>.card')){e.preventDefault();e.stopImmediatePropagation();}},true);
  tray.addEventListener('click',e=>{
@@ -193,7 +178,7 @@
   document.body.classList.add('layout-dragging-active');
  }
  main.addEventListener('pointerdown',e=>{
-  if(!editing||drag||(e.pointerType==='mouse'&&e.button!==0)||e.target.closest('.layout-hide'))return;
+  if(!editing||drag||(e.pointerType==='mouse'&&e.button!==0)||e.target.closest('.layout-hide,.board-title-edit,.board-title-editor'))return;
   const card=e.target.closest('main>.card');if(!card)return;
   const id=idOf(card),handle=e.target.closest('.layout-resize');
   if(!handle&&!e.target.closest('.cardhead'))return;
@@ -292,8 +277,17 @@
    if(!layout.items[id])return {ok:false,message:''};
    const r=visible?L.show(layout,id):L.hide(layout,id);
    if(!r.ok)return {ok:false,message:`빈 자리가 없어 ${names[id]} 칸을 표시하지 못했습니다. [배치 편집]에서 다른 칸을 줄인 뒤 다시 표시하세요.`};
-   layout=r.layout;if(!editing){saved=L.clone(layout);put('boardLayout',saved);}
+   layout=r.layout;if(!editing){saved=L.clone(layout);put(storageKey(),saved);}
    render();return {ok:true};
+  },
+  structure:()=>structure,
+  // 화면 설정 → 화면 구조: the dashboard changes at once and shows that structure's own arrangement.
+  setStructure(value){
+   const next=L.structureOf(value);if(next===structure)return;
+   if(editing)end(true);
+   structure=next;put('layoutStructure',structure);markStructure();
+   saved=load();layout=L.clone(saved);render();
+   document.dispatchEvent(new CustomEvent('layout-structure-change',{detail:{structure}}));
   },
   begin,finish:()=>end(true),cancel:()=>end(false)
  };
