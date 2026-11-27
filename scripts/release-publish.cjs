@@ -121,7 +121,10 @@ async function checkPublic() {
     if (sha256(bytes) !== hash) throw Error(`Public ${name} differs from the build`);
     console.log(`public OK  ${name}  ${bytes.length}`);
   }
-  const latest = await (await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {headers: {'user-agent': 'classroom-release-check'}})).json();
+  // The API call uses the workflow token: anonymous calls from shared runners hit the rate limit (1.8.18: "undefined").
+  const headers = {'user-agent': 'classroom-release-check', ...(process.env.GH_TOKEN ? {authorization: `Bearer ${process.env.GH_TOKEN}`} : {})};
+  const latest = await (await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {headers})).json();
+  if (!latest.tag_name) throw Error('Could not read releases/latest: ' + (latest.message || 'no tag_name'));
   if (c.okgu && latest.tag_name !== c.tag) throw Error(`releases/latest is ${latest.tag_name}, expected ${c.tag}`);
   if (!c.okgu && !/^v\d/.test(latest.tag_name || '')) throw Error(`releases/latest is ${latest.tag_name}; it must stay on an 옥구초 tag`);
   console.log(`releases/latest = ${latest.tag_name}`);
