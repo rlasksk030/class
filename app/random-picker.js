@@ -77,6 +77,34 @@ window.createRandomPicker=function({read,put}){
   grid.append(...groups.map((g,i)=>{const el=document.createElement('div');el.className='group-card group-card--'+(i%4);const title=document.createElement('h3');title.textContent=`${i+1}모둠`;const members=document.createElement('p');members.textContent=g.map(s=>s.name).join('\n');el.append(title,members);return el;}));
   $('groupResults').replaceChildren(summary,grid);render();}
  $('makeGroups').onclick=groups;$('shuffleGroups').onclick=groups;
+ // 모둠 결과는 뽑기 자리를 꽉 채웁니다: 모둠 수에 맞는 열 수를 고르고, 이름이 칸에 다 들어가는 가장 큰 글씨로 맞춥니다.
+ const groupStage=root.querySelector('.random-stage');let groupFrame;
+ function fitGroups(){
+  cancelAnimationFrame(groupFrame);
+  groupFrame=requestAnimationFrame(()=>{
+   const grid=$('groupResults').querySelector('.group-grid');groupStage.classList.toggle('has-groups',!!grid);
+   if(!grid||root.hidden||!grid.clientWidth||!grid.clientHeight)return;
+   const cards=[...grid.children],bodies=cards.map(c=>c.querySelector('p')),n=cards.length;
+   const fits=()=>bodies.every(p=>p.scrollHeight<=p.clientHeight+1&&p.scrollWidth<=p.clientWidth+1);
+   grid.style.setProperty('--group-lh','1.3');
+   const largest=()=>{let low=12,high=180;for(let i=0;i<12;i++){const f=(low+high)/2;grid.style.setProperty('--group-font',f+'px');if(fits())low=f;else high=f;}return Math.floor(low);};
+   // Try each useful column count (one per distinct number of rows) on the real layout and keep the one with the biggest names.
+   let best={cols:Math.min(n,3),font:0};
+   for(let cols=1;cols<=n;cols++){
+    if(cols>1&&Math.ceil(n/cols)===Math.ceil(n/(cols-1)))continue;
+    grid.style.setProperty('--group-cols',String(cols));const font=largest();if(font>best.font)best={cols,font};
+   }
+   grid.style.setProperty('--group-lh','1.3');grid.style.setProperty('--group-cols',String(best.cols));grid.style.setProperty('--group-font',best.font+'px');
+   // Leftover height spreads the names over the card (line spacing up to 2), instead of leaving the bottom empty.
+   const lines=Math.max(1,...bodies.map(p=>p.textContent.split('\n').length)),room=Math.min(...bodies.map(p=>p.clientHeight-parseFloat(getComputedStyle(p).paddingTop)-parseFloat(getComputedStyle(p).paddingBottom)));
+   let lh=Math.min(2,Math.max(1.3,Math.floor(room/(lines*best.font)*0.95*100)/100));
+   grid.style.setProperty('--group-lh',String(lh));
+   while(lh>1.3&&!fits()){lh=Math.max(1.3,lh-0.05);grid.style.setProperty('--group-lh',String(lh));}
+  });
+ }
+ new MutationObserver(fitGroups).observe($('groupResults'),{childList:true});
+ new ResizeObserver(fitGroups).observe(groupStage);
+ document.fonts?.ready.then(fitGroups);
  // E04 presentation screen: [한 명 더 뽑기] and [뽑기 취소] call the same drawing functions.
  const openStage=()=>{stage.hidden=false;document.body.classList.add('random-presenting');$('presentAgain').focus();};
  const closeStage=()=>{stage.hidden=true;document.body.classList.remove('random-presenting');if(!root.hidden)$('showBig').focus();};
