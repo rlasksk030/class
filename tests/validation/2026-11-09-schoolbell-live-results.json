@@ -1,0 +1,195 @@
+{
+  "date": "2026-11-09",
+  "timezone": "Asia/Seoul",
+  "baseline": "2463ea6ad7692f458fa191ec872bcb42a2f5a7c6",
+  "testedCodeCommit": "a2de12b4bd4d1393b698c30b91fbd5add7d2adbb",
+  "branch": "feature/schoolbell-diary-nationwide",
+  "liveSchoolbell": "BLOCKED",
+  "release": "NO GO",
+  "observation": {
+    "publicLogin": "observed; no credentials entered",
+    "teacherComposer": "BLOCKED: user has not created a class",
+    "automationPermission": "BLOCKED: user confirms no explicit approval; reviewed public sources do not establish it",
+    "approvedEmptyTestClass": "BLOCKED: awaiting approval / unavailable",
+    "liveDriver": "not installed",
+    "liveInputAttachmentPublication": "NOT RUN"
+  },
+  "macOS": {
+    "architecture": "arm64",
+    "node": "24.14.1",
+    "electron": "40.10.6",
+    "syntax": {
+      "pass": 92,
+      "total": 92
+    },
+    "unit": {
+      "pass": 97,
+      "total": 97
+    },
+    "electronTests": {
+      "pass": 347,
+      "total": 347,
+      "scripts": [
+        {
+          "path": "tests/e2e/board-titles.e2e.cjs",
+          "pass": 24,
+          "total": 24
+        },
+        {
+          "path": "tests/e2e/v182-features.e2e.cjs",
+          "pass": 43,
+          "total": 43
+        },
+        {
+          "path": "tests/e2e/regression.e2e.cjs",
+          "pass": 36,
+          "total": 36
+        },
+        {
+          "path": "tests/e2e/hiclass-link.e2e.cjs",
+          "pass": 16,
+          "total": 16
+        },
+        {
+          "path": "tests/e2e/recovery.e2e.cjs",
+          "pass": 17,
+          "total": 17
+        },
+        {
+          "path": "tests/e2e/timetable-layout.e2e.cjs",
+          "pass": 8,
+          "total": 8
+        },
+        {
+          "path": "tests/e2e/diary-drafts.e2e.cjs",
+          "pass": 17,
+          "total": 17
+        },
+        {
+          "path": "tests/e2e/hiclass-recipients.e2e.cjs",
+          "pass": 38,
+          "total": 38
+        },
+        {
+          "path": "tests/e2e/hiclass-submit.e2e.cjs",
+          "pass": 21,
+          "total": 21
+        },
+        {
+          "path": "tests/e2e/timer-startup.e2e.cjs",
+          "pass": 21,
+          "total": 21
+        },
+        {
+          "path": "tests/e2e/diary-layout.e2e.cjs",
+          "pass": 15,
+          "total": 15
+        },
+        {
+          "path": "tests/e2e/hiclass-window.e2e.cjs",
+          "pass": 11,
+          "total": 11
+        },
+        {
+          "path": "tests/e2e/photos.e2e.cjs",
+          "pass": 22,
+          "total": 22
+        },
+        {
+          "path": "tests/e2e/hiclass-photos.e2e.cjs",
+          "pass": 4,
+          "total": 4
+        },
+        {
+          "path": "tests/e2e/photo-boundaries.e2e.cjs",
+          "pass": 6,
+          "total": 6
+        },
+        {
+          "path": "tests/e2e/photo-transfer.e2e.cjs",
+          "pass": 5,
+          "total": 5
+        },
+        {
+          "path": "tests/e2e/multischool.e2e.cjs",
+          "pass": 7,
+          "total": 7
+        },
+        {
+          "path": "tests/e2e/schoolbell.e2e.cjs",
+          "pass": 18,
+          "total": 18
+        },
+        {
+          "path": "tests/e2e/schoolbell-automatic.e2e.cjs",
+          "pass": 7,
+          "total": 7
+        },
+        {
+          "path": "tests/e2e/schoolbell-completion.e2e.cjs",
+          "pass": 11,
+          "total": 11
+        }
+      ]
+    },
+    "migration": "SKIP: CLASSROOM_V178_APP not supplied"
+  },
+  "windows": {
+    "status": "BLOCKED",
+    "reason": "prlctl unable to connect to Parallels Service, including retry with host permission",
+    "executedTests": 0,
+    "existingResultsReused": false,
+    "installationRebootClipboard": "NOT RUN"
+  },
+  "github": {
+    "newActionsRunsByThisTask": 0,
+    "addedActionsCostKRW": 0,
+    "push": false,
+    "draftPR": 5,
+    "remoteHead": "2463ea6ad7692f458fa191ec872bcb42a2f5a7c6",
+    "merged": false,
+    "releaseCreated": false
+  },
+  "sourceSHA256": {
+    "app/diary.js": "213ed8370f9a501a4afb4b2d39ed32a64dbe907be214b28f666201f178de84a6",
+    "app/diary-schoolbell.js": "1a26a23f3b163ac0a72926e7f495682e5849d0e0844926650df1eb400da4acb1",
+    "app/schoolbell.cjs": "4725f9fdc6b633c0a6311f7d4fb1066988f4f31b8b91247891e10c924659d9c9",
+    "app/schoolbell-capability.cjs": "e0115aed49cdf3bde047fe582fb50b961802ca5fff527e52cd2b790300ecfd9d",
+    "app/schoolbell-publish.cjs": "b1fe19d977da2ecfe0b66d5803712a08f02ba4fcc162758453a005ab59ce7f8b",
+    "app/diary-services.cjs": "6ddfc6cfbbeb913ce0fb8288c4fcb837ef6bbcf027cae4250556b66f33446447",
+    "app/main.cjs": "4fb4ce431b6330c2d420d52416a9b7d0f94dc8d57590edc215fd34529e555261",
+    "app/preload.cjs": "6998d8469605d0a39d21f22fa8f3bb188811c8ef4843aafdc9554666c4c9de1c",
+    "app/package.json": "1ebd2eb1914b702bc5504bb6911dc0884c47781d60ea3a47a0dc436cefad8a29",
+    "package.json": "2c2331be77443612e045bdad7db4d6dc7bae4c7dbf0448e6854668628c91cbc9",
+    "package-lock.json": "c33c73f54974ed1e804941cff5a22d816dd334dddd3efc48abf0f8567fa52f97",
+    "electron-builder.json": "b90672ad98d6e1bee2411fa0ef181543590dd7544b9f8c431d97ed6958f556cc",
+    "tests/e2e/board-titles.e2e.cjs": "0325e1689ab868670552ac85d052da1be34459a69c4988bcb7a71c25f2e305d5",
+    "tests/e2e/v182-features.e2e.cjs": "8b17f752da70f88db92eaea9762e5f07517f9855bd53a5d8558609ba41da2014",
+    "tests/e2e/regression.e2e.cjs": "c723e069def4e8630279724d313e821e52a55c8c285962cc531a1edbf4fb8dc1",
+    "tests/e2e/hiclass-link.e2e.cjs": "9a01ab8b9da8c18c987d93d9d8d3d9da22c850f80e04585fdef820394c6f744d",
+    "tests/e2e/recovery.e2e.cjs": "8c251b6ae2e75898bdad5d0d2c53ce038b485d638a6caa66b87d075f368042e6",
+    "tests/e2e/timetable-layout.e2e.cjs": "4c23be777494da6b9772443fd515093a50eb286de0fce31010cf8ad73d06a468",
+    "tests/e2e/diary-drafts.e2e.cjs": "14e97d5c9b62d4c55dc86f50ab18769c5c75683b937fe5394220e96a55013471",
+    "tests/e2e/hiclass-recipients.e2e.cjs": "213a1ccc7f1681c76201db6e7d9a2311ca182bf90139dfde4c5e65f823bea679",
+    "tests/e2e/hiclass-submit.e2e.cjs": "9b61522c776bc696b0cf996d71372ffb9cf81505bbfacadc4bdba08d77c685f7",
+    "tests/e2e/timer-startup.e2e.cjs": "2e2711ae7d8c2192e218f31aabace7e0eff4e5a48bf7dff8a1bb5db30912bf67",
+    "tests/e2e/diary-layout.e2e.cjs": "8690c4843ab3f4adc69b64b16ae13dc609d56b199dfa983d544a8f17f0e56c02",
+    "tests/e2e/hiclass-window.e2e.cjs": "155e120a570d74dc5ee4d79b1036a2012372ca062070cd563b3d2756b7d0ee76",
+    "tests/e2e/photos.e2e.cjs": "968b76aadf92b572c03975fb4d4b23982d9750aa0024e0b838e3540939dbe058",
+    "tests/e2e/hiclass-photos.e2e.cjs": "1f35b2df4cf7d1ca6087d459ed257a7d90b6effd76134833b0b727013efd3a35",
+    "tests/e2e/photo-boundaries.e2e.cjs": "afe9bc979d8a5acdc597bc058bbf6246af5f83756dd9a516ce7be1a2dc6d697f",
+    "tests/e2e/photo-transfer.e2e.cjs": "7a6eb44ab315678a34d7530d3f2185805ee8c6badadf01a93973f4263978fc60",
+    "tests/e2e/multischool.e2e.cjs": "b26b4b3d561f7dc76fdc91d8b44911660200f51fd9d35ea4422383523dbdbe19",
+    "tests/e2e/schoolbell.e2e.cjs": "650e732045aadd770a52e87a2d838fd8baf74e9ebe10b58a27d58bd55512cc42",
+    "tests/e2e/schoolbell-automatic.e2e.cjs": "8350e1439d1fd66ab6b5dccb7df8537452b61e11553a1717ef0962424502d903",
+    "tests/e2e/schoolbell-completion.e2e.cjs": "b0a8a909bd9e01ca7b3308c78a91b2a604deb0ca429d67d7e8475e18d7fde045"
+  },
+  "localLogDirectory": "tests/e2e/.out/2026-11-09-live",
+  "logSHA256": {
+    "e2e.log": "f2f1b740cc90c3426537f5256ca9a1c1a08b1a3da53196b4553876374929290b",
+    "migration.log": "f7819737c6d76ec27371644882b37240f289adc34ce9880766fb942218c79168",
+    "syntax.log": "50cc1e9919d20f6397099c0788958c062e0ab8a08e4d0f6692583a5bdde3334d",
+    "unit.log": "0cd318d71f4a19720c95e81d425b930cff3dd1b7eb6519955ee12b98e7b39ee2"
+  },
+  "qualification": "All Schoolbell posting/input/photo PASS results are local synthetic tests, not live service verification."
+}

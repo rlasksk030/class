@@ -1,0 +1,32 @@
+{
+  "checks": {
+    "classPage": true,
+    "gradeClass": true,
+    "school": false,
+    "year": false,
+    "actor": false,
+    "accountContactAvailable": true,
+    "adminDisplayMatch": false,
+    "rosterEmpty": true,
+    "inviteEmpty": true,
+    "recipientTableEmpty": true
+  },
+  "blockers": [
+    "school-unverified",
+    "year-unverified",
+    "actor-unverified",
+    "teacher-unverified",
+    "notification-policy-unverified"
+  ],
+  "publicationMode": {
+    "known": true,
+    "mode": "immediate",
+    "dateSelectable": false,
+    "dropdownKnown": true,
+    "availableWhenClosed": false
+  },
+  "recipientCheck": {
+    "known": true,
+    "empty": true
+  }
+}

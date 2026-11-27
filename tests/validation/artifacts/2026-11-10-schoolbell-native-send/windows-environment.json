@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-10",
+  "initialState": "suspended",
+  "resumeConfirmed": true,
+  "guestArchitecture": "ARM64",
+  "shortCommandResponded": true,
+  "currentUserCommandResponded": true,
+  "existingNodeLocated": false,
+  "searchScope": [
+    "PATH",
+    "standard-program-files",
+    "Windows-Temp",
+    "current-user-temp",
+    "user-folders",
+    "existing-qa-folders"
+  ],
+  "checks": [
+    {
+      "test": "node-in-temp",
+      "exit": 1,
+      "seconds": 1.6,
+      "candidates": 0,
+      "noFilesFound": false
+    },
+    {
+      "test": "current-user-ready",
+      "exit": 0,
+      "seconds": 13.2,
+      "marker": true
+    },
+    {
+      "test": "path-node",
+      "exit": 1,
+      "seconds": 10.0,
+      "candidates": 0
+    },
+    {
+      "test": "user-temp-node",
+      "exit": 1,
+      "seconds": 10.6,
+      "candidates": 0
+    },
+    {
+      "test": "standard-node",
+      "exit": 0,
+      "seconds": 14.1,
+      "candidates": 0
+    },
+    {
+      "test": "existing-user-node-search",
+      "exit": 0,
+      "seconds": 17.4,
+      "candidates": 0
+    },
+    {
+      "test": "existing-qa-node-search",
+      "exit": 0,
+      "seconds": 11.3,
+      "candidates": 0
+    }
+  ],
+  "finalState": "suspended",
+  "newVM": false,
+  "newInstall": false,
+  "productTests": "NOT RUN",
+  "installerUpdateReboot": "NOT RUN",
+  "additionalCost": 0
+}

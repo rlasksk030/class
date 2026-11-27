@@ -1,0 +1,132 @@
+
+> test:e2e
+> node tests/e2e/board-titles.e2e.cjs && node tests/e2e/v182-features.e2e.cjs && node tests/e2e/regression.e2e.cjs && node tests/e2e/hiclass-link.e2e.cjs && node tests/e2e/recovery.e2e.cjs && node tests/e2e/timetable-layout.e2e.cjs && node tests/e2e/diary-drafts.e2e.cjs && node tests/e2e/hiclass-recipients.e2e.cjs && node tests/e2e/hiclass-submit.e2e.cjs && node tests/e2e/timer-startup.e2e.cjs && node tests/e2e/diary-layout.e2e.cjs && node tests/e2e/hiclass-window.e2e.cjs && npm run test:photos && node tests/e2e/multischool.e2e.cjs && node tests/e2e/schoolbell.e2e.cjs && npm run test:schoolbell-auto
+
+PASS 1. 기본 제목 표시 — ☀ 아침활동
+PASS 10a. 잠금 시 연필 숨김
+PASS 10b. 잠금 시 더블클릭 편집 불가
+PASS 11a. 잠금 해제
+PASS 11b. 잠금 해제 시 연필 표시
+PASS 4a. 편집 중 헤더 높이 유지 — 80 vs 80
+PASS 2/4. 아침활동 Enter 저장
+PASS 5. Esc 취소
+PASS 3/6. 안내사항 바깥 클릭 저장 — ✳ 꼭 확인하세요
+PASS 13a. 최대 30자 제한 — 30/30
+PASS 13b. 긴 제목에서도 보드 크기·위치 불변 — ellipsis=true
+PASS 13c. 제목 스타일 불변
+PASS 13d. 좁은 창에서도 헤더 넘침 없음
+PASS 9. 기본 제목 복원
+PASS 12a. 터치 길게 누르기로 편집 시작
+PASS 12b. 터치 바깥 탭 저장 — ✳ 알립니다
+PASS 12c. 연필 터치로 편집 시작
+PASS 10c. 편집 중 잠그면 편집 종료·연필 숨김
+PASS 8a. 본문 내용 유지(화면·저장소) — 책 읽기 20분
+일기 쓰기 / 체육복 챙기기
+PASS 7. 재실행 후 제목 유지
+PASS 8b. 재실행 후 본문 유지
+PASS 10d. 재실행 후 잠금 유지·연필 숨김
+PASS health. 업데이트 헬스체크 조건
+PASS store. 제목·본문 별도 키
+
+24/24 passed
+PASS A. 정상 수업일 시간표
+PASS A. 정상 급식
+PASS C. API 장애 + 캐시 → 저장된 시간표 유지 — 연결 실패 · 저장된 정보 · 오후 09:51
+PASS C. API 장애 + 캐시 → 저장된 급식 유지
+PASS B. 휴일(정상 응답+0건) 시간표 — 오늘은 등록된 수업이 없습니다.
+PASS B. 급식 없는 날 — 오늘은 급식이 없습니다.
+PASS B. 휴일은 오류 문구 없음
+PASS D. API 장애 + 캐시 없음 → 작은 안내
+PASS 방학에도 다른 보드 정상
+PASS 캐시 복구: 연결 회복 시 자동 재조회
+PASS WB. 초기 실행취소/다시실행 비활성
+PASS WB. 텍스트 생성·자동저장
+PASS WB. 실행취소 활성/다시실행 비활성
+PASS WB. 입력 묶음 한 번에 취소 — ["@0.142,0.197#36"]
+PASS WB. 블록 생성 취소
+PASS WB. 되돌릴 것 없으면 비활성
+PASS WB. 다시 실행 2회
+PASS WB. 이동
+PASS WB. 이동 취소 — 오늘 준비물@0.142,0.197#36 vs 오늘 준비물@0.142,0.197#36
+PASS WB. 이동 다시 실행
+PASS WB. 글씨 크기 변경 취소 — 오늘 준비물@0.283,0.329#40
+PASS WB. 텍스트 수정 + 바깥 클릭 시 기록
+PASS WB. 삭제→취소→다시 실행 — 1/2/1
+PASS WB. 판서도 같은 기록으로 취소/다시
+PASS WB. 전체 지우기(확인창 유지)
+PASS WB. 전체 지우기 후 실행 취소
+PASS WB. Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z
+PASS WB. 취소 후 상태가 재실행 후 유지
+PASS WB. 대시보드에서는 단축키 무시
+PASS BK. 백업 완료 메시지 — 백업이 완료되었습니다. (backup-out.json)
+PASS BK. schemaVersion·appVersion·createdAt — 1.8.11
+PASS BK. 사용자 데이터 포함
+PASS BK. 민감정보·캐시·위치 제외
+PASS BK. 로그인 세션(Partitions)은 백업 대상 아님 — Cache,Code Cache,DIPS,DIPS-wal,DawnGraphiteCache,DawnWebGPUCache,DevToolsActivePort,GPUCache,Local Storage,Network Persistent State,Preferences,Session Storage,Shared Dictionary,SingletonCookie,SingletonLock,SingletonSocket,Trust Tokens,Trust Tokens-journal,blob_storage,desktop-settings.json,migration-v187,neis-key.bin
+PASS BK. 잘못된 파일 거부
+PASS BK. 손상 파일 거부, 기존 데이터 유지
+PASS BK. 확인창 취소 시 변경 없음
+PASS BK. 복원 후 화면을 실제로 다시 불러옴(저장 차단 해제)
+PASS BK. 복원 후 다시 불러오기·값 복원
+PASS BK. 복원 시 화이트보드 덮어쓰기 없음
+PASS BK. 복원 전 자동 보관본 생성
+PASS BK. 복원 뒤 기존 인증키는 로컬 암호화 저장소에만 유지
+PASS health. 업데이트 헬스체크 조건
+
+43/43 passed
+PASS 시간표 자동 조회
+PASS 현재 교시 자동 강조
+PASS 시간표 당일 직접 수정
+PASS 원래 시간표로 되돌리기
+PASS 안내사항 어제 내용 불러오기
+PASS 안내사항 저장
+PASS D-Day 최대 2개 표시(가까운 순)
+PASS D-Day 제목/날짜 수정·당일 D-Day
+PASS D-Day 글씨 18px 이상 — 20.16px
+PASS D-Day 삭제·없으면 영역 숨김
+PASS 보드 숨김(자리 유지)
+PASS 보드별 글씨 크기
+PASS 보드 크기 조절·기본 크기 복원 — 277→316→277
+PASS 팝업 닫아도 진행·버튼에 남은 시간 — ⏱ 00:02
+PASS 타이머 완료 표시
+PASS 타이머 초기화
+PASS 일시정지→계속하기
+PASS 1명 뽑기
+PASS 여러 명 뽑기
+PASS 한 라운드 중복 없음
+PASS 남은 인원 초과 시 안내
+PASS 오늘 제외
+PASS 전체 다시 포함
+PASS 새 라운드
+PASS 모둠 자동 편성·다시 섞기
+PASS 학부모·학생 모두 OFF 안내
+PASS 모두 OFF면 등록 차단(하이클래스 호출 없음)
+PASS 수신대상 4개 조합 초안과 함께 저장
+PASS 선택 시 등록 요청 전달·실패해도 초안 유지
+PASS 하이클래스 자동화 실패가 앱을 멈추지 않음
+PASS 날짜별 초안(새 날짜는 빈 본문)
+PASS 기존 날짜 초안 복원
+PASS 잠금 시 편집 버튼·설정 숨김
+PASS 잠금 해제
+PASS 재실행 후 명단 유지
+PASS 재실행 후 알림장 초안 유지
+
+36/36 passed
+PASS 미연결 상태 표시·버튼 하나
+PASS ① 로그인 안내와 단계 표시
+FAIL 연결 진행 중에도 버튼 하나
+PASS ② 담당 학급 선택 안내
+PASS ③ 학급 홈만 열면 연결하지 않고 구체적 안내 — 옥구초등학교 6학년 1반 학급은 확인했습니다. 이제 해당 학급의 알림장 게시판을 열어 주세요.
+PASS 학급 홈에서는 저장 없음
+PASS ④ 알림장 게시판 자동 감지 → 확인창 1회 — [{"message":"옥구초등학교 6학년 1반을(를) 찾았습니다.\n이 학급에 연결할까요?","detail":"우리 교실: 옥구초등학교 6학년 1반\n알림장 게시판: https://www.hiclass.net/main/clazzes/c1/note/n1","buttons":["취소","연결하기"]}]
+PASS [연결하기] 순간 classKey·게시판 URL·학급명 저장 — {"url":"https://www.hiclass.net/main/clazzes/c1/note/n1","title":"옥구초등학교 6학년 1반","schoolName":"옥구초등학교"}
+PASS 완료 메시지
+PASS 연결 완료 후 하이클래스 숨김·대시보드 포커스
+PASS 연결 완료 표시·[연결 변경]
+PASS 비밀번호·쿠키 저장 없음
+PASS 재실행 후에도 "연결됨" 표시
+PASS 로그인 만료 시에만 다시 로그인 안내
+PASS 확인창 [취소] 시 저장 안 함
+PASS [하이클래스 연결하기]로 다시 확인창
+
+15/16 passed

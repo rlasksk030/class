@@ -1,0 +1,16 @@
+{
+  "initialState": "suspended",
+  "resumedExistingVM": true,
+  "defaultExecRunsAsSystem": true,
+  "defaultExecUsesSystemProfile": true,
+  "standardProgramFilesNode": "ABSENT",
+  "systemProfileNodeCandidates": "ABSENT",
+  "desktopUserNodeVersion": "TIMEOUT 20s",
+  "desktopUserWhereNode": "TIMEOUT 15s",
+  "powershellPathAndRegistryInspection": "TIMEOUT 35s",
+  "finalState": "suspended",
+  "newVM": false,
+  "softwareInstalled": false,
+  "productTests": "NOT RUN",
+  "installationUpgradeRestartClipboard": "NOT RUN"
+}

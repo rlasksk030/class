@@ -1,0 +1,19 @@
+{
+  "checks": {
+    "classPage": true,
+    "gradeClass": true,
+    "school": false,
+    "year": false,
+    "actor": false,
+    "accountContactAvailable": true,
+    "adminDisplayMatch": false,
+    "adminSettingsEditable": true,
+    "rosterEmpty": true,
+    "inviteEmpty": true,
+    "recipientTableEmpty": false
+  },
+  "recipientCheck": {
+    "known": false,
+    "reason": "dialog-count"
+  }
+}

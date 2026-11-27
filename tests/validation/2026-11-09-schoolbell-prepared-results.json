@@ -1,0 +1,250 @@
+{
+  "date": "2026-11-09",
+  "branch": "feature/schoolbell-diary-nationwide",
+  "baseHead": "ea107d6e13e75d33da7fd0a1f2cdd1f0ae352adb",
+  "codeCommit": "8738f3ed5623c0fdcc535426988dc36372077934",
+  "officialPermission": {
+    "status": "NOT_OBTAINED",
+    "inquiryDraft": "학교종이_자동화_기술문의_초안.md",
+    "sent": false,
+    "paidServiceRequested": false
+  },
+  "live": {
+    "structureObservation": "REUSED; NOT_REPEATED",
+    "manualPostReadback": "PRIOR_OBSERVATION_ONLY",
+    "recipientStatus": "RECONFIRMED_NONE_BY_USER; DOM_UNVERIFIED",
+    "actualDriverBridgeInstalled": false,
+    "automaticInput": "NOT_RUN",
+    "automaticAttachments": "NOT_RUN",
+    "automaticPublication": "NOT_RUN",
+    "automaticGateEnabled": false
+  },
+  "checks": {
+    "syntax": {
+      "passed": 99,
+      "failed": 0,
+      "exitCode": 0,
+      "subsequentlyChangedE2EFilesSeparatelyParsed": 3
+    },
+    "unit": {
+      "passed": 163,
+      "failed": 0,
+      "exitCode": 0,
+      "newPreparedDriverCases": 58
+    },
+    "electron": {
+      "scripts": 21,
+      "passed": 355,
+      "failed": 0,
+      "suites": [
+        {
+          "script": "tests/e2e/board-titles.e2e.cjs",
+          "passed": 24,
+          "total": 24,
+          "log": "e2e.log"
+        },
+        {
+          "script": "tests/e2e/v182-features.e2e.cjs",
+          "passed": 43,
+          "total": 43,
+          "log": "v182-final.log"
+        },
+        {
+          "script": "tests/e2e/regression.e2e.cjs",
+          "passed": 36,
+          "total": 36,
+          "log": "regression-after-timer.log"
+        },
+        {
+          "script": "tests/e2e/hiclass-link.e2e.cjs",
+          "passed": 16,
+          "total": 16,
+          "log": "e2e-remaining.log"
+        },
+        {
+          "script": "tests/e2e/recovery.e2e.cjs",
+          "passed": 17,
+          "total": 17,
+          "log": "e2e-remaining.log"
+        },
+        {
+          "script": "tests/e2e/timetable-layout.e2e.cjs",
+          "passed": 8,
+          "total": 8,
+          "log": "timetable-final.log"
+        },
+        {
+          "script": "tests/e2e/diary-drafts.e2e.cjs",
+          "passed": 17,
+          "total": 17,
+          "log": "e2e-final-tail.log"
+        },
+        {
+          "script": "tests/e2e/hiclass-recipients.e2e.cjs",
+          "passed": 38,
+          "total": 38,
+          "log": "e2e-final-tail.log"
+        },
+        {
+          "script": "tests/e2e/hiclass-submit.e2e.cjs",
+          "passed": 21,
+          "total": 21,
+          "log": "e2e-final-tail.log"
+        },
+        {
+          "script": "tests/e2e/timer-startup.e2e.cjs",
+          "passed": 21,
+          "total": 21,
+          "log": "timer-final.log"
+        },
+        {
+          "script": "tests/e2e/diary-layout.e2e.cjs",
+          "passed": 15,
+          "total": 15,
+          "log": "e2e-after-timer.log"
+        },
+        {
+          "script": "tests/e2e/hiclass-window.e2e.cjs",
+          "passed": 11,
+          "total": 11,
+          "log": "e2e-after-timer.log"
+        },
+        {
+          "script": "tests/e2e/photos.e2e.cjs",
+          "passed": 22,
+          "total": 22,
+          "log": "e2e-after-timer.log"
+        },
+        {
+          "script": "tests/e2e/hiclass-photos.e2e.cjs",
+          "passed": 4,
+          "total": 4,
+          "log": "e2e-after-timer.log"
+        },
+        {
+          "script": "tests/e2e/photo-boundaries.e2e.cjs",
+          "passed": 6,
+          "total": 6,
+          "log": "e2e-after-timer.log"
+        },
+        {
+          "script": "tests/e2e/photo-transfer.e2e.cjs",
+          "passed": 5,
+          "total": 5,
+          "log": "e2e-after-timer.log"
+        },
+        {
+          "script": "tests/e2e/multischool.e2e.cjs",
+          "passed": 7,
+          "total": 7,
+          "log": "e2e-after-timer.log"
+        },
+        {
+          "script": "tests/e2e/schoolbell.e2e.cjs",
+          "passed": 18,
+          "total": 18,
+          "log": "e2e-after-timer.log"
+        },
+        {
+          "script": "tests/e2e/schoolbell-automatic.e2e.cjs",
+          "passed": 7,
+          "total": 7,
+          "log": "e2e-after-timer.log"
+        },
+        {
+          "script": "tests/e2e/schoolbell-completion.e2e.cjs",
+          "passed": 12,
+          "total": 12,
+          "log": "e2e-after-timer.log"
+        },
+        {
+          "script": "tests/e2e/schoolbell-prepared.e2e.cjs",
+          "passed": 7,
+          "total": 7,
+          "log": "e2e-after-timer.log"
+        }
+      ]
+    }
+  },
+  "preservedFailures": [
+    {
+      "scope": "new localhost E2E",
+      "result": "sandbox listen EPERM",
+      "resolution": "same isolated local test with host execution permission; 7/7 passed"
+    },
+    {
+      "scope": "v182-features",
+      "result": "41/43 twice; fixed pen coordinates outside short viewport",
+      "resolution": "relative canvas coordinates; 43/43"
+    },
+    {
+      "scope": "timetable-layout",
+      "result": "font sizes equal at auto-fit minimum in host-constrained viewport",
+      "resolution": "explicit 1280x900 renderer geometry; 8/8"
+    },
+    {
+      "scope": "timer-startup",
+      "result": "completion banner intercepted close button in short dialog",
+      "resolution": "in-flow alert inside dialog; explicit 900x550 coverage; 21/21 and regression 36/36"
+    }
+  ],
+  "windows": {
+    "hostInventory": "PASS",
+    "existingVMResume": "PASS",
+    "guestReadOnlyProbe": "NO_RESPONSE_OVER_2_MINUTES; OWN_PROBE_TERMINATED",
+    "probeExitCode": 143,
+    "originalSuspendedStateRestored": true,
+    "currentSourceSyntaxUnitE2E": "NOT_RUN",
+    "installerRebootClipboard": "NOT_RUN",
+    "newVM": false,
+    "toolsUpdated": false
+  },
+  "sourceSHA256": {
+    "app/extras.css": "b525f506853179d0920947ae438c0d954a6569025146cbc02b67ce3c68f78529",
+    "app/schoolbell-driver-errors.cjs": "7cbf59683528b98571f98ad46c83a092c5fa16ca0b5939e4c811f63ea49d98ac",
+    "app/schoolbell-prepared-driver.cjs": "7f04e38dac16512014ece7794e3de031d1e447c463acc4ae28f1ce5426d19d81",
+    "app/schoolbell-prepared-driver.test.cjs": "556a19706ab98050a8f268795a73a13091ff82b75240cf3f15950fec10e28951",
+    "app/schoolbell-publish.cjs": "347311446c7de0367a70f33b882adc0c3e55f18ab252cc700dd12220f58108f0",
+    "package.json": "cf904452381221c62096d9f402e977969e902f0eaaee55bf41b9a9856b21a95a",
+    "tests/e2e/schoolbell-prepared.e2e.cjs": "efd68eb76a427eecdbe7b59d9231e8996cabee5d0e146b8269355e49babb036c",
+    "tests/e2e/timer-startup.e2e.cjs": "48b50ac58b379fbbef63f84b9fd843bb94d8ebebe33c4bd754087ab4beb7f331",
+    "tests/e2e/timetable-layout.e2e.cjs": "0481a058fe9e54eb2d4fed7650e3fa11ee04391a211d867b6e6110f52c5082e4",
+    "tests/e2e/v182-features.e2e.cjs": "855a19da2b185281eaaa0130578fb8d508a1734c94e542db2b65fc084ea822b3",
+    "tests/schoolbell-prepared-fixture.cjs": "5976b5847794ee41bea6c20e3196d3549aa55817a77cef22010e095013e7291d",
+    "app/schoolbell.cjs": "4725f9fdc6b633c0a6311f7d4fb1066988f4f31b8b91247891e10c924659d9c9",
+    "app/schoolbell-capability.cjs": "e0115aed49cdf3bde047fe582fb50b961802ca5fff527e52cd2b790300ecfd9d",
+    "app/diary.js": "2726a19f1ffa8c9c3a9b52554cce3977574a5ae910e31acd24dcda2cd80f6ee3",
+    "app/diary-services.cjs": "e8093a38633192899e14ca225523e7a4db7203dd394c3389a2cba616f235c987",
+    "app/hiclass.cjs": "ad07695e352dc9a645fdec7ee08e0630bf509c4625b43fac9dda0f46d70a90a9",
+    "app/hiclass-submit.cjs": "f14ae6a597ad59b97d58f330b085d68a980d97c88c6903079017ae3f93445207",
+    "app/backup-core.js": "759f60074a561554c37c86e19bac4439312a21515b855b1e0dcc1b811c603f72",
+    "app/whiteboard-objects.js": "dd365ea226a192fa74c985c8ad6711dcb341dc4a810ae53515e8695d673664da"
+  },
+  "logDirectory": "tests/e2e/.out/2026-11-09-schoolbell-prepared",
+  "logSHA256": {
+    "e2e-after-timer.log": "9222904f48fe4f8ed16bfcf4ba076a762cbcccfaa3357c614a9f160187b9a6c5",
+    "e2e-final-tail.log": "318c216c45eb32dc6276ac451b6d77cdb8717994394de95dae54518035389b67",
+    "e2e-remaining.log": "ff714d9fa099ba5a9f61aa6f3ed58b857f6d35bff851c770a3ba9e9b2eba9287",
+    "e2e.log": "2f0625cb7aef511f2ecc4fb827e5ce0e19fbb177a1fa895efbb4b406ebee17fa",
+    "regression-after-timer.log": "4e3a4215d89e11787cd19ee2e42b91a1b5843cfaaa2c00d3bbda24f69be4811c",
+    "syntax.log": "f30370aa001b54070c83c0d5f80a1b6c7f77b4b5966385354bf7202d1b4c7ad0",
+    "timer-final.log": "7fb9452f64e136942fa6c3fdec0eab6a40b682d2401c3c1b12e1a67e07030618",
+    "timetable-final.log": "8d7ebfb0e246545edb6345c317daa75102dc04eece2a484c720e8b99a7405ec2",
+    "unit.log": "42a039af5b606dd90286f59e19e1aae4c69a59f924fd690155ad035707202a99",
+    "v182-final.log": "744603771a69a3df1d33c3e9870c70151fcd44e0b2c57dfbf5d5cd621e9b3e24",
+    "v182-investigation.log": "dc70177998057ec2bff7271733d74c97ade93349cf719b32dfcf12f811c7ed99"
+  },
+  "githubBeforePush": {
+    "head": "ea107d6e13e75d33da7fd0a1f2cdd1f0ae352adb",
+    "draft": true,
+    "open": true,
+    "actionsTotal": 19,
+    "lastRunId": 41977391612,
+    "workflowBlob": "58613481272e59545c0c910d5d6e033a65f0247a"
+  },
+  "actionsStarted": 0,
+  "extraCostKRW": 0,
+  "newBuilds": 0,
+  "deployments": 0,
+  "releaseDecision": "NO_GO"
+}

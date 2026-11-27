@@ -1,0 +1,24 @@
+✔ verification-only completion saves original receipt and uncertainty provenance, with no send transport (130.369334ms)
+✔ wrong draft, unposted stage, ambiguous post and incomplete original proof cannot create a receipt (1000.947583ms)
+✖ ordinary uncertain attempt reconciles read-only with teacher provenance and no repeat submit approval (193.881917ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2035.086709
+
+✖ failing tests:
+
+test at app/schoolbell-reconcile.test.cjs:51:1
+✖ ordinary uncertain attempt reconciles read-only with teacher provenance and no repeat submit approval (193.881917ms)
+  Error: 시험 게시 검증 기록을 확인해 주세요.
+      at /Users/kimnana/Documents/codex/2026-09-29/referenced-chatgpt-conversation-this-is-an-2/schoolbell-live-verified-20261109/app/diary-services.cjs:193:87
+      at edit (/Users/kimnana/Documents/codex/2026-09-29/referenced-chatgpt-conversation-this-is-an-2/schoolbell-live-verified-20261109/app/diary-services.cjs:110:18)
+      at Object.reconcileAutomatic (/Users/kimnana/Documents/codex/2026-09-29/referenced-chatgpt-conversation-this-is-an-2/schoolbell-live-verified-20261109/app/diary-services.cjs:188:10)
+      at reconcile (/Users/kimnana/Documents/codex/2026-09-29/referenced-chatgpt-conversation-this-is-an-2/schoolbell-live-verified-20261109/app/schoolbell-reconcile.cjs:58:8)
+      at async TestContext.<anonymous> (/Users/kimnana/Documents/codex/2026-09-29/referenced-chatgpt-conversation-this-is-an-2/schoolbell-live-verified-20261109/app/schoolbell-reconcile.test.cjs:53:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)

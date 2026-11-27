@@ -1,0 +1,21 @@
+PASS legacy default HiClass
+PASS service switch preserves common draft/photos and hides HiClass recipient controls
+PASS actual-screen inspection without a class page cannot grant authority or clear the draft
+PASS read-only lookup without a bound class preserves draft/photos and cannot create a success receipt
+PASS remote window has no preload, Node or trusted IPC access
+PASS wrong school blocks manual class confirmation
+PASS wrong academic year blocks manual class confirmation
+PASS matching teacher confirmation is explicitly manual, never authenticated success
+PASS copy/export preserve exact photo bytes and order, remain pending
+PASS duplicate handoff blocked
+PASS restart restores service, draft, photos and unresolved publication
+PASS editing content cannot bypass unresolved handoff
+PASS explicit result confirmation records manual outcome without clearing newer edits
+PASS return to HiClass retains draft and photos
+PASS network failure preserves draft/photos and pending record, duplicate never retries network
+PASS explicit not-posted confirmation permits deliberate recovery from failed handoff
+PASS another class has independent selection, link and publication history
+PASS real Electron cookie stores isolate school, class and service
+PASS automatic Schoolbell publication disabled in main process and UI; renderer cannot opt in
+PASS observed official login redirect passes navigation guard
+20/20 passed

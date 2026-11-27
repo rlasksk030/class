@@ -1,0 +1,16 @@
+{
+  "baseCommit": "c1df74dc47559b4b4ee8b936289e5260ef0d1471",
+  "sourceSha256": {
+    "app/schoolbell-send-input.cjs": "7af0569207e4a91cfd3e2a046c7b248954b4699ded5779b1789d4b1f638700ce",
+    "app/schoolbell-observed-composer.cjs": "589e03e5ec42a188bbb1ceed27378b7d2572e2b141e17fc1e2a09078e031a2ba",
+    "app/schoolbell-electron-driver.cjs": "3ba237179ca775cee7d82e214f24c9f911d6809522b0ea2441c56557d18aec42",
+    "app/schoolbell-live-posts.cjs": "e2602559c49d9c3bdf4ccb25a86eb0045ccb559b53616141efa69c3859e96520",
+    "tests/schoolbell-send-input-fixture.cjs": "ab9eaac69ece4245c0280d1b6063d9ee4043671d693993c363f32f71fd6a7ab9"
+  },
+  "newFocusedChecks": 6,
+  "existingSuitesRepeated": 0,
+  "liveNativeSend": "AWAITING_FINAL_APPROVAL",
+  "livePrepublish": "PASS",
+  "productionEnabled": false,
+  "actionsRequested": 0
+}

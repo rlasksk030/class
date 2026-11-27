@@ -1,0 +1,12 @@
+PASS normal mocked publication never shows or focuses a HiClass window
+PASS duplicate hash blocks a second adapter attempt
+PASS only explicit connect reveals login window
+PASS an existing visible connection window is hidden before publication
+PASS expired login returns guidance without revealing window
+PASS background window.open is denied and stops before submit with explanation
+PASS uncertain result retains ledger and never auto-retries
+PASS explicit authentication may use HTTPS popup instead of blanket blocking it
+PASS all interactive child windows hidden on background transition
+PASS real session inspection recognizes login form without showing a window
+PASS real adapter fills hidden non-focusable editor, verifies recipients/confirmation/article, and records success on fixture only
+11/11 passed

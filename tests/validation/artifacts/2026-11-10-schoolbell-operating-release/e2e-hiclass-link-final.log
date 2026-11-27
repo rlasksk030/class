@@ -1,0 +1,18 @@
+PASS 미연결 상태 표시·버튼 하나
+PASS ① 로그인 안내와 단계 표시
+PASS 연결 진행 중에도 버튼 하나
+PASS ② 담당 학급 선택 안내
+PASS ③ 학급 홈만 열면 연결하지 않고 구체적 안내 — 옥구초등학교 6학년 1반 학급은 확인했습니다. 이제 해당 학급의 알림장 게시판을 열어 주세요.
+PASS 학급 홈에서는 저장 없음
+PASS ④ 알림장 게시판 자동 감지 → 확인창 1회 — [{"message":"옥구초등학교 6학년 1반을(를) 찾았습니다.\n이 학급에 연결할까요?","detail":"우리 교실: 옥구초등학교 6학년 1반\n알림장 게시판: https://www.hiclass.net/main/clazzes/c1/note/n1","buttons":["취소","연결하기"]}]
+PASS [연결하기] 순간 classKey·게시판 URL·학급명 저장 — {"url":"https://www.hiclass.net/main/clazzes/c1/note/n1","title":"옥구초등학교 6학년 1반","schoolName":"옥구초등학교"}
+PASS 완료 메시지
+PASS 연결 완료 후 하이클래스 숨김·대시보드 포커스
+PASS 연결 완료 표시·[연결 변경]
+PASS 비밀번호·쿠키 저장 없음
+PASS 재실행 후에도 "연결됨" 표시
+PASS 로그인 만료 시에만 다시 로그인 안내
+PASS 확인창 [취소] 시 저장 안 함
+PASS [하이클래스 연결하기]로 다시 확인창
+
+16/16 passed

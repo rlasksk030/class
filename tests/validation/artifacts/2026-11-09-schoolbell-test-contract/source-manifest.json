@@ -1,0 +1,44 @@
+{
+  "baseCommit": "40ad1b1819bf201771896e0759b0ae1bef014962",
+  "serviceResult": "not-verified",
+  "productionEnabled": false,
+  "sourceSha256": {
+    "app/diary-schoolbell.js": "01994f9275ca94b1e05daf19bd7c5c62b59000136d1025d3556eab02a196bf68",
+    "app/diary-services.cjs": "1665853012de2f7d8c4881613b63a2dcf1529b13919b99b7d17af67af3905261",
+    "app/preload.cjs": "438ffddde12bf0f4e592efc0fb80de619e1e0912bac2524d273f1062f606ea07",
+    "app/schoolbell-audience.cjs": "4976f8bc1e9722bfc743ff9b1e884309a40e218687aeb04e21f3c8b8edbc9271",
+    "app/schoolbell-driver-errors.cjs": "5394096252a716bddf3c48825ab1caad45e88e9f693e3116c44eba126721b0c0",
+    "app/schoolbell-electron-driver.cjs": "58b963b49c3fdaeed5bab62599de5287f443c83e85e2d0e52d8286f3ad789105",
+    "app/schoolbell-final-guard.cjs": "f38eb04845f57cbf8d4e1edc1ab30c6ae4f68d98e30977712f66052b6678718b",
+    "app/schoolbell-final-guard.test.cjs": "6b2ad0376de85576c0bfee4ea5a2b4b101f648463ab007ff2d1f8544cc729192",
+    "app/schoolbell-live-context.cjs": "3b983f487cd02fe9436c88a04733ccf6e42653fddae502a6528aee468da1150a",
+    "app/schoolbell-live-posts.cjs": "ad1135b457038d6acf80bf5cce399fbf78d8699c58bd041cf0b5f7764decd80a",
+    "app/schoolbell-observed-composer.cjs": "eebe8a3bdb7c96de2a1115fd7a6311fab0bb0538a724a040d62d3b5bd81d3c6a",
+    "app/schoolbell-prepared-driver.cjs": "45d43bc6dc66bbaa0d959efd654f39542863c2a64bcba9827a39aaf7292fc01e",
+    "app/schoolbell-preview-originals.cjs": "4d91384fff63def399710108e35553c824e552a838777872bd2baaacd881eb87",
+    "app/schoolbell-publish.cjs": "fbaa5d10dda0d37693dbbeb1bb77a39fa4dec85dd5c1bbf18ad5c5a3be45c1da",
+    "app/schoolbell-recipients.cjs": "8f36dd3f13427b6c2ac2dbc0f003bd31095d6a10f0977e332ce24859dc60ad70",
+    "app/schoolbell.cjs": "ed2546be89ee7cbf267c28574cf2e4ca8d42b1d96072ecb859314bcd2f055ceb",
+    "tests/schoolbell-final-integration-fixture.cjs": "f9dd2be79f852e6dee0c8d737f2029eecf06f5e758b3e58edf1a67ffed6fbeb0",
+    "app/schoolbell-test-authorization.cjs": "8332e0662024e1e33355d4c08d2a5f6bc97baa74cf09c81db815d188fad3adea",
+    "app/schoolbell-test-authorization.test.cjs": "5f19aff5ad3ba72154cd770b8b2413b3829b4be395cfb8a13025c70586fdd984",
+    "app/schoolbell-post-navigation.test.cjs": "b8f6fd5937b2168ef12d71c9d0f256271e8704e6ffac6adee2b7f39780fb32c8"
+  },
+  "checks": {
+    "nodeRegression": {
+      "pass": 215,
+      "fail": 0
+    },
+    "syntax": {
+      "pass": 134,
+      "fail": 0
+    },
+    "latestFocused": {
+      "pass": 4,
+      "fail": 0
+    },
+    "windows": "NOT RUN"
+  },
+  "actionsRequested": 0,
+  "newPaidResources": 0
+}

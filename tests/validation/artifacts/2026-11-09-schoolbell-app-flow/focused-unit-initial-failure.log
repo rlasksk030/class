@@ -1,0 +1,43 @@
+✖ observed class route excludes school announcements, credentials and other origins (16.684416ms)
+✔ matching display names and empty slots cannot establish school, year, actor or notification authority (15.897875ms)
+✔ cancellation while the context reader is opening destroys only that reader and prevents reads (0.830042ms)
+✔ observed post ID and tooltip date do not claim virtual list coverage (36.084708ms)
+✔ post provider keeps incomplete baseline blocked and revisits only its pinned class after send (3.587041ms)
+✔ observed diary route is bound to an official origin and class board (8.463792ms)
+✔ reads only the unique requested post and keeps file order without size labels (7.82375ms)
+✔ post reader cannot inspect without permission or move to another board (8.299166ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 7
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 383.2315
+
+✖ failing tests:
+
+test at app/schoolbell-live-evidence.test.cjs:6:1
+✖ observed class route excludes school announcements, credentials and other origins (16.684416ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   base: 'https://schoolbell-e.com/ko/main/group/100',
+  +   groupId: '100',
+  +   origin: 'https://schoolbell-e.com'
+  + }
+  - null
+  
+      at TestContext.<anonymous> (<repo>/app/schoolbell-live-evidence.test.cjs:8:168)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { origin: 'https://schoolbell-e.com', groupId: '100', base: 'https://schoolbell-e.com/ko/main/group/100' },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

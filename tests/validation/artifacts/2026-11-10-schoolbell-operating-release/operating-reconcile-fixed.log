@@ -1,0 +1,22 @@
+✔ service choice, links and manual history survive restart, default HiClass and isolate classes/schools (133.440083ms)
+✔ uncertain handoff blocks duplicates and edited content, only explicit not-posted permits retry (151.992875ms)
+✔ photo identity and order affect duplicate checks without storing private text or names (81.638666ms)
+✔ sessions isolate services, schools, year and class; legacy session belongs to only one class (30.799458ms)
+✔ class matching and official-page rules reject mismatches, auth links and unsafe URLs (6.547917ms)
+✔ corrupt state fails closed and file is preserved; prototype-like class names stay ordinary data (35.481709ms)
+✔ observed v4 login returns are navigation-only, unknown redirects and credentials are denied (10.504125ms)
+✔ manual and automatic records block one another; unresolved restart cannot become success by user confirmation (195.968208ms)
+✔ malformed automatic state fails closed without overwriting audit data (84.904917ms)
+✔ successful records require a receipt; persist only whitelisted post and photo proof across restart (100.173334ms)
+✔ legacy successful records without receipt remain readable and block duplicates without fabricating proof (113.51925ms)
+✔ verification-only completion saves original receipt and uncertainty provenance, with no send transport (166.518459ms)
+✔ wrong draft, unposted stage, ambiguous post and incomplete original proof cannot create a receipt (860.039625ms)
+✔ ordinary uncertain attempt reconciles read-only with teacher provenance and no repeat submit approval (124.667291ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1599.598042

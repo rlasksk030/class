@@ -1,0 +1,6 @@
+electronApplication.evaluate: Error: content-unverified case "\n첫 줄\n" DOM {"text":"\n첫 줄\n\n","html":"\n첫 줄\n\n"}
+    at global.runSchoolbellElectronTests (<REPO>/tests/schoolbell-electron-fixture.cjs:166:69)
+    at async <anonymous>:337:30
+    at <REPO>/tests/e2e/schoolbell-electron.e2e.cjs:9:26 {
+  log: []
+}

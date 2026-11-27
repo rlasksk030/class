@@ -1,0 +1,19 @@
+✔ runtime denies before opening a window without a code-owned official grant (0.802542ms)
+✔ an official grant does not substitute for UI identity evidence (3.044584ms)
+✔ permission is tied to method, target, approved test class and requested action (0.236875ms)
+✔ file transport rejects paths, hash mismatch, malformed bytes and limits before DOM access (7.42425ms)
+✔ only official HTTPS hosts may be used (3.818541ms)
+✔ defaults deny before DOM inspection or mutation (4.168292ms)
+✔ reads match only unique observed controls without private account data (7.345458ms)
+✔ title and body text are passed as inert JSON, never HTML or source interpolation (2.65475ms)
+✔ denies disallowed binding, revoked permission, navigation, aborted signal (1.244125ms)
+✔ a main-process grant alone cannot replace atomic DOM identity evidence (0.8465ms)
+✔ closed or overlapping transports never queue stale input (0.52975ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 109.3455

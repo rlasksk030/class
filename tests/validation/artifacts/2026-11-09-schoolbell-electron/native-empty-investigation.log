@@ -1,0 +1,6 @@
+electronApplication.evaluate: Error: content-unverified empty synthetic {"text":"\n","html":"<br>"}
+    at global.runSchoolbellElectronTests (<REPO>/tests/schoolbell-electron-fixture.cjs:163:71)
+    at async <anonymous>:337:30
+    at <REPO>/tests/e2e/schoolbell-electron.e2e.cjs:9:26 {
+  log: []
+}

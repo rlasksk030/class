@@ -1,0 +1,17 @@
+sandbox_extension_issue_file_to_process failed for <workspace>/node_modules/electron/dist/Electron.app: 1 (Operation not permitted)
+PASS final native DOM target change blocks send; durable uncertain receipt preserves the attempt
+PASS atomic DOM guard rejects scheduled mode despite stale immediate evidence; sends zero times
+AssertionError [ERR_ASSERTION]: {"status":"uncertain","message":"새 게시물의 식별정보·본문·사진 원본을 재조회로 확인하지 못했습니다. 초안과 사진은 유지됩니다. 자동으로 재전송하지 않습니다.","reason":"publication-unverified"}
++ actual - expected
+
++ 'uncertain'
+- 'success'
+
+    at <workspace>/tests/schoolbell-final-integration-fixture.cjs:82:39 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'uncertain',
+  expected: 'success',
+  operator: 'strictEqual',
+  diff: 'simple'
+}

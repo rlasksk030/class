@@ -6,7 +6,11 @@ const ROOT=path.resolve(__dirname,'../..'),OUT=require('../output.cjs');
 fs.mkdirSync(OUT,{recursive:true});
 const PROFILE=fs.mkdtempSync(path.join(OUT,'profile-timetable-'));
 let app,count=0;
+// Board sizes are changed the way a teacher does it: [배치 편집] with the keyboard, then [완료].
+async function arrange(page,steps){await page.click('#layoutToggle');for(const [sel,key,n] of steps){await page.focus(sel);for(let i=0;i<n;i++)await page.keyboard.press(key);}await page.click('#layoutDone');}
 const subjects=['영어시험, 청소','언어문화 개선','동아리활동','동아리활동','사회','사회'];
+// Timetable editing (B01): one subject field per period.
+async function fillTimetable(page,list){await page.click('[data-edit=timetable]');const fields=page.locator('#timetableRows input');const n=await fields.count();assert.ok(n>=list.length);for(let i=0;i<n;i++)await fields.nth(i).fill(list[i]||'');await page.click('#editForm .primary');}
 async function geometry(page,label,{singleLine=false}={}){
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  const g=await page.evaluate(()=>{
@@ -31,12 +35,21 @@ async function geometry(page,label,{singleLine=false}={}){
 (async()=>{try{
  app=await _electron.launch({executablePath:require('electron'),args:['--no-sandbox',path.join(ROOT,'app')],env:{...process.env,CLASSROOM_TEST_PROFILE:PROFILE}});
  const page=await app.firstWindow();
+ // The host can clamp a visible native window to a very short work area. Pin
+ // this renderer layout test so auto-fit's minimum size does not mask font controls.
+ await page.setViewportSize({width:1280,height:900});
+ assert.deepEqual(await page.evaluate(()=>[innerWidth,innerHeight]),[1280,900]);
  await app.evaluate(({ipcMain})=>{ipcMain.removeHandler('fetch');ipcMain.handle('fetch',async()=>{throw Error('offline test');});});
  await page.evaluate(()=>{localStorage.setItem('settings',JSON.stringify({grade:'6',classroom:'1'}));localStorage.setItem('dashboardLocked','false');});
+ // This profile already saw the running version's '새로워진 점' notice (whats-new.e2e tests the notice itself),
+ // so it does not open over the layout tools in the middle of these checks.
+ await page.evaluate(v=>localStorage.setItem('lastSeenVersion',JSON.stringify(v)),require(path.join(ROOT,'app/package.json')).version);
  await page.reload();await page.evaluate(()=>document.fonts.ready);
- await page.click('[data-edit=timetable]');await page.fill('#editText',subjects.map((s,i)=>`${i+1} | ${s}`).join('\n'));await page.click('#editForm .primary');
+ await fillTimetable(page,subjects);
  await geometry(page,'default card');
- await page.click('#resizeToggle');await page.focus('[data-resize=left-column]');for(let i=0;i<7;i++)await page.keyboard.press('Shift+ArrowRight');await page.click('#resizeToggle');
+ // Make room on the right (middle boards 2 columns narrower and 2 to the right), then widen the timetable.
+ await arrange(page,[['main>.morning','Shift+ArrowLeft',2],['main>.morning','ArrowRight',2],['main>.notices','Shift+ArrowLeft',2],['main>.notices','ArrowRight',2],['main>.timetable','Shift+ArrowRight',2]]);
+ assert.equal(await page.evaluate(()=>window.boardLayout.get().items.timetable.w),5);
  await geometry(page,'wider card',{singleLine:true});
  await page.screenshot({path:path.join(OUT,'timetable-wide.png')});
  await page.click('#screenSettings');for(let i=0;i<4;i++)await page.click('[aria-label="시간표 글자 크게"]');await page.click('#screenDialog .close-extra');
@@ -45,11 +58,12 @@ async function geometry(page,label,{singleLine=false}={}){
  const smaller=await geometry(page,'smaller font',{singleLine:true});assert.ok(smaller.font<bigger.font);
  await page.evaluate(()=>{const row=document.querySelector('#timetable .lesson:nth-child(5)');row.classList.add('lesson-current');row.setAttribute('aria-current','true');});
  await geometry(page,'current period highlight');
- await page.click('#resizeToggle');await page.focus('[data-resize=left-column]');for(let i=0;i<20;i++)await page.keyboard.press('Shift+ArrowLeft');await page.click('#resizeToggle');
+ await arrange(page,[['main>.timetable','Shift+ArrowLeft',4]]); // stops at the 2-column minimum
+ assert.equal(await page.evaluate(()=>window.boardLayout.get().items.timetable.w),2);
  await geometry(page,'narrow card');
- await page.click('[data-edit=timetable]');await page.fill('#editText',subjects.map((s,i)=>`${i+1} | ${i===0?'공간이 부족한 경우에만 자연스럽게 줄바꿈하는 아주 긴 수업 이름 ABCDEFGHIJKLMNOPQRSTUVWXYZ':s}`).join('\n'));await page.click('#editForm .primary');
+ await fillTimetable(page,subjects.map((s,i)=>i===0?'공간이 부족한 경우에만 자연스럽게 줄바꿈하는 아주 긴 수업 이름 ABCDEFGHIJKLMNOPQRSTUVWXYZ':s));
  await geometry(page,'long subject wraps');await page.screenshot({path:path.join(OUT,'timetable-narrow.png')});
- await page.click('[data-edit=timetable]');await page.fill('#editText','');await page.click('#editForm .primary');
+ await fillTimetable(page,[]);
  assert.ok(await page.isVisible('#timetable .empty'));count++;console.log('PASS empty timetable');
  console.log(`${count}/${count} passed`);
 }finally{if(app)await app.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

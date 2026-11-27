@@ -1,4 +1,4 @@
-const defaults={dashboard:{width:400,height:260},random:{width:440,height:360},activity:{width:680,height:560},whiteboard:{width:720,height:540}};
+const defaults={dashboard:{width:400,height:260},random:{width:440,height:360},activity:{width:680,height:560},whiteboard:{width:720,height:540},timer:{width:400,height:340}};
 function safeBounds(saved,areas,fallback,kind){
  const d=defaults[kind]||defaults.dashboard;
  const b={x:Number.isFinite(saved?.x)?Math.round(saved.x):fallback.x+40,y:Number.isFinite(saved?.y)?Math.round(saved.y):fallback.y+40,width:Number.isFinite(saved?.width)?Math.round(saved.width):d.width,height:Number.isFinite(saved?.height)?Math.round(saved.height):d.height};

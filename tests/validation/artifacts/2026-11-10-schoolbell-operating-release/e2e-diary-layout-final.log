@@ -1,0 +1,16 @@
+PASS 1440x960 scale 1: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS 1280x720 scale 1: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS 900x650 scale 1: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS scale 1: extreme zoom keeps action accessible and fields scrollable
+PASS scale 1: keyboard reaches every diary control
+PASS 1440x960 scale 1.25: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS 1280x720 scale 1.25: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS 900x650 scale 1.25: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS scale 1.25: extreme zoom keeps action accessible and fields scrollable
+PASS scale 1.25: keyboard reaches every diary control
+PASS 1440x960 scale 1.5: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS 1280x720 scale 1.5: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS 900x650 scale 1.5: button/recipients visible; fields and editor scroll internally; long messages stable
+PASS scale 1.5: extreme zoom keeps action accessible and fields scrollable
+PASS scale 1.5: keyboard reaches every diary control
+15/15 passed

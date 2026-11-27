@@ -1,0 +1,22 @@
+PASS running close preserves deadline and countdown
+PASS paused Escape preserves remaining time and resume
+PASS finished button resets saved state, banner and button without another alarm
+PASS finished Escape resets saved state, banner and button without another alarm
+PASS finished native close resets saved state, banner and button without another alarm
+PASS acknowledge inside open dialog resets and immediately restarts configured time
+PASS closed-dialog completion keeps alert until user acknowledgement
+PASS banner acknowledgement outside dialog clears completion
+PASS acknowledged completion remains idle after relaunch
+PASS unacknowledged alert survives reload, acknowledgement is persisted
+PASS PIP running timer visible
+PASS PIP paused timer preserved
+PASS PIP completion clears after acknowledgement
+PASS standalone PIP is always on top; close and reopen preserve the running timer
+PASS PIP pause, resume, restart and reset update the main timer
+PASS main-window controls update the standalone PIP
+PASS minimized main window finishes once; PIP acknowledgement clears the saved alert
+PASS small timer PIP fits horizontally; time settings restores main timer without switching to an invalid tab
+PASS manual duplicate launch exits without another window: same path
+PASS manual duplicate launch exits without another window: different app path
+PASS isolated startup OFF persists across relaunch without OS registration
+21/21 passed

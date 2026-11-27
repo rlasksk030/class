@@ -1,0 +1,11 @@
+✔ permitted scripted login redirect is not misreported as a network failure (2.828166ms)
+✔ SPA class navigation does not leave the connection status stuck loading (0.2875ms)
+✔ network failure, denied redirect and timeout report safe causes; deliberate retry recovers (6.861292ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117.547375

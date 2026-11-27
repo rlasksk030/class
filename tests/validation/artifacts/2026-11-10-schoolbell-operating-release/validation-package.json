@@ -1,0 +1,21 @@
+{
+  "source": "55b32b976a4d2c1e37ff11489d9a43f21671e9f7",
+  "metadata": {
+    "name": "classroom-dashboard-validation",
+    "version": "1.8.11-validation.55b32b976a4d",
+    "private": true,
+    "description": "우리 교실 자동 대시보드",
+    "main": "main.cjs",
+    "productName": "우리 교실 검증용",
+    "classroomValidation": true
+  },
+  "matchedSourceFiles": 132,
+  "mismatches": [],
+  "exe": "classroom-dashboard-validation-1.8.11-validation.55b32b976a4d-x64.exe",
+  "bytes": 99402885,
+  "sha256": "b827abb608bb7bae8de812b1dc87781b3510604dc7c35c57ad14895d263e6f52",
+  "asarSha256": "e733b1c686086ee1d52e05464a4868d494ccd6e0d106b97fe48df9b2d1f98dc9",
+  "release": false,
+  "windowsRuntime": "NOT RUN",
+  "installerTest": "NOT RUN"
+}

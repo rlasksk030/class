@@ -1,0 +1,11 @@
+electronApplication.evaluate: AssertionError: Expected values to be strictly equal:
++ actual - expected
+
++ 'success'
+- 'blocked'
+
+    at global.runSchoolbellElectronTests (<REPO>/tests/schoolbell-electron-fixture.cjs:147:10)
+    at async <anonymous>:337:30
+    at <REPO>/tests/e2e/schoolbell-electron.e2e.cjs:9:26 {
+  log: []
+}

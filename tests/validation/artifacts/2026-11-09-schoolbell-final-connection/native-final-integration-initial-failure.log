@@ -1,0 +1,4 @@
+sandbox_extension_issue_file_to_process failed for <workspace>/node_modules/electron/dist/Electron.app: 1 (Operation not permitted)
+TypeError: media.create is not a function
+    at attempt (<workspace>/tests/schoolbell-final-integration-fixture.cjs:45:22)
+    at async <workspace>/tests/schoolbell-final-integration-fixture.cjs:65:16

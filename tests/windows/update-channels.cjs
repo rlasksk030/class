@@ -1,4 +1,4 @@
-// node tests/windows/update-channels.cjs <directory with previous.exe, nationwide.yml and its EXE>
+// node tests/windows/update-channels.cjs <directory with previous.exe, nationwide2.yml and its EXE>
 // Runs the actual NSIS packages and their bundled updater in a disposable Windows account.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -14,9 +14,11 @@ const fixtures = path.resolve(process.argv[2]);
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'class-channels-'));
 const install = path.join(root, 'app');
 const exe = path.join(install, '우리 교실.exe');
-const manifest = fs.readFileSync(path.join(fixtures, 'nationwide.yml'), 'utf8');
+const manifest = fs.readFileSync(path.join(fixtures, 'nationwide2.yml'), 'utf8');
 const version = /^version: (\d+\.\d+\.\d+)\s*$/m.exec(manifest)[1];
 const nationalFile = v => `classroom-dashboard-nationwide-setup-${v}-x64.exe`;
+// v1.8.16+: nationwide2.yml names the installer by its GitHub Release asset URL.
+const nationalAsset = v => `https://github.com/rlasksk030/class/releases/download/nationwide-v${v}/${nationalFile(v)}`;
 const nationalBase = 'https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/';
 const okguBase = 'https://github.com/rlasksk030/class/releases';
 const old = path.join(fixtures, 'previous.exe');
@@ -41,9 +43,10 @@ async function run(edition, setup, installedVersion) {
       updater.httpExecutor.request = async options => {
         const u = new URL(options.path, options.protocol+'//'+options.hostname);
         u.search=''; const url=u.href; f.requests.push(url);
-        if(url===nationalBase+'nationwide.yml'){
+        if(url===nationalBase+'nationwide2.yml'){
           if(f.offline)throw Error('offline fixture');
-          const name=f.mixed?'classroom-dashboard-setup-'+f.nationwide+'.exe':'classroom-dashboard-nationwide-setup-'+f.nationwide+'-x64.exe';
+          // mixed: the old file-name form, which v1.8.16+ must refuse.
+          const name=f.mixed?'classroom-dashboard-nationwide-setup-'+f.nationwide+'-x64.exe':'https://github.com/rlasksk030/class/releases/download/nationwide-v'+f.nationwide+'/classroom-dashboard-nationwide-setup-'+f.nationwide+'-x64.exe';
           return data(f.nationwide,name);
         }
         if(url===okguBase+'.atom')return '<feed><entry><title>fixture</title><link href="'+okguBase+'/tag/v'+f.okgu+'"/></entry></feed>';
@@ -64,10 +67,10 @@ async function run(edition, setup, installedVersion) {
     assert.deepEqual(await instance.evaluate(()=>globalThis.channelFixture.downloads),[]);
     await page.evaluate(()=>desktop.startUpdate());
     const report=await instance.evaluate(()=>globalThis.channelFixture);
-    const expected=edition==='okgu'?okguBase+'/download/v'+future+'/classroom-dashboard-setup-'+future+'.exe':nationalBase+nationalFile(future);
+    const expected=edition==='okgu'?okguBase+'/download/v'+future+'/classroom-dashboard-setup-'+future+'.exe':nationalAsset(future);
     assert.deepEqual(report.downloads,[expected]);
     if(edition==='okgu')assert.ok(report.requests.every(url=>url.startsWith(okguBase)));
-    else assert.deepEqual([...new Set(report.requests)],[nationalBase+'nationwide.yml']);
+    else assert.deepEqual([...new Set(report.requests)],[nationalBase+'nationwide2.yml']);
     console.log('PASS '+edition+' offers its own version and requests only its own EXE after confirmation');
     if(edition==='nationwide'){
       for(const failure of ['mixed','offline']){
@@ -76,8 +79,8 @@ async function run(edition, setup, installedVersion) {
         assert.equal(await page.evaluate(()=>desktop.startUpdate()),false);
       }
       const final=await instance.evaluate(()=>globalThis.channelFixture);
-      assert.deepEqual(final.downloads,[expected]);assert.deepEqual([...new Set(final.requests)],[nationalBase+'nationwide.yml']);
-      console.log('PASS wrong-edition manifest and unavailable nationwide feed both block installation without fallback');
+      assert.deepEqual(final.downloads,[expected]);assert.deepEqual([...new Set(final.requests)],[nationalBase+'nationwide2.yml']);
+      console.log('PASS old file-name manifest and unavailable nationwide feed both block installation without fallback');
     }
   } finally {await instance.close();}
 }

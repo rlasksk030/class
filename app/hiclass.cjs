@@ -3,10 +3,19 @@ module.exports=function(main){let window,busy=false,connecting=false;const file=
  const schoolProfile=require('./school-profile.cjs').get();
  const schoolName=()=>schoolProfile.config.active?.school.SCHUL_NM||require('./school.js').legacy.SCHUL_NM;
  const photos=require('./hiclass-photos.cjs');
- const presentation=windows.controller({reveal:navigation.reveal,partition:schoolProfile.hiclassPartition});
- function open(show=true){
+ const serviceStore=require('./diary-services.cjs').createStore(schoolProfile);let windowClass;
+ function partitionFor(key){
+  let links={};try{links=JSON.parse(require('node:fs').readFileSync(file,'utf8')).links||{};}catch(e){if(e.code!=='ENOENT')throw e;}
+  const keys=Object.keys(links),active=schoolProfile.config.active,now=new Date(),year=now.getFullYear()-(now.getMonth()<2?1:0);
+  const preferred=active?[year,active.grade,active.classroom].join(':'):null;
+  return serviceStore.hiclassPartition(key,keys.includes(preferred)?preferred:keys.length===1?keys[0]:keys.length===0?key:null);
+ }
+ let presentation=windows.controller({reveal:navigation.reveal,partition:schoolProfile.hiclassPartition});
+ function open(show=true,key){
+  if(windowClass!==key){for(const old of presentation.all())old.destroy();window=null;windowClass=key;presentation=windows.controller({reveal:navigation.reveal,partition:partitionFor(key)});}
+
   if(!window||window.isDestroyed()){
-   window=new BrowserWindow({width:1200,height:850,show:false,skipTaskbar:!show,title:'하이클래스 연결',webPreferences:{partition:schoolProfile.hiclassPartition,contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
+   window=new BrowserWindow({width:1200,height:850,show:false,skipTaskbar:!show,title:'하이클래스 연결',webPreferences:{partition:partitionFor(key),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
    window.removeMenu();presentation.attach(window);const created=window;
    created.webContents.on('did-fail-load',(_event,code,_description,_url,isMainFrame)=>{if(isMainFrame&&code!==-3)created.hiclassLoadFailed=true;});
    for(const ev of ['did-navigate','did-navigate-in-page','did-finish-load'])created.webContents.on(ev,()=>setTimeout(check,600));
@@ -24,7 +33,7 @@ module.exports=function(main){let window,busy=false,connecting=false;const file=
  // once to link it. Nothing is saved without the confirmation; the note-board and class-title checks are unchanged.
  let pending=null,watchTimer=null,lastOffer='',lastProgress='',offering=false;
  const target=p=>p&&typeof p.classKey==='string'&&typeof p.label==='string'?{classKey:p.classKey,label:p.label,grade:String(p.grade||''),classroom:String(p.classroom||'')}:null;
- function progress(p){const key=JSON.stringify([p.step,p.state,p.message]);if(key===lastProgress&&!p.done)return;lastProgress=key;const m=main();if(m&&!m.isDestroyed())m.webContents.send('diary:progress',p);}
+ function progress(p){const key=JSON.stringify([p.step,p.state,p.message]);if(key===lastProgress&&!p.done)return;lastProgress=key;const m=main();if(m&&!m.isDestroyed())m.webContents.send('diary:progress',{...p,classKey:pending?.classKey||windowClass});}
  function stopWatch(){clearInterval(watchTimer);watchTimer=null;pending=null;lastOffer='';}
  async function offer(w,to,s){
   const c=flow.classify(s);
@@ -48,10 +57,10 @@ module.exports=function(main){let window,busy=false,connecting=false;const file=
   lastOffer=c.url;const r=await offer(w,pending,s);progress(r);
   if(r.done){stopWatch();presentation.finish();navigation.reveal(main());}
  }
- ipcMain.handle('diary:connect',async(event,payload)=>{if(!trusted(event))throw Error('접근 불가');return connection(async()=>{const w=open();pending=target(payload);lastOffer='';lastProgress='';await navigation.ready(w,'https://www.hiclass.net');if(pending&&!watchTimer)watchTimer=setInterval(check,1500);setTimeout(check,800);return {step:1,state:'started',message:flow.GUIDE};});});
+ ipcMain.handle('diary:connect',async(event,payload)=>{if(!trusted(event))throw Error('접근 불가');return connection(async()=>{const to=target(payload);if(!to)throw Error('잘못된 요청');const w=open(true,to.classKey);pending=to;lastOffer='';lastProgress='';await navigation.ready(w,'https://www.hiclass.net');if(pending&&!watchTimer)watchTimer=setInterval(check,1500);setTimeout(check,800);return {step:1,state:'started',message:flow.GUIDE};});});
  // Recovery: check the page that is open right now (the watcher normally does this by itself).
  ipcMain.handle('diary:link',async(event,payload)=>{if(!trusted(event))throw Error('접근 불가');const to=target(payload);if(!to)throw Error('잘못된 요청');return connection(async()=>{
-  const data=await read(),w=open();
+  const data=await read(),w=open(true,to.classKey);
   await navigation.ready(w,data.links[to.classKey]?.url||'https://www.hiclass.net');
   const s=await navigation.bounded(()=>adapter.inspect(w,schoolName()));
   const c=flow.classify(s);if(c.state!=='note')return c;
@@ -63,11 +72,12 @@ module.exports=function(main){let window,busy=false,connecting=false;const file=
   if(!trusted(event))throw Error('접근 불가');
   const link=(await read()).links?.[classKey];if(!link)return {status:'none'};
   if(busy||connecting||pending||(window&&!window.isDestroyed()&&window.isVisible()))return {status:'unknown'};
-  const r=await connection(async()=>{const w=open(false);await navigation.bounded(()=>w.loadURL(link.url),20000,()=>{if(!w.isDestroyed())w.webContents.stop();});
+  const r=await connection(async()=>{const w=open(false,classKey);await navigation.bounded(()=>w.loadURL(link.url),20000,()=>{if(!w.isDestroyed())w.webContents.stop();});
    for(let i=0;i<24;i++){const s=await adapter.inspect(w,schoolName(),link.title);if(s.login)return {status:'expired'};if(s.classTitle)return {status:'ok'};await new Promise(r=>setTimeout(r,500));}
    return {status:'unknown'};});
   return {status:['ok','expired'].includes(r?.status)?r.status:'unknown'};
  });
- ipcMain.handle('diary:publish',async(event,payload)=>{if(!trusted(event))throw Error('접근 불가');if(busy||connecting||offering)return {message:'이미 연결 또는 등록 진행 중입니다.'};if(!payload||typeof payload.parents!=='boolean'||typeof payload.students!=='boolean'||typeof payload.title!=='string'||typeof payload.body!=='string'||!payload.title.trim()||(!payload.body.trim()&&!payload.photos?.length))return {message:'제목을 입력하고 본문 또는 사진을 추가해 주세요.'};if(!payload.parents&&!payload.students)return {message:'학부모 또는 학생 중 한 곳 이상을 수신대상으로 선택해 주세요.'};busy=true;stopWatch();let data,hash,attachmentDriver,postingWindow,started=false;try{data=await read();const link=data.links[payload.classKey];if(!link)return {message:'현재 학년·반의 하이클래스 학급을 먼저 연결해 주세요.'};hash=photos.digest(payload);for(const ref of payload.photos||[])await require('./media.cjs').current().read(ref);if(data.posts[hash])return {status:data.posts[hash].status==='pending'?'uncertain':data.posts[hash].status,hash,attachmentsVerified:data.posts[hash].attachmentsVerified===true,message:data.posts[hash].status==='success'?'이미 등록한 내용입니다.':data.posts[hash].status==='draft'?'이미 하이클래스에 임시저장한 내용입니다.':'이전 등록 결과가 불확실합니다. 중복 방지를 위해 하이클래스에서 먼저 확인해 주세요.'};const w=postingWindow=open(false);attachmentDriver=payload.photos?.length?require('./hiclass-attachment-driver.cjs').create(w,payload,link):null;const before=await adapter.prepare(w,link,payload,{attachmentDriver});windows.assertBackground(w);data.posts[hash]={status:'pending',time:Date.now()};await save(data);started=true;const outcome=await adapter.submit(w,payload,before,link);const attachmentsVerified=outcome==='success'?await photos.verify(w,payload,true):false;data.posts[hash]={status:outcome,time:Date.now(),photos:payload.photos||[],attachmentsVerified};await save(data);return {status:outcome,hash,attachmentsVerified,message:outcome==='success'?'하이클래스 등록 완료':'하이클래스 임시저장 완료 (공개 등록 아님)'};}catch(e){if(started&&e.safeToRetry===true){delete data.posts[hash];await save(data);started=false;}return {status:started?'uncertain':'error',message:started?'등록 여부를 확인하지 못했습니다. 중복 등록 방지를 위해 하이클래스에서 결과를 확인해 주세요.':e.message};}finally{await attachmentDriver?.dispose();if(postingWindow)photos.forget(postingWindow);presentation.finish();busy=false;}});
+ ipcMain.handle('diary:publish',async(event,payload)=>{if(!trusted(event))throw Error('접근 불가');if(payload?.classKey&&serviceStore.get(payload.classKey).service!=='hiclass')return {status:'blocked',message:'현재 학급의 발행 서비스가 하이클래스가 아닙니다.'};if(busy||connecting||offering)return {message:'이미 연결 또는 등록 진행 중입니다.'};if(!payload||typeof payload.parents!=='boolean'||typeof payload.students!=='boolean'||typeof payload.title!=='string'||typeof payload.body!=='string'||!payload.title.trim()||(!payload.body.trim()&&!payload.photos?.length))return {message:'제목을 입력하고 본문 또는 사진을 추가해 주세요.'};if(!payload.parents&&!payload.students)return {message:'학부모 또는 학생 중 한 곳 이상을 수신대상으로 선택해 주세요.'};busy=true;stopWatch();let data,hash,attachmentDriver,postingWindow,started=false;try{data=await read();const link=data.links[payload.classKey];if(!link)return {message:'현재 학년·반의 하이클래스 학급을 먼저 연결해 주세요.'};hash=photos.digest(payload);for(const ref of payload.photos||[])await require('./media.cjs').current().read(ref);if(data.posts[hash])return {status:data.posts[hash].status==='pending'?'uncertain':data.posts[hash].status,hash,attachmentsVerified:data.posts[hash].attachmentsVerified===true,message:data.posts[hash].status==='success'?'이미 등록한 내용입니다.':data.posts[hash].status==='draft'?'이미 하이클래스에 임시저장한 내용입니다.':'이전 등록 결과가 불확실합니다. 중복 방지를 위해 하이클래스에서 먼저 확인해 주세요.'};const w=postingWindow=open(false,payload.classKey);attachmentDriver=payload.photos?.length?require('./hiclass-attachment-driver.cjs').create(w,payload,link):null;const before=await adapter.prepare(w,link,payload,{attachmentDriver});windows.assertBackground(w);data.posts[hash]={status:'pending',time:Date.now()};await save(data);started=true;const outcome=await adapter.submit(w,payload,before,link);const attachmentsVerified=outcome==='success'?await photos.verify(w,payload,true):false;data.posts[hash]={status:outcome,time:Date.now(),photos:payload.photos||[],attachmentsVerified};await save(data);return {status:outcome,hash,attachmentsVerified,message:outcome==='success'?'하이클래스 등록 완료':'하이클래스 임시저장 완료 (공개 등록 아님)'};}catch(e){if(started&&e.safeToRetry===true){delete data.posts[hash];await save(data);started=false;}return {status:started?'uncertain':'error',message:started?'등록 여부를 확인하지 못했습니다. 중복 등록 방지를 위해 하이클래스에서 결과를 확인해 주세요.':e.message};}finally{await attachmentDriver?.dispose();if(postingWindow)photos.forget(postingWindow);presentation.finish();busy=false;}});
+ ipcMain.handle('diary:close',event=>{if(!trusted(event))throw Error('접근 불가');if(busy||connecting||offering)return {closed:false,message:'하이클래스 연결 또는 등록이 끝난 뒤 서비스를 바꿔 주세요.'};stopWatch();for(const w of presentation.all())w.destroy();window=null;return {closed:true};});
  return ()=>!busy&&!connecting&&!offering&&!pending;
 };

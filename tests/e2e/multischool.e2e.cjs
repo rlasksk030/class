@@ -4,11 +4,11 @@ const {_electron}=require('playwright-core'),Schools=require('../../app/school.j
 const root=path.resolve(__dirname,'../..'),profile=fs.mkdtempSync(path.join(os.tmpdir(),'class-188-schools-'));
 const one={...Schools.legacy,ATPT_OFCDC_SC_CODE:'B10',SD_SCHUL_CODE:'7010001',SCHUL_NM:'가상초등학교',ORG_RDNMA:'가상 서울 주소'};
 const two={...one,ATPT_OFCDC_SC_CODE:'J10',SD_SCHUL_CODE:'7010002',ORG_RDNMA:'가상 경기 주소'};
-let app,page,count=0;
+let app,page,count=0;const pageErrors=[];
 function ok(label,result){assert.ok(result,label);console.log('PASS '+label);count++;}
 async function launch(){
  app=await _electron.launch({executablePath:require('electron'),args:[path.join(root,'app')],env:{...process.env,CLASSROOM_TEST_PROFILE:profile}});
- page=await app.firstWindow();await page.waitForLoadState('domcontentloaded');
+ page=await app.firstWindow();page.on('pageerror',e=>pageErrors.push(e.message));await page.waitForLoadState('domcontentloaded');
  await app.evaluate(({app,ipcMain},schools)=>{
   // The harness launches the replacement process after observing the original process exit.
   app.relaunch=()=>{};globalThis.seen=[];
@@ -33,16 +33,25 @@ async function select(school){
 }
 (async()=>{try{
  await launch();ok('new installation starts with NEIS helper and no selected school',await page.locator('#settingsDialog[open] #neisGuide[open]').count()&&await page.locator('#grade').isDisabled());
+ // The PIP snapshot runs every 120 ms; give it more than ten passes without a selected school.
+ await page.waitForTimeout(1500);
+ const neisBeforeSchool=(await app.evaluate(()=>globalThis.seen)).filter(([name])=>/Timetable$|^mealServiceDietInfo$|^classInfo$/.test(name));
+ ok('no-school first run keeps the school prompt without page errors or NEIS lookups',pageErrors.length===0&&!neisBeforeSchool.length&&await page.locator('#timetable').innerText()==='설정에서 학교를 선택해 주세요.'&&await page.locator('#meal').innerText()==='설정에서 학교를 선택해 주세요.');
  await select(one);await page.click('#refresh');await page.waitForFunction(()=>document.querySelector('#meal').innerText.includes('가상 급식'));
+ ok('selected school shows NEIS timetable and meal on the dashboard',(await page.locator('#timetable').innerText()).includes('가상 국어')&&(await page.locator('#meal').innerText()).includes('가상 급식'));
  const requests=await app.evaluate(()=>globalThis.seen);
  ok('both NEIS services receive selected office and school codes', ['elsTimetable','mealServiceDietInfo'].every(ep=>requests.some(([name,p])=>name===ep&&p.ATPT_OFCDC_SC_CODE==='B10'&&p.SD_SCHUL_CODE==='7010001')));
  await page.evaluate(()=>{for(const key of ['classRosters','diaryDrafts','activityCompletion'])localStorage.setItem(key,JSON.stringify({fixture:'first school'}));});
  await app.evaluate(({app},root)=>{const p=process.mainModule.require(root+'/app/school-profile.cjs').get(),fs=process.mainModule.require('fs');fs.writeFileSync(p.dir+'/hiclass-links.json',JSON.stringify({links:{'6:1':{title:'first school'}},posts:{}}));},root);
+ await page.evaluate(()=>desktop.diaryServiceSelect({classKey:'2026:6:1',service:'schoolbell'}));
  await select(two);
  ok('same name, grade and class in another district open an isolated store',await page.evaluate(()=>['classRosters','diaryDrafts','activityCompletion'].every(k=>!localStorage.getItem(k)?.includes('first school'))));
  ok('second school has no first-school HiClass link',!(await page.evaluate(()=>desktop.diaryStatus('6:1'))).linked);
+ ok('second school has no first-school publishing selection or history',await page.evaluate(async()=>{const s=await desktop.diaryServiceStatus('2026:6:1');return s.service==='hiclass'&&!s.link&&!s.posts.length;}));
  await page.evaluate(()=>localStorage.setItem('activityCompletion',JSON.stringify({fixture:'second school'})));
  await select(one);
  ok('returning restores all first-school data and the correct link',await page.evaluate(async()=>['classRosters','diaryDrafts','activityCompletion'].every(k=>localStorage.getItem(k)?.includes('first school'))&&(await desktop.diaryStatus('6:1')).linked));
+ ok('returning restores first-school publishing service',await page.evaluate(async()=>(await desktop.diaryServiceStatus('2026:6:1')).service==='schoolbell'));
+ ok('no renderer page errors across school selections and restarts',pageErrors.length===0);
  console.log(count+'/'+count+' passed');
-}finally{if(app)await app.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
+}finally{if(pageErrors.length)console.error('page errors:',[...new Set(pageErrors)]);if(app)await app.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

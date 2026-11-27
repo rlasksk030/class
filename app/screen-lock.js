@@ -1,9 +1,11 @@
 (() => {
- const button=document.createElement('button');button.id='screenLock';document.querySelector('.utility-controls').append(button);
- const blocked='[data-edit],#settings,#resizeToggle,#resizeReset,#screenSettings';
+ const button=document.createElement('button');button.id='screenLock';button.type='button';button.className='uc-tool';
+ const label=document.createElement('span');label.className='uc-tool__label';button.append(ucIcon('lock'),label);
+ document.querySelector('.app-bar__right').append(button);
+ const blocked='[data-edit],#settings,#layoutToggle,#screenSettings,.period-setup';
  function apply(locked){
-  if(locked&&document.body.classList.contains('board-size-mode'))document.getElementById('resizeToggle').click();
-  window.dashboardLocked=locked;put('dashboardLocked',locked);document.body.classList.toggle('dashboard-locked',locked);button.textContent=locked?'🔒 잠금 해제':'화면 잠금';button.setAttribute('aria-pressed',String(locked));
+  if(locked&&window.boardLayout?.editing())window.boardLayout.finish(); // locking keeps the arrangement made so far
+  window.dashboardLocked=locked;put('dashboardLocked',locked);document.body.classList.toggle('dashboard-locked',locked);label.textContent=locked?'잠금 해제':'화면 잠금';button.setAttribute('aria-pressed',String(locked));
   document.querySelectorAll(blocked).forEach(el=>el.disabled=locked);
   if(locked)for(const id of ['settingsDialog','editDialog','screenDialog','periodDialog','ddayDialog']){const d=document.getElementById(id);if(d?.open)d.close();}
  }

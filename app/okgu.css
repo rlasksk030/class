@@ -4,7 +4,6 @@
 @font-face{font-family:'Nanum Barun Gothic';src:url('fonts/NanumBarunGothicBold.woff') format('woff');font-weight:700;font-display:swap}
 :root{font-family:'Gowun Batang',serif}
 h1,#date{font-family:'Gowun Batang','Batang',serif}
-main{grid-template-columns:minmax(190px,.21fr) minmax(260px,.55fr) minmax(220px,.24fr)}
 #timetable{width:90%;min-width:0;display:flex;flex-direction:column}
 .lesson{flex:1;min-height:0;padding:.1em .18em;gap:.45em;align-items:center}
 .lesson-current{font-weight:700}
@@ -12,11 +11,11 @@ main{grid-template-columns:minmax(190px,.21fr) minmax(260px,.55fr) minmax(220px,
 #ddayBadge:empty{display:none}
 #ddayBadge span{background:#f1ebf8;color:#675181;border:1px solid #e1d5ee;border-radius:99px;padding:8px 20px;font-size:clamp(22px,1.65vw,30px);font-weight:700;max-width:48%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 header:has(#ddayBadge:not(:empty)){row-gap:12px}
-#timerButton{position:fixed;right:16px;bottom:8px;font-size:13px;padding:6px 12px;border-color:#cbd4e0;background:#f5f7fa}
-.utility-controls{left:calc(50% - 120px)}
-body:not(.whiteboard-active) .size-controls{left:calc(50% - 166px)}
-.whiteboard-active .utility-controls{right:125px;left:auto}
-.dashboard-locked [data-edit],.dashboard-locked #settings,.dashboard-locked .size-controls,.dashboard-locked #screenSettings{visibility:hidden}
+
+
+
+
+
 .whiteboard-surface{isolation:isolate}
 #whiteboardCanvas{position:absolute;inset:0;width:100%;height:100%}
 #whiteboardTextLayer{position:absolute;inset:0;touch-action:none}
@@ -31,18 +30,17 @@ body:not(.whiteboard-active) .size-controls{left:calc(50% - 166px)}
 .textblock-width{display:none;position:absolute;right:0;bottom:0;cursor:ew-resize}
 .whiteboard-block.selected .textblock-width{display:block}
 @media(min-width:1800px){#morning{--max-font:44}#timetable{--max-font:48}#meal{--max-font:30}#notices{--max-font:32}}
-@media(max-width:1100px){main{grid-template-columns:minmax(190px,.21fr) minmax(260px,.55fr) minmax(220px,.24fr)}#ddayBadge span{font-size:22px;padding:6px 14px}}
+@media(max-width:1100px){#ddayBadge span{font-size:22px;padding:6px 14px}}
 
 /* One bundled typeface across the dashboard and every tool. */
 button,input,select,textarea{font-family:inherit}
 #morning,#notices,#timetable,#ddayBadge{font-weight:700}
 
-/* Keep screen navigation centered in every mode. */
-body .utility-controls{left:auto;right:125px;bottom:8px;transform:none}
-.screen-tabs{position:fixed;left:50%;bottom:8px;transform:translateX(-50%);display:flex;gap:4px;white-space:nowrap;background:white;border-radius:8px;padding:2px}
-body .size-controls,body:not(.whiteboard-active) .size-controls{left:16px;bottom:8px;transform:none}
-/* Give the activity board more room and make the header easier to read. */
-main{grid-template-columns:minmax(220px,21fr) minmax(260px,61fr) minmax(210px,18fr)}
+
+
+
+
+/* Make the header easier to read. */
 header{column-gap:24px}
 .weather.card{width:clamp(240px,24vw,340px);max-width:none;padding-left:18px}
 #weather{font-size:16px}
@@ -60,16 +58,16 @@ header{column-gap:24px}
 body.random-active .date-dday-line #ddayBadge{display:none}
 #date{font-size:clamp(21px,1.9vw,30px);font-weight:700}
 
-/* Larger, centered screen tabs with a clear selected state. */
-body{padding-bottom:76px}
-body .screen-tabs{bottom:10px;gap:6px;padding:3px;border:1px solid #dce1e8;box-shadow:0 2px 10px #1823350d}
-body .screen-tabs button{font-size:18px;font-weight:700;min-height:42px;padding:8px 15px;color:#4b5563;border-radius:7px}
-body .screen-tabs button[aria-selected="true"]{background:#354d74;color:#fff;border-color:#354d74}
-body .utility-controls{bottom:19px}
-body .size-controls,body:not(.whiteboard-active) .size-controls{bottom:20px}
-#timerButton{bottom:18px}
+
+
+
+
+
+
+
+
 #whiteboardScreen{padding-bottom:72px}
-@media(max-width:1000px){body .utility-controls{right:112px}body .utility-controls>button{padding-inline:5px}body .screen-tabs button{padding-inline:11px;font-size:17px}}
+
 
 
 /* D-Day badges follow their text length, without truncating event names. */
@@ -101,9 +99,9 @@ body.whiteboard-active #ddayBadge,body.random-active #ddayBadge,body.activity-ac
 #clock{font-size:72px}
 @media(max-width:1100px){#clock{font-size:60px}.headerRight nav{gap:4px}.headerRight nav button{padding:8px 7px;font-size:11px}}
 
-.open-update.update-available{background:#e2f2df;color:#285c32;border-color:#68a875;font-weight:700;animation:update-ready 2.4s ease-in-out infinite}
-@keyframes update-ready{0%,100%{box-shadow:0 0 0 0 #68a87522}50%{box-shadow:0 0 0 5px #68a87544}}
-@media(prefers-reduced-motion:reduce){.open-update.update-available{animation:none}}
+.open-update.update-available{background:var(--uc-done-bg);color:var(--uc-done-text);border-color:var(--uc-done-line);font-weight:700}
+
+
 
 #whiteboardPhotoFiles[hidden]{display:none}
 #whiteboardPhotoStatus{font-size:14px;max-height:3em;overflow:auto;flex-shrink:0;color:#555}

@@ -1,0 +1,11 @@
+✔ validation metadata isolates data even when a production test-profile override is supplied (16.0555ms)
+✔ validation updater registers read-only status but never loads the network updater or installs (3.474167ms)
+✔ packaged validation startup never inventories or changes production login entries (2.115709ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 323.526459

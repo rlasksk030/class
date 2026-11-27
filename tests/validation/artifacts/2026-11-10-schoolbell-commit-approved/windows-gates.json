@@ -1,0 +1,33 @@
+{
+  "initialState": "suspended",
+  "resumeConfirmed": true,
+  "firstProbeDiagnostic": "Host UTF-8 decoding rejected guest legacy-encoding stderr; no product result inferred.",
+  "currentUserProbe": {
+    "exit": 0,
+    "elapsedSeconds": 46.8,
+    "probeResult": {
+      "probe": "existing-user-node-and-product",
+      "commandResponded": true,
+      "nodeOnPath": false,
+      "standardNodeCount": 0,
+      "installedProductCount": 0,
+      "nodeVersion": null
+    },
+    "outputPresent": true,
+    "errorPresent": false
+  },
+  "newNodeInstalled": false,
+  "newVM": false,
+  "newServer": false,
+  "productionCapabilityEnabled": false,
+  "ordinaryRecipientClassVerified": false,
+  "appRun": "NOT RUN",
+  "installedVersionUpdate": "NOT RUN",
+  "draftPhotoSessionPreservation": "NOT RUN",
+  "schoolbellConnectionOnWindows": "NOT RUN",
+  "hiclassRegressionOnWindows": "NOT RUN",
+  "rebootRun": "NOT RUN",
+  "release": "NO GO",
+  "additionalCost": 0,
+  "finalState": "suspended"
+}

@@ -1,0 +1,173 @@
+{
+  "sourceCommit": "1663a948bbb4d632a50c1ce309f9dedae083e6b1",
+  "scope": "Schoolbell manual handoff; all remote service pages synthetic",
+  "macOS": {
+    "syntax": 87,
+    "unit": 61,
+    "e2e": {
+      "suites": 18,
+      "passed": 327,
+      "total": 327
+    }
+  },
+  "windows": {
+    "os": "Windows 11 Pro ARM64 10.0.26200",
+    "node": "22.14.0 x64",
+    "electron": "40.10.6 x64",
+    "syntax": 87,
+    "unit": 61,
+    "suites": [
+      {
+        "suite": "schoolbell",
+        "passed": 16,
+        "total": 16,
+        "log": "windows-schoolbell.log",
+        "sha256": "72df0480d9690db3d4172e96feacda5ca5fbc879e2d0cad2d5d73b6047503e61"
+      },
+      {
+        "suite": "hiclass-link",
+        "passed": 16,
+        "total": 16,
+        "log": "windows-hiclass-link.log",
+        "sha256": "803e46969a815e5520efe63dc3f6c03bb8f7113f60309b74728e06e97171d1db"
+      },
+      {
+        "suite": "diary-drafts",
+        "passed": 17,
+        "total": 17,
+        "log": "windows-diary-drafts.log",
+        "sha256": "9b7fff3f138987ac9c6ec630f8f5678bc0da89368d77d3a6ac25458909ef3aa2"
+      },
+      {
+        "suite": "hiclass-recipients",
+        "passed": 38,
+        "total": 38,
+        "log": "windows-hiclass-recipients.log",
+        "sha256": "a3023961bacf7500b4f8f8f5aad9d742112b5cd39bd62deae6014560fca3fdbe"
+      },
+      {
+        "suite": "hiclass-submit",
+        "passed": 21,
+        "total": 21,
+        "log": "windows-hiclass-submit.log",
+        "sha256": "1ef5c9e7959538d1a02bc8534af0dff4efcdd0a466f18cad18924b3176c5cba2"
+      },
+      {
+        "suite": "hiclass-window",
+        "passed": 11,
+        "total": 11,
+        "log": "windows-hiclass-window.log",
+        "sha256": "db718d59e3db7d7cf43c0013b0567261c77802c07c3499ad68c8f88005eece15"
+      },
+      {
+        "suite": "photos",
+        "passed": 22,
+        "total": 22,
+        "log": "windows-photos.log",
+        "sha256": "38372e1f8e588d1368200967ef7bde8f405f43999e89237af32078fc07ac88e2"
+      },
+      {
+        "suite": "hiclass-photos",
+        "passed": 4,
+        "total": 4,
+        "log": "windows-hiclass-photos.log",
+        "sha256": "cde3b5f7c3e3a2ddda41ed68e2bc265642e92bd36bc9d3d3980452e45aea9ea4"
+      },
+      {
+        "suite": "photo-boundaries",
+        "passed": 6,
+        "total": 6,
+        "log": "windows-photo-boundaries.log",
+        "sha256": "70d91456090e4cee868c5f1d3a541a1c9c2ca77b8a42ef44d6e222f06b75e81d"
+      },
+      {
+        "suite": "photo-transfer",
+        "passed": 5,
+        "total": 5,
+        "log": "windows-photo-transfer.log",
+        "sha256": "07553b67510ceb0110048856590b8e7646f95d11b2f3bd2cba0bea68b5739e53"
+      },
+      {
+        "suite": "multischool",
+        "passed": 7,
+        "total": 7,
+        "log": "windows-multischool.log",
+        "sha256": "7a87391cacfff953862720f171aa42d92537b9e1f90ca7111de7cd7fee616e9b"
+      },
+      {
+        "suite": "timer-startup",
+        "passed": 22,
+        "total": 22,
+        "log": "windows-timer-startup.log",
+        "sha256": "4a4abc1b02714fb2a1797f82c610b4153bd9c474328fedaa5b5a0d9551cbd69b"
+      }
+    ],
+    "total": 185,
+    "sourceIdentity": {
+      "syntheticServices": true,
+      "files": 95,
+      "differences": [],
+      "nodeArchitecture": "x64",
+      "electronVersion": "40.10.6",
+      "installedPackage": false
+    }
+  },
+  "notRun": [
+    "real teacher login/permission/class verification",
+    "real Schoolbell photo upload or publication",
+    "new NSIS installer/update validation",
+    "physical native x64 Windows PC"
+  ],
+  "automaticPosting": "BLOCKED: official permission/API contract not established",
+  "githubActions": {
+    "before": 19,
+    "after": 19,
+    "newRuns": 0,
+    "extraCost": 0,
+    "billingAccountScope": "unavailable: API user scope missing"
+  },
+  "macLogs": [
+    {
+      "log": "syntax-final.log",
+      "sha256": "73300d85a9bd81bd0879692e08974662645dbab684186fba335aea77449fdab1"
+    },
+    {
+      "log": "unit-final.log",
+      "sha256": "f03b20c4084fed4f159e2b801508a5c7b2f88ebd8d2e941d01bf058bcb4b56e0"
+    },
+    {
+      "log": "e2e.log",
+      "sha256": "7a7646b9e61aaa7ac04b4967d3a0922a6825a49ed02f112259b52f39c0936234"
+    },
+    {
+      "log": "hiclass-link-retry.log",
+      "sha256": "803e46969a815e5520efe63dc3f6c03bb8f7113f60309b74728e06e97171d1db"
+    },
+    {
+      "log": "remaining.log",
+      "sha256": "39ddbd7d4b198de5f1fac9d44247b054e6dd45386963867d57f43fcc34286c80"
+    },
+    {
+      "log": "schoolbell-final.log",
+      "sha256": "72df0480d9690db3d4172e96feacda5ca5fbc879e2d0cad2d5d73b6047503e61"
+    }
+  ],
+  "windowsLogs": [
+    {
+      "log": "windows-syntax.log",
+      "sha256": "aa2b3a44e14c2b595780058d46ac275f5ceb5473b879920f5526f3840b155c1b"
+    },
+    {
+      "log": "windows-unit-final.log",
+      "sha256": "22411f9d6820e8de94acbad6a3fb2021003aaa94cce440576d2890df206d9ad0"
+    },
+    {
+      "log": "windows-environment.log",
+      "sha256": "688c2764e7220bd4858057b3d8b45376a7045d3d0863e4daa9be60e774f4cded"
+    },
+    {
+      "log": "windows-source-identity.json",
+      "sha256": "0199b2c4e3402a93ec47b6a2a223b56c86ac936c5de2c8ecf620f8920dbe7a28"
+    }
+  ]
+}

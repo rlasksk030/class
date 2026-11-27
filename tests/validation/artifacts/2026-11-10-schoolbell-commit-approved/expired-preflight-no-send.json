@@ -1,0 +1,163 @@
+{
+  "reason": "test-scope-expired-before-send",
+  "cancelledBeforeSend": true,
+  "nativeSendEvents": 0,
+  "comparisonTrace": [
+    {
+      "step": "checkCommit",
+      "state": "started"
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "before-readDate",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": false,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": true,
+      "changes": {
+        "inputEvent": false,
+        "titleMutation": false,
+        "changeEvent": false,
+        "changedAttribute": false,
+        "classAttribute": true,
+        "bodyMutation": true,
+        "characterData": false,
+        "childList": false,
+        "fileMutation": false,
+        "unchangedAttribute": true,
+        "otherAttribute": true,
+        "editableAttribute": true
+      },
+      "reason": "commit-revision-mismatch"
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "after-readDate",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": false,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": true,
+      "changes": {
+        "inputEvent": false,
+        "titleMutation": false,
+        "changeEvent": false,
+        "changedAttribute": false,
+        "classAttribute": true,
+        "bodyMutation": true,
+        "characterData": false,
+        "childList": false,
+        "fileMutation": false,
+        "unchangedAttribute": true,
+        "otherAttribute": true,
+        "editableAttribute": true
+      },
+      "reason": "commit-revision-mismatch"
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "before-focus",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": false,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": true,
+      "changes": {
+        "inputEvent": false,
+        "titleMutation": false,
+        "changeEvent": false,
+        "changedAttribute": false,
+        "classAttribute": true,
+        "bodyMutation": true,
+        "characterData": false,
+        "childList": false,
+        "fileMutation": false,
+        "unchangedAttribute": true,
+        "otherAttribute": true,
+        "editableAttribute": true
+      },
+      "reason": "commit-revision-mismatch"
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "after-focus",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": false,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": true,
+      "changes": {
+        "inputEvent": false,
+        "titleMutation": false,
+        "changeEvent": false,
+        "changedAttribute": false,
+        "classAttribute": true,
+        "bodyMutation": true,
+        "characterData": false,
+        "childList": false,
+        "fileMutation": false,
+        "unchangedAttribute": true,
+        "otherAttribute": true,
+        "editableAttribute": true
+      },
+      "reason": "commit-revision-mismatch"
+    },
+    {
+      "step": "commit-comparison",
+      "stage": "after-target-ready",
+      "notSubmitted": true,
+      "sendEnabled": true,
+      "singleAction": true,
+      "revisionMatch": false,
+      "titleMatch": true,
+      "bodyMatch": true,
+      "sameDocument": true,
+      "semanticRevisionMatch": true,
+      "changes": {
+        "inputEvent": false,
+        "titleMutation": false,
+        "changeEvent": false,
+        "changedAttribute": false,
+        "classAttribute": true,
+        "bodyMutation": true,
+        "characterData": false,
+        "childList": false,
+        "fileMutation": false,
+        "unchangedAttribute": true,
+        "otherAttribute": true,
+        "editableAttribute": true
+      },
+      "reason": "commit-revision-mismatch"
+    },
+    {
+      "step": "commit-revalidation",
+      "contextMatches": true,
+      "audienceMatches": true,
+      "originalsMatch": true,
+      "titleMatches": true,
+      "bodyMatches": true,
+      "semanticRevisionMatches": true
+    },
+    {
+      "step": "commit-revision-refresh",
+      "revalidated": true
+    },
+    {
+      "step": "checkCommit",
+      "state": "complete"
+    }
+  ]
+}

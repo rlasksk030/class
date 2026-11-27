@@ -1,22 +1,64 @@
-@font-face{font-family:'Gowun Batang';src:url('fonts/GowunBatang-Regular.ttf')}@font-face{font-family:'Gowun Batang';src:url('fonts/GowunBatang-Bold.ttf');font-weight:700}
-*{box-sizing:border-box}body{margin:0;padding:12px;background:#fff;color:#303640;font-family:'Gowun Batang',serif;height:100vh;display:flex;flex-direction:column;gap:10px;overflow:hidden}header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex:none}header strong{font-size:20px;overflow-wrap:anywhere}button,input,textarea{font:inherit;color:inherit}button{cursor:pointer;background:#fff;border:1px solid #dce1e8;border-radius:8px;min-height:44px;padding:7px 10px;font-size:18px;touch-action:manipulation}button:focus-visible,textarea:focus-visible{outline:3px solid #9aafcb}#content{flex:1;min-height:0;overflow:auto}.clock{font-size:28px;color:#737b86}.current{font-size:clamp(25px,6vw,40px);font-weight:700;margin:6px 0}.next{font-size:22px;color:#626a76}.pip-timer{display:block;width:100%;font-size:38px;font-weight:700;background:#edf2f9;margin-top:12px}.pip-counts{font-size:20px;color:#687561;margin:8px 0}.pip-activity{height:100%;display:flex;flex-direction:column}.pip-activity h1{font-size:25px;margin:0;overflow-wrap:anywhere}.pip-columns{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}.pip-column{background:#faf8f4;border-radius:8px;display:flex;min-height:0;flex-direction:column;padding:8px}.pip-column.complete{background:#f0f6ec}.pip-column h2{font-size:18px;margin:0 0 8px}.pip-cards{overflow:auto;min-height:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(110px,100%),1fr));gap:8px;align-content:start}.pip-cards button{font-size:23px;font-weight:700;min-height:50px;overflow-wrap:anywhere}.complete button{background:#e4eedc;border-color:#ccdcbc}.random-result{font-size:clamp(28px,8vw,60px);font-weight:700;text-align:center;margin:14px 0;overflow-wrap:anywhere}.random-pip{text-align:center}.random-pip button{font-size:23px;margin:4px}.random-pip .primary{background:#354d74;color:#fff;padding-inline:30px}.hint{font-size:17px;color:#737b86}.pip-board{position:relative;width:100%;height:100%;touch-action:manipulation;overflow:hidden}.pip-board canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.pip-block{position:absolute;border:1px solid transparent;background:transparent;padding:0;resize:none;line-height:1.4;min-height:44px;overflow:auto;white-space:pre-wrap}.pip-block:focus{border-color:#cbd4e0;outline:none}.all-done{color:#49633e;font-weight:700}button:disabled{opacity:.6;cursor:default}
-
-/* One proportional unit system for all PIP contents. */
-body{padding:.65rem;gap:.5rem;font-size:1rem}
-header{gap:.5rem}header strong{font-size:1.25rem}
-button{min-height:2.75rem;padding:.44rem .625rem;font-size:1.125rem;border-radius:.5rem}
-#expand{min-height:2.25rem;font-size:1rem;padding:.35rem .5rem;white-space:nowrap}
-.clock{font-size:1.5rem}.current{font-size:2rem;margin:.35rem 0}.next{font-size:1.25rem}
-.pip-timer{font-size:2.25rem;margin-top:.6rem}
-.pip-counts{font-size:1.25rem;margin:.5rem 0}.pip-activity h1{font-size:1.56rem}
-.pip-columns{gap:.625rem}.pip-column{padding:.5rem;border-radius:.5rem}.pip-column h2{font-size:1.125rem;margin-bottom:.5rem}
-.pip-cards{grid-template-columns:repeat(auto-fit,minmax(min(6.875rem,100%),1fr));gap:.5rem}
-.pip-cards button{font-size:1.44rem;min-height:3.125rem}
-.random-result{font-size:3rem;margin:.875rem 0}.random-pip button{font-size:1.44rem;margin:.25rem}.random-pip .primary{padding-inline:1.875rem}
-.hint{font-size:1.06rem}.pip-block{min-height:2.75rem}
+/* 우리 교실 PIP 창 (지시서 7장 J01–J04, 약 420×260). 크기는 rem(창 크기에 따라 pip.js가 바꿈), 색은 --uc-* 변수만. */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;display:flex;flex-direction:column;overflow:hidden;background:var(--uc-surface);color:var(--uc-text);font-family:var(--uc-font-sub);font-size:1rem}
+button,input,textarea{font:inherit;color:inherit}
+button{min-height:2.75rem;min-width:2.75rem;padding:0 .75rem;border:1px solid var(--uc-line-strong);border-radius:var(--uc-radius-md);background:var(--uc-surface);font-family:var(--uc-font-sub);font-size:1rem;font-weight:700;cursor:pointer;touch-action:manipulation}
+button:active{filter:brightness(.96)}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--uc-primary);outline-offset:2px}
+button:disabled{background:var(--uc-surface-2);border-color:var(--uc-line);color:var(--uc-text-disabled);cursor:default}
+button.primary{border:none;background:var(--uc-primary);color:var(--uc-on-primary)}
+button.primary:disabled{background:#C9D1DD;color:#FFFFFF}
 [hidden]{display:none!important}
-
-#pipActivityTitle{width:100%;min-width:0;font-size:1.6rem;font-weight:700;padding:.4rem;border:1px solid #dce1e8;border-radius:.4rem;background:#fff;flex:none}
-.pip-activity-body{display:flex;flex-direction:column;flex:1;min-height:0}
-
-.pip-photo{object-fit:contain;pointer-events:auto;user-select:none;border:0;background:transparent}
+/* 위 제목 줄 (48px, 파스텔 바탕) */
+header.uc-pip__bar{flex:none;display:flex;align-items:center;gap:.5rem;height:3rem;padding:0 .25rem 0 .9rem;background:var(--uc-blue-tint);color:var(--uc-blue-text)}
+body[data-kind="activity"] header.uc-pip__bar{background:var(--uc-green-tint);color:var(--uc-green-text)}
+body[data-kind="random"] header.uc-pip__bar{background:var(--uc-blue-tint)}
+.uc-pip__title{flex:1 1 auto;min-width:0;font-family:var(--uc-font-main);font-size:1.125rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body[data-kind="activity"] .uc-pip__title{display:none}
+.pip-bar-info{flex:none;font-size:.85rem;color:inherit}
+.pip-bar-info b{font-family:var(--uc-font-main);font-size:1.4rem;margin-right:.15rem}
+#expand.uc-pip__action{flex:none;height:2.75rem;min-height:2.75rem;padding:0 .75rem;border:none;border-radius:var(--uc-radius-md);background:rgba(255,255,255,.75);color:inherit;font-size:.875rem}
+#content{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;padding:.6rem .9rem .75rem;overflow:auto}
+/* J01 대시보드: 지금 교시만 크게, 아래 얇은 선 밑에 시각 · 타이머 */
+.current{flex:1 1 auto;display:flex;align-items:flex-end;margin:0;font-family:var(--uc-font-main);font-size:3rem;font-weight:700;line-height:1.15;color:var(--uc-now-text);overflow-wrap:anywhere}
+.next{flex:none;margin:.3rem 0 .6rem;font-family:var(--uc-font-main);font-size:1.25rem;color:var(--uc-text-2);overflow-wrap:anywhere}
+.pip-foot{flex:none;display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding-top:.5rem;border-top:1px solid var(--uc-line)}
+.clock{font-family:var(--uc-font-main);font-size:1.375rem;color:var(--uc-text-2)}
+.pip-timer{margin-left:auto;min-height:2.75rem;padding:0 .25rem;border:none;background:transparent;font-family:var(--uc-font-main);font-size:1.875rem;font-weight:700;color:var(--uc-primary);font-variant-numeric:tabular-nums}
+.pip-timer::before{content:'타이머';margin-right:.5rem;font-family:var(--uc-font-sub);font-size:.8rem;font-weight:400;color:var(--uc-text-3)}
+/* J02 타이머: 큰 숫자 남색, 버튼 4칸 순서 고정 */
+.timer-pip{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.35rem;text-align:center}
+#pipTimerDisplay{font-family:var(--uc-font-main);font-variant-numeric:tabular-nums;font-size:4.75rem;font-weight:700;line-height:1;color:var(--uc-primary)}
+.timer-pip[data-state="idle"] #pipTimerDisplay{color:var(--uc-text)}
+#pipTimerMessage{min-height:1.4em;font-size:.95rem;color:var(--uc-text-2)}
+.timer-pip[data-state="finished"] #pipTimerDisplay,.timer-pip[data-state="finished"] #pipTimerMessage{color:var(--uc-danger)}
+.pip-timer-controls{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.4rem}
+.pip-timer-controls button{min-height:2.75rem;padding:0 .25rem;font-size:.95rem}
+#pipTimerDismiss{grid-column:1/-1;border-color:var(--uc-dust-bad);background:var(--uc-dust-bad-bg);color:var(--uc-dust-bad)}
+/* J03 랜덤 뽑기 */
+.random-pip{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;text-align:center}
+.random-result{font-family:var(--uc-font-main);font-size:4rem;font-weight:700;line-height:1.1;overflow-wrap:anywhere}
+.random-left{margin:0;font-size:.95rem;color:var(--uc-text-2)}
+.random-pip .hint{margin:0}
+.random-pip .hint:empty{display:none}
+.random-pip-row{display:flex;gap:.5rem;width:100%;margin-top:.4rem}
+.random-repeat{flex:0 0 auto;min-height:3.25rem}
+.random-repeat[aria-pressed="true"]{border:2px solid var(--uc-primary);background:var(--uc-primary-soft);color:var(--uc-primary)}
+.random-pip-row .primary{flex:1 1 auto;min-height:3.25rem;font-family:var(--uc-font-main);font-size:1.25rem}
+/* J04 활동완료: 제목 줄의 활동 이름은 그대로 고칠 수 있음, 이름 단추 4열 · 명단 순서 고정 */
+#pipActivityTitle{flex:1 1 auto;min-width:0;height:2.5rem;margin:0;padding:0 .25rem;border:1px solid transparent;border-radius:var(--uc-radius-sm);background:transparent;font-family:var(--uc-font-main);font-size:1.125rem;font-weight:700;color:inherit}
+#pipActivityTitle:focus{border-color:var(--uc-green-solid);background:var(--uc-surface);outline:none}
+.pip-activity{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.pip-activity-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:.4rem}
+.pip-cards{flex:1 1 auto;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:2.75rem;gap:.4rem;align-content:start}
+.pip-cards button{min-height:2.75rem;padding:0 .25rem;font-family:var(--uc-font-main);font-size:1.05rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pip-cards button.is-done{border-color:var(--uc-done-line);background:var(--uc-done-bg);color:var(--uc-done-text)}
+.pip-cards button.is-done::before{content:'✓ ';color:var(--uc-done)}
+.all-done{font-weight:700;color:var(--uc-done)}
+.hint{font-size:.95rem;color:var(--uc-text-3)}
+/* 화이트보드 PIP (판은 흰 바탕) */
+.pip-board{position:relative;width:100%;height:100%;touch-action:manipulation;overflow:hidden;border:1px solid var(--uc-line);border-radius:var(--uc-radius-md)}
+.pip-board canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.pip-block{position:absolute;border:1px solid transparent;background:transparent;padding:0;resize:none;line-height:1.4;min-height:44px;overflow:auto;white-space:pre-wrap;font-family:var(--uc-font-main)}
+.pip-block:focus{border-color:var(--uc-line-strong);outline:none}

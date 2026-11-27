@@ -1,5 +1,5 @@
 window.createClassDiary=function({read,put}){
- const root=document.createElement('section');root.id='diaryScreen';root.hidden=true;root.setAttribute('role','tabpanel');root.setAttribute('aria-labelledby','diaryTab');root.innerHTML=`<div class="diary-fields"><div class="diary-heading"><h1>알림장</h1><label>작성 날짜 <input id="diaryDate" type="date"></label></div><section id="diaryHiclass" class="diary-hiclass" data-state="none"><div class="diary-hiclass-line"><span id="diaryLinkState" role="status"></span><button id="diaryConnect" class="primary">하이클래스 연결하기</button></div><ol id="diaryLinkSteps" hidden><li>로그인</li><li>담당 학급 선택</li><li>알림장 게시판 열기</li><li>연결 확인</li></ol><p id="diaryLinkMessage" role="status"></p></section><div class="diary-actions"><button id="diaryImport">대시보드 내용 불러오기</button></div><label class="diary-title-field">제목<input id="diaryTitle"></label><div class="diary-font-controls" role="group" aria-label="편집 화면 본문 글씨 크기"><span>본문 글씨</span><button id="diaryFontMinus">글씨 작게</button><output id="diaryFontSize" aria-live="polite"></output><button id="diaryFontPlus">글씨 크게</button><button id="diaryFontReset">기본값</button><small>이 편집 화면에만 적용</small></div><label class="diary-body-field">본문<textarea id="diaryBody" placeholder="학생과 가정에 전할 내용을 적어 주세요."></textarea></label><section class="diary-photos" aria-label="첨부 사진"><button id="diaryPhotoAdd">사진 파일 추가</button><input id="diaryPhotoFiles" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg" multiple hidden><p id="diaryPhotoHelp"></p><p>사진은 Ctrl+V로도 추가할 수 있습니다.</p><p id="diaryPhotoSending" hidden>사진은 표시된 순서로 하이클래스에 첨부됩니다. 업로드와 등록 확인이 끝날 때까지 초안을 보존합니다.</p><div id="diaryPhotos"></div></section></div><div class="diary-footer"><div class="diary-actions diary-recipients"><strong>하이클래스 수신대상</strong><label><input id="diaryParents" type="checkbox" checked> 학부모 수신</label><label><input id="diaryStudents" type="checkbox" checked> 학생 수신</label></div><div class="diary-actions diary-registration"><span id="diaryStatus" role="status" tabindex="0" aria-label="등록 상태"></span><button id="diaryPublish" class="primary">하이클래스 등록</button></div></div><dialog id="diaryImportDialog"><h2>필요한 내용만 선택하세요</h2><div id="diaryCandidates"></div><button id="diaryImportApply">선택 내용 추가</button><button id="diaryImportCancel">취소</button></dialog>`;document.body.append(root);
+ const root=document.createElement('section');root.id='diaryScreen';root.hidden=true;root.setAttribute('role','tabpanel');root.setAttribute('aria-labelledby','diaryTab');root.innerHTML=`<div class="diary-fields"><div class="diary-heading"><h1>알림장</h1><label class="diary-date">작성 날짜 <input id="diaryDate" type="date"></label></div><section id="diaryHiclass" class="diary-hiclass" data-state="none"><div class="diary-hiclass-line"><span id="diaryLinkState" role="status"></span><button id="diaryConnect" class="primary">하이클래스 연결하기</button></div><ol id="diaryLinkSteps" hidden><li>로그인</li><li>담당 학급 선택</li><li>알림장 게시판 열기</li><li>연결 확인</li></ol><p id="diaryLinkMessage" role="status"></p></section><div class="diary-actions"><button id="diaryImport">대시보드 내용 불러오기</button></div><label class="diary-title-field">제목<input id="diaryTitle"></label><div class="diary-font-controls" role="group" aria-label="편집 화면 본문 글씨 크기"><span>글씨 크기 · 이 편집 화면에만</span><button id="diaryFontMinus" aria-label="글씨 작게">가−</button><output id="diaryFontSize" aria-live="polite"></output><button id="diaryFontPlus" aria-label="글씨 크게">가+</button><button id="diaryFontReset" class="uc-btn--ghost">기본값</button></div><label class="diary-body-field">본문<textarea id="diaryBody" placeholder="학생과 가정에 전할 내용을 적어 주세요."></textarea></label><section class="diary-photos" aria-label="첨부 사진"><button id="diaryPhotoAdd">사진 파일 추가</button><input id="diaryPhotoFiles" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg" multiple hidden><p id="diaryPhotoHelp"></p><p>사진은 Ctrl+V로도 추가할 수 있습니다.</p><p id="diaryPhotoSending" hidden>사진은 표시된 순서로 하이클래스에 첨부됩니다. 업로드와 등록 확인이 끝날 때까지 초안을 보존합니다.</p><div id="diaryPhotos"></div></section></div><div class="diary-footer"><div class="diary-actions diary-recipients"><strong>하이클래스 수신대상</strong><label><input id="diaryParents" type="checkbox" checked> 학부모 수신</label><label><input id="diaryStudents" type="checkbox" checked> 학생 수신</label></div><div class="diary-actions diary-registration"><span id="diaryStatus" role="status" tabindex="0" aria-label="등록 상태"></span><button id="diaryPublish" class="primary">하이클래스 등록</button></div></div><dialog id="diaryImportDialog"><h2>필요한 내용만 선택하세요</h2><p class="dialog-desc">대시보드의 내용을 알림장 본문에 붙입니다.</p><div id="diaryCandidates"></div><div class="actions"><button id="diaryImportCancel" type="button">취소</button><button id="diaryImportApply" type="button" class="primary">선택 내용 추가</button></div></dialog>`;document.body.append(root);
  const $=id=>root.querySelector('#'+id);let drafts=read('diaryDrafts',{}),date=Core.dateKey(),key,busy=false,connecting=false;const revisions=new Map(),pendingPhotos=new Map();let photoQueue=Promise.resolve(),unsaved=false;const persist=()=>{const ok=put('diaryDrafts',drafts);unsaved=!ok;return ok;};const changed=k=>revisions.set(k,(revisions.get(k)||0)+1);
  const classId=()=>`${academicYear()}:${settings.grade||''}:${settings.classroom||''}`;
  const title=d=>{const day=new Date(d+'T12:00:00');return `${day.getMonth()+1}월 ${day.getDate()}일 ${['일','월','화','수','목','금','토'][day.getDay()]}요일 알림장`;};
@@ -58,7 +58,9 @@ window.createClassDiary=function({read,put}){
   if(link.linked&&!checkedSession.has(key)&&window.desktop.diarySession){checkedSession.add(key);window.desktop.diarySession(key).then(r=>{if(key===classId()){link.session=r.status;showLink();}}).catch(()=>{});}
  }
  window.desktop?.onDiaryProgress?.(p=>{
+  if(p.service==='schoolbell')return;
   $('diaryLinkMessage').hidden=false;
+  if(p.classKey&&p.classKey!==classId())return;
   if(p.state==='closed'){steps(0);$('diaryLinkMessage').textContent=p.message;$('diaryConnect').disabled=false;return;}
   steps(p.step);$('diaryLinkMessage').textContent=p.message;
   if(p.done){steps(0);$('diaryLinkMessage').hidden=true;$('diaryConnect').disabled=false;link={linked:true,title:p.title||'',session:'ok'};showLink();}
@@ -75,11 +77,11 @@ window.createClassDiary=function({read,put}){
   steps(0);$('diaryLinkMessage').textContent=r?.message||'하이클래스에 연결하지 못했습니다. 작성 내용은 유지됩니다.';
  }
  $('diaryConnect').onclick=()=>connect(()=>window.desktop.diaryConnect(target()));
- $('diaryPublish').onclick=async()=>{if(busy||connecting||!save())return;if(pendingPhotos.get(key)){$('diaryStatus').textContent='사진 저장이 끝난 뒤 등록해 주세요.';return;}if(!$('diaryTitle').value.trim()||(!$('diaryBody').value.trim()&&!photos(key).length)){$('diaryStatus').textContent='제목을 입력하고 본문 또는 사진을 추가해 주세요.';return;}if(noTarget()){$('diaryStatus').textContent=NO_TARGET;return;}busy=true;$('diaryPublish').disabled=true;$('diaryPublish').textContent='등록 중...';const postingKey=key,postingRevision=revisions.get(key)||0;const payload={photos:photos(key).map(p=>({...p})),classKey:classId(),date,title:$('diaryTitle').value,body:$('diaryBody').value,parents:$('diaryParents').checked,students:$('diaryStudents').checked};$('diaryStatus').textContent='등록 상태 확인 중…';try{const result=await run(()=>window.desktop.diaryPublish(payload));if(result?.status==='success'&&(!payload.photos.length||result.attachmentsVerified===true)){const draft=drafts[postingKey];
+ $('diaryPublish').onclick=async()=>{if(serviceControls.service()!=='hiclass'||serviceControls.busy())return;if(busy||connecting||!save())return;if(pendingPhotos.get(key)){$('diaryStatus').textContent='사진 저장이 끝난 뒤 등록해 주세요.';return;}if(!$('diaryTitle').value.trim()||(!$('diaryBody').value.trim()&&!photos(key).length)){$('diaryStatus').textContent='제목을 입력하고 본문 또는 사진을 추가해 주세요.';return;}if(noTarget()){$('diaryStatus').textContent=NO_TARGET;return;}busy=true;$('diaryPublish').disabled=true;$('diaryPublish').textContent='등록 중...';const postingKey=key,postingRevision=revisions.get(key)||0;const payload={photos:photos(key).map(p=>({...p})),classKey:classId(),date,title:$('diaryTitle').value,body:$('diaryBody').value,parents:$('diaryParents').checked,students:$('diaryStudents').checked};$('diaryStatus').textContent='등록 상태 확인 중…';try{const result=await run(()=>window.desktop.diaryPublish(payload));if(result?.status==='success'&&(!payload.photos.length||result.attachmentsVerified===true)){const draft=drafts[postingKey];
  // Keep edits made while registration was pending, and retain registration history.
  const unchanged=(revisions.get(postingKey)||0)===postingRevision&&draft.title===payload.title&&draft.body===payload.body&&JSON.stringify(photos(postingKey))===JSON.stringify(payload.photos);
  const history=read('diaryRegistrationHistory',{});
- history[postingKey]=[...(Array.isArray(history[postingKey])?history[postingKey]:[]),{...payload,hash:result.hash||draft.postedHash||null,status:'success',registeredAt:Date.now(),result:{...result}}];
+ history[postingKey]=[...(Array.isArray(history[postingKey])?history[postingKey]:[]),{...payload,service:'hiclass',hash:result.hash||draft.postedHash||null,status:'success',registeredAt:Date.now(),result:{...result}}];
  if(!put('diaryRegistrationHistory',history)){$('diaryStatus').textContent='하이클래스 등록 완료 · 기록 저장을 확인해 주세요. 작성 내용은 유지됩니다.';return;}
  const nextDrafts={...drafts,[postingKey]:{...draft,...(unchanged?{title:title(payload.date),body:'',photos:[],updatedAt:Date.now()}:{}),postedHash:result.hash||draft.postedHash}};
  if(!put('diaryDrafts',nextDrafts)){$('diaryStatus').textContent='하이클래스 등록 완료 · 새 초안을 저장하지 못해 작성 내용을 유지합니다.';return;}
@@ -87,8 +89,47 @@ window.createClassDiary=function({read,put}){
  if(key===postingKey&&unchanged){$('diaryTitle').value=title(payload.date);$('diaryBody').value='';renderPhotos();$('diaryStatus').textContent='하이클래스 등록 완료 · 새 초안을 작성할 수 있습니다.';}link.session='ok';showLink();}else if(result?.status==='success'&&payload.photos.length){$('diaryStatus').textContent='첨부 사진의 등록을 확인하지 못했습니다. 자동 재전송하지 말고 하이클래스에서 확인해 주세요. 본문과 사진은 유지됩니다.';}else if(/로그인/.test(result?.message||'')){link.session='expired';showLink();}}finally{busy=false;$('diaryPublish').disabled=false;$('diaryPublish').textContent='하이클래스 등록';}};
  $('diaryImport').onclick=()=>{const items=[];const notices=document.getElementById('notices')?.innerText.trim();if(notices)items.push({label:'안내사항 / 준비물 / 전달사항',text:notices});$('diaryCandidates').replaceChildren(...items.map(item=>{const label=document.createElement('label'),check=document.createElement('input'),span=document.createElement('span');check.type='checkbox';check.dataset.text=item.text;span.textContent=item.label+'\n'+item.text;label.append(check,span);return label;}));if(!items.length)$('diaryCandidates').textContent='불러올 안내사항이 없습니다.';$('diaryImportDialog').showModal();};
  $('diaryImportCancel').onclick=()=>$('diaryImportDialog').close();$('diaryImportApply').onclick=()=>{const texts=[...$('diaryCandidates').querySelectorAll('input:checked')].map(x=>x.dataset.text);if(texts.length){changed(key);$('diaryBody').value=[$('diaryBody').value,...texts].filter(Boolean).join('\n\n');save();}$('diaryImportDialog').close();};
- const unfinished=()=>busy||unsaved||fontUnsaved||pendingFont!==null||[...pendingPhotos.values()].some(n=>n>0);
+ const readNote=()=>({classKey:classId(),date,title:$('diaryTitle').value,body:$('diaryBody').value,photos:photos(key).map(p=>({...p}))});
+ // Schoolbell registration: same completion rules as HiClass. createDiaryServices saves first and owns the busy guard.
+ async function publishSchoolbell(){
+  const postingKey=key,postingRevision=revisions.get(key)||0,payload=readNote();
+  if(pendingPhotos.get(key))return {message:'사진 저장이 끝난 뒤 등록해 주세요.'};
+  if(!payload.title.trim()||(!payload.body.trim()&&!payload.photos.length))return {message:'제목을 입력하고 본문 또는 사진을 추가해 주세요.'};
+  const result=await desktop.schoolbellPublish(payload);
+  if(result?.status!=='success')return result;
+  const retained='초안과 사진은 유지됩니다. 다시 보내지 말고 학교종이에서 게시 결과를 확인해 주세요.';
+  if(payload.photos.length&&result.attachmentsVerified!==true)return {status:'uncertain',message:'첨부 사진의 등록을 확인하지 못했습니다. '+retained};
+  const draft=drafts[postingKey];
+  // Keep edits made while registration was pending, and retain registration history.
+  const unchanged=(revisions.get(postingKey)||0)===postingRevision&&draft.title===payload.title&&draft.body===payload.body&&JSON.stringify(photos(postingKey))===JSON.stringify(payload.photos);
+  const history=read('diaryRegistrationHistory',{});
+  const entries=Array.isArray(history[postingKey])?history[postingKey]:[];
+  if(!entries.some(p=>p.service==='schoolbell'&&p.attemptId&&p.attemptId===result.attemptId))
+   history[postingKey]=[...entries,{...payload,service:'schoolbell',attemptId:result.attemptId||null,hash:result.hash||null,status:'success',registeredAt:Date.now(),result:{...result}}];
+  if(!put('diaryRegistrationHistory',history))
+   return {...result,message:'학교종이 등록 완료 · 기록을 저장하지 못해 초안과 사진을 유지합니다. 다시 등록하지 마세요.'};
+  const nextDrafts={...drafts,[postingKey]:{...draft,...(unchanged?{title:title(payload.date),body:'',photos:[],updatedAt:Date.now()}:{}),postedHash:result.hash||draft.postedHash}};
+  if(!put('diaryDrafts',nextDrafts))
+   return {...result,message:'학교종이 등록 완료 · 새 초안을 저장하지 못해 초안과 사진을 유지합니다. 다시 등록하지 마세요.'};
+  drafts=nextDrafts;
+  if(key===postingKey&&unchanged){$('diaryTitle').value=title(payload.date);$('diaryBody').value='';renderPhotos();}
+  return {...result,message:unchanged?'학교종이 등록 완료 · 새 초안을 작성할 수 있습니다.':'학교종이 등록 완료 · 등록 중 추가하거나 바꾼 내용은 유지했습니다.'};
+ }
+ const serviceControls=createDiaryServices({root,save,target,onHiclass:refreshLink,onPublish:publishSchoolbell,isBusy:()=>busy||connecting||[...pendingPhotos.values()].some(n=>n>0),status:message=>$('diaryStatus').textContent=message,photoHelp:$('diaryPhotoSending'),readNote});
+ // Layout (H02/H03): the heading runs across the top (with the publishing service beside 알림장),
+ // the writing card on the left and the sending card ("보내기") on the right. Elements keep their ids.
+ {const fields=root.querySelector('.diary-fields'),heading=fields.querySelector('.diary-heading'),footer=root.querySelector('.diary-footer');
+  root.prepend(heading);const service=fields.querySelector('.diary-service-selector');if(service)heading.querySelector('h1').after(service);
+  const send=document.createElement('h2');send.className='diary-send-title';send.textContent='보내기';footer.prepend(send);
+  const help=root.querySelector('#diaryPhotoHelp');help?.nextElementSibling?.classList.add('diary-photo-paste');
+  // Field heads: "제목" with [대시보드 내용 불러오기], "본문" with the editor font size, on one line each.
+  for(const [selector,name,extra,control] of [['.diary-title-field','제목','.diary-fields>.diary-actions','#diaryTitle'],['.diary-body-field','본문','.diary-font-controls','#diaryBody']]){
+   const label=root.querySelector(selector),head=document.createElement('div');head.className='diary-field-head';
+   head.append(Object.assign(document.createElement('span'),{className:'diary-field-name',textContent:name}),root.querySelector(extra));
+   label.before(head);if(label.firstChild?.nodeType===3)label.firstChild.remove();root.querySelector(control).setAttribute('aria-label',name);
+  }}
+ const unfinished=()=>serviceControls.busy()||busy||unsaved||fontUnsaved||pendingFont!==null||[...pendingPhotos.values()].some(n=>n>0);
  window.addEventListener('classroom:before-data-transfer',e=>{if(unfinished())e.preventDefault();});
  window.addEventListener('beforeunload',e=>{if(unfinished()){e.preventDefault();e.returnValue='';$('diaryStatus').textContent='사진 처리·등록 또는 편집 내용 저장이 끝나지 않아 창을 유지합니다. 저장 상태를 확인해 주세요.';}});
- return {activate(active){if(!root.hidden&&key)save();root.hidden=!active;if(active){load();refreshLink();}}};
+ return {activate(active){if(!root.hidden&&key)save();root.hidden=!active;if(active){load();serviceControls.refresh().then(()=>{if(serviceControls.service()==='hiclass')refreshLink();});}}};
 };

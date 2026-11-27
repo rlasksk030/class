@@ -1,0 +1,14 @@
+PASS disabled production capability blocks even direct click handler invocation
+PASS capability without a current operating connection cannot invoke publication
+PASS failure, cancellation, blocked response, uncertainty and exception retain body/photos
+PASS missing photo proof, manual confirmation and unmatched persisted receipt never clear draft
+PASS missing or mismatched server post receipt never clears the current draft
+PASS verified automatic receipt saves service-tagged original history before clearing; reload restores new draft
+PASS verified no-photo success creates new draft
+PASS new text and photo added during posting are preserved; history uses submitted snapshot
+PASS success clears only submitted date and leaves newly edited date intact
+PASS history storage failure keeps complete draft and does not report a fresh draft
+PASS new-draft storage failure preserves saved body/photos and verified history across reload
+PASS class switch during posting cannot clear or relabel another class draft
+PASS return to HiClass retains existing publishing controls
+13/13 passed (synthetic IPC only; live Schoolbell remains BLOCKED)

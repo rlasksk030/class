@@ -1,0 +1,5 @@
+PASS offline full adapter: real file inputs + upload receipt + ordered editor photos + body + confirmed article photos
+PASS partial photo upload stops before register, never body-only publication
+PASS photo removed after popup blocks final confirmation and proves cancellation
+PASS published body without every photo is uncertain, never success or automatic retry
+4/4 passed

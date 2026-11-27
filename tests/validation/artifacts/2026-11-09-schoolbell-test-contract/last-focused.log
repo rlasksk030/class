@@ -1,0 +1,12 @@
+✔ readback waits for the service result screen before refreshing the composer (613.658667ms)
+✔ native test consent is distinct from official permission; copying a record cannot authorize execution (3.177416ms)
+✔ packaged/ordinary profiles, members, account observation change, logout and expiration cannot retain test access (2.784125ms)
+✔ a separate final confirmation binds exactly one draft and ordered original hashes (1.761583ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 707.355291

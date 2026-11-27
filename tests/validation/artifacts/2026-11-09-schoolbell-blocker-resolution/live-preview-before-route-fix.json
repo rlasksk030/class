@@ -1,0 +1,61 @@
+{
+  "complete": false,
+  "stage": "upload-unverified:preview-url-changed",
+  "previewDetails": {
+    "customTags": [
+      "app-root",
+      "ion-app",
+      "app-side-menu",
+      "ion-menu",
+      "ion-header",
+      "ion-toolbar",
+      "ion-menu-toggle",
+      "ion-item",
+      "ion-avatar",
+      "app-avatar-img",
+      "ion-img",
+      "ion-label",
+      "ion-text",
+      "ion-list",
+      "ion-icon",
+      "ion-content",
+      "ion-refresher",
+      "ion-refresher-content",
+      "ion-spinner",
+      "app-group-list-item",
+      "ion-item-sliding",
+      "ion-item-options",
+      "ion-item-option",
+      "ion-router-outlet",
+      "app-group-board-letter-detail-preview",
+      "ion-buttons",
+      "app-group-board-title",
+      "ion-title",
+      "ion-button",
+      "app-letter-list-item-tags",
+      "app-letter-metadata",
+      "wysiwyg-viewer",
+      "ion-modal",
+      "app-media-display",
+      "app-files-list",
+      "ion-item-divider",
+      "app-file-name",
+      "app-call-control-ui",
+      "app-review-dialog",
+      "app-dialog"
+    ],
+    "rows": [
+      {
+        "expectedNamePresent": true,
+        "shadowButtonCount": 1,
+        "sizeSuffix": true
+      }
+    ],
+    "url": {
+      "sameOrigin": true,
+      "samePath": false,
+      "sameQuery": false,
+      "sameHash": true
+    }
+  }
+}

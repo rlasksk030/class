@@ -1,0 +1,111 @@
+/* =========================================================
+   우리 교실 디자인 토큰 v1.0  (옥구초판 · 전국판 공통)
+   - 글꼴은 앱에 이미 들어 있는 고운바탕 · 나눔바른고딕만 씁니다.
+     아래 font-family 이름은 앱의 @font-face 이름과 같게 맞춰 주세요.
+   - 어두운 테마 없음.
+   ========================================================= */
+:root {
+  /* 글꼴 */
+  --uc-font-main: 'Gowun Batang', serif;            /* 학생이 읽는 글: 제목·시간표·급식·시계·이름 */
+  --uc-font-sub: 'Nanum Barun Gothic', sans-serif; /* 앱 @font-face 이름(okgu.css)에 맞춤. 교사가 누르고 읽는 글: 버튼·탭·입력·안내 */
+  --uc-weight-regular: 400;
+  --uc-weight-bold: 700;
+
+  /* 바탕 · 면 · 선 */
+  --uc-bg: #F7F8F8;
+  --uc-surface: #FFFFFF;
+  --uc-surface-2: #F4F5F7;
+  --uc-line: #E5E7EB;
+  --uc-line-soft: #EEF0F2;
+  --uc-line-strong: #CDD1D7;
+
+  /* 글자 */
+  --uc-text: #262B33;     /* 13:1 */
+  --uc-text-2: #5B636E;   /* 6.1:1 */
+  --uc-text-3: #6B7380;   /* 4.8:1  (지금 쓰는 #AEB3BA는 쓰지 않음) */
+  --uc-text-disabled: #9AA3AF;
+
+  /* 기본(남색) */
+  --uc-primary: #354D74;
+  --uc-primary-soft: #E3EBF8;
+  --uc-on-primary: #FFFFFF;
+
+  /* 지금 교시 강조 */
+  --uc-now-bg: #DCE6F6;
+  --uc-now-border: #354D74;
+  --uc-now-text: #1F3352;
+
+  /* D-Day (연보라) */
+  --uc-dday-bg: #EEE7F6;
+  --uc-dday-text: #55437A;
+  --uc-dday-today-bg: #6E5A9A;
+  --uc-dday-today-text: #FFFFFF;
+
+  /* 칸 4색 : 제목 줄 바탕 / 제목 글자 / 점·선 */
+  --uc-blue-tint: #E3EBF8;   --uc-blue-text: #354D74;   --uc-blue-solid: #9DB4DA;   /* 오늘 시간표 */
+  --uc-green-tint: #E6F0E2;  --uc-green-text: #3E5A33;  --uc-green-solid: #A9C79C;  /* 아침활동 */
+  --uc-yellow-tint: #FDEDD3; --uc-yellow-text: #6E5426; --uc-yellow-solid: #F0C77E; /* 안내사항 */
+  --uc-pink-tint: #F8E3DE;   --uc-pink-text: #7A4A40;   --uc-pink-solid: #E6AFA3;   /* 오늘의 급식 */
+
+  /* 상태 */
+  --uc-success: #3E6B35;
+  --uc-done: #3E6B35;  --uc-done-bg: #E6F0E2;  --uc-done-line: #A9C79C;  --uc-done-text: #2F4A27;
+  --uc-warning: #8A5A12;
+  --uc-danger: #A33A3A;
+
+  /* 미세먼지 4단계 : 글자 / 바탕 */
+  --uc-dust-good: #2F5C9E;     --uc-dust-good-bg: #E3EBF8;
+  --uc-dust-normal: #3E6B35;   --uc-dust-normal-bg: #E6F0E2;
+  --uc-dust-bad: #8A5A12;      --uc-dust-bad-bg: #FDEDD3;
+  --uc-dust-verybad: #A33A3A;  --uc-dust-verybad-bg: #F8E0DE;
+
+  /* 알림장 칠판 모드 (단색 칠판 + 얇은 나무 테두리, 질감·그라데이션 없음) */
+  --uc-chalk-bg: #2F4A3A;        /* 칠판 */
+  --uc-chalk-frame: #6E5438;     /* 나무 테두리, 화면 가장자리 10~14px */
+  --uc-chalk-text: #F3F0E6;      /* 분필 흰색 · 본문 (칠판 대비 8.5:1) */
+  --uc-chalk-accent: #F1D98A;    /* 분필 노랑 · 날짜 · 제목 (6.9:1, 큰 글씨용) */
+  --uc-chalk-bar: rgba(18, 28, 22, 0.82);          /* 도구 막대 (흐림 없는 단색 반투명) */
+  --uc-chalk-btn-line: rgba(243, 240, 230, 0.38);  /* 막대 버튼 테두리 */
+  --uc-chalk-btn-bg: rgba(243, 240, 230, 0.08);    /* 막대 버튼 바탕 */
+
+  /* 날씨 아이콘의 해 */
+  --uc-sun: #E0A93B;
+
+  /* 글자 크기 – 설정 창 · 도구 (고정) */
+  --uc-fs-title: 28px;     /* 창 제목 · 고운바탕 700 */
+  --uc-fs-heading: 18px;   /* 묶음 제목 */
+  --uc-fs-body: 16px;
+  --uc-fs-small: 15px;     /* 버튼 · 탭 · 입력 칸 이름 */
+  --uc-fs-caption: 13px;   /* 가장 작은 글씨 (출처 표시만 12px) */
+  --uc-fs-page-title: 34px;/* 탭 화면 제목 · 고운바탕 700 */
+
+  /* 글자 크기 – 대시보드 (1440×900 기준값, 화면 배율 s를 곱함) */
+  --uc-fs-clock: 74px;
+  --uc-fs-school: 34px;
+  --uc-fs-date: 24px;
+  --uc-fs-now: 23px;
+  --uc-fs-dday: 21px;
+  --uc-fs-temp: 58px;
+
+  /* 간격 */
+  --uc-space-1: 4px;  --uc-space-2: 8px;  --uc-space-3: 12px; --uc-space-4: 16px;
+  --uc-space-5: 24px; --uc-space-6: 32px; --uc-space-7: 48px; --uc-space-8: 64px;
+
+  /* 모서리 */
+  --uc-radius-sm: 6px;    /* 지금 표시, 체크박스 */
+  --uc-radius-md: 10px;   /* 버튼 · 입력 칸 */
+  --uc-radius-lg: 16px;   /* 대시보드 칸 */
+  --uc-radius-xl: 20px;   /* 대화 상자 */
+  --uc-radius-pill: 999px;/* D-Day · 미세먼지 · 스위치에만 */
+
+  /* 그림자 (흐림 효과 · 유리 효과 쓰지 않음) */
+  --uc-shadow-card: 0 1px 2px rgba(38, 43, 51, 0.05);
+  --uc-shadow-dialog: 0 12px 32px rgba(38, 43, 51, 0.14);
+  --uc-overlay: rgba(38, 43, 51, 0.38);
+
+  /* 누르는 크기 */
+  --uc-touch-min: 44px;
+  --uc-btn-h-lg: 56px;
+  --uc-btn-h-md: 48px;
+  --uc-btn-h-sm: 44px;
+}

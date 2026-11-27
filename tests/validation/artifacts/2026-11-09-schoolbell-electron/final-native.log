@@ -1,0 +1,23 @@
+PASS production gate and independent missing grant block before opening a web window
+PASS actual Electron adapter: 0 original file(s), native text events, one click, refresh and observed UI original downloads
+PASS actual Electron adapter: 1 original file(s), native text events, one click, refresh and observed UI original downloads
+PASS actual Electron adapter: 2 original file(s), native text events, one click, refresh and observed UI original downloads
+PASS corrupt UI-downloaded original prevents success, removes only verification temp files and never republishes
+PASS acknowledged one-click navigation to schoolnews is followed by read-only classnews verification
+PASS refreshed persisted content blocks duplicate even with a new local ledger
+PASS partial originals block final send and retry; local photos remain readable
+PASS reversed originals block final send and retry; local photos remain readable
+PASS corrupt-upload originals block final send and retry; local photos remain readable
+PASS missing readContext never becomes verified success
+PASS missing readDate never becomes verified success
+PASS missing readUploads never becomes verified success
+PASS missing readPublished never becomes verified success
+PASS separate final approval cancellation prevents any click
+PASS edit while final confirmation is open prevents stale submission
+PASS unobserved final confirmation semantics prevent send-button click
+PASS post-storage mismatch remains uncertain and never retries
+PASS framework event model receives trusted native body input; Korean/newlines/literal HTML preserved
+PASS active composition blocks replacement; empty body clears through native editing
+PASS replacing existing text preserves leading/trailing empty lines and spaces exactly
+PASS current DOM authority mismatch blocks actual editor mutation
+22/22 passed (local Electron; live Schoolbell NOT RUN)

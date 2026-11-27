@@ -1,0 +1,26 @@
+{
+  "kind": "sanitized-tool-observation-summary-not-product-test-log",
+  "date": "2026-11-09",
+  "existingVmOnly": true,
+  "initialState": "suspended",
+  "resumed": true,
+  "guestTools": "27.0.1-58670 (outdated)",
+  "observations": [
+    "CMD readiness marker returned successfully after resume.",
+    "Node was absent from PATH; existing cached portable Node v22.14.0 was copied into a dedicated temporary QA directory and --version returned successfully.",
+    "Windows copy failed; robocopy successfully transferred the runtime. Copy failure is setup failure, not product failure.",
+    "Electron extraction and later guest commands timed out. Some commands later reported success; the isolated wrapper file existed.",
+    "Source and current-source archive extraction returned exit 0.",
+    "Runner transfer returned PrlJob_GetRetCode Invalid argument; start command timed out. It was not retried.",
+    "Result read returned Invalid argument. Reverse robocopy returned error 2: result directory did not exist. No product test result was available.",
+    "Existing app registry presence query timed out. Existing install registration was not modified."
+  ],
+  "windowsSyntax": "NOT RUN / no completed result",
+  "windowsUnit": "NOT RUN / no completed result",
+  "windowsElectron": "NOT RUN / environment BLOCKED",
+  "installerUpdateRebootClipboard": "NOT RUN / guest command reliability and install preflight unresolved",
+  "newVm": false,
+  "newInstallerBuild": false,
+  "paidResources": false,
+  "restoreState": "suspended (verified)"
+}

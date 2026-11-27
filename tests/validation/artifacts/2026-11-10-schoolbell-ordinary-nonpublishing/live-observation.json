@@ -1,0 +1,85 @@
+{
+  "codeBase": "6890b961527ff4a1f76fedbdd2d9126db2e44341",
+  "execution": "actual app-owned Electron session; ordinary-class read-only inspection",
+  "checks": {
+    "classPage": true,
+    "gradeClass": false,
+    "school": false,
+    "year": false,
+    "actor": false,
+    "accountContactAvailable": true,
+    "adminDisplayMatch": true,
+    "adminSettingsEditable": true,
+    "rosterEmpty": true,
+    "inviteEmpty": true,
+    "recipientTableEmpty": false
+  },
+  "recipientCheck": {
+    "known": true,
+    "totalCount": 1,
+    "dialogCount": 1,
+    "hiddenCount": 0,
+    "unknownCount": 0,
+    "covered": false,
+    "recipientsVerified": false,
+    "empty": false,
+    "observedSearchClear": true,
+    "visibleRows": 18,
+    "totalStudents": null,
+    "totalParents": null,
+    "roles": {
+      "administrator": {
+        "checked": true,
+        "disabled": true
+      },
+      "guardian1": {
+        "checked": true,
+        "disabled": false
+      },
+      "guardian2": {
+        "checked": true,
+        "disabled": false
+      },
+      "student": {
+        "checked": true,
+        "disabled": false
+      }
+    },
+    "roleSelectionKnown": true,
+    "mandatoryAdministrator": true
+  },
+  "publicationMode": {
+    "known": true,
+    "mode": "immediate",
+    "dateSelectable": false,
+    "dropdownKnown": true,
+    "availableWhenClosed": false
+  },
+  "classMapping": {
+    "savedAppGrade": "1",
+    "savedAppClassroom": "3",
+    "teacherReportedGrade": "1",
+    "teacherReportedClassroom": "2",
+    "correctionSaved": false,
+    "reason": "open-service-window-prevents-settings-switch"
+  },
+  "privacy": {
+    "studentNamesStored": false,
+    "contactValuesStored": false,
+    "screenshotsTaken": false,
+    "cookiesExported": false
+  },
+  "nonpublishingInput": "NOT RUN",
+  "livePhotoUpload": "NOT RUN",
+  "liveOriginalVerification": "NOT RUN",
+  "awaiting": "teacher confirmation that the existing composer contains no unsaved text or files",
+  "actions": {
+    "send": 0,
+    "schedule": 0,
+    "saveDraft": 0,
+    "githubActionsStarted": 0,
+    "additionalCost": 0
+  },
+  "productionLock": "unchanged",
+  "release": "unchanged"
+}

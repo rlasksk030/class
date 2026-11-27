@@ -1,0 +1,6 @@
+sandbox_extension_issue_file_to_process failed for <workspace>/node_modules/electron/dist/Electron.app: 1 (Operation not permitted)
+PASS new baseline port walks to observed end, retains every ID, reads only title candidates and compares independent original bytes
+PASS observed class-list entry opens once, preserves an existing composer and rejects a different class
+PASS new prepublication port uses app-owned iframe file controls and checks both original hashes in order
+PASS original mismatch blocks and cleans only verification files; no publication code invoked
+4/4 focused native checks; actual app login and live original download NOT RUN

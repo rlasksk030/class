@@ -1,0 +1,47 @@
+{
+  "purpose": "read-only send-target diagnosis; no photos selected and no send attempted",
+  "before": {
+    "target": {
+      "visible": true,
+      "enabled": true,
+      "centerHitsButton": true,
+      "visiblePoints": 6,
+      "hitTag": "SPAN",
+      "hitDropdown": false,
+      "hitContainsButton": false,
+      "hitIsParent": false,
+      "pointerEvents": "enabled",
+      "hitIsBackdrop": false,
+      "hitSurfaceClasses": [
+        "btn-main-text"
+      ]
+    },
+    "mode": {
+      "known": false,
+      "immediateCount": 0,
+      "scheduledCount": 0
+    }
+  },
+  "after": {
+    "target": {
+      "visible": true,
+      "enabled": true,
+      "centerHitsButton": true,
+      "visiblePoints": 6,
+      "hitTag": "SPAN",
+      "hitDropdown": false,
+      "hitContainsButton": false,
+      "hitIsParent": false,
+      "pointerEvents": "enabled",
+      "hitIsBackdrop": false,
+      "hitSurfaceClasses": [
+        "btn-main-text"
+      ]
+    },
+    "mode": {
+      "known": false,
+      "immediateCount": 0,
+      "scheduledCount": 0
+    }
+  }
+}

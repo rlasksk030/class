@@ -1,6 +1,6 @@
 # Windows validation build (not a release).
 # Builds the NSIS installer from this development branch and keeps it only as a workflow artifact.
-# It never publishes: no tag, no GitHub Release, no public nationwide.yml, so installed apps see no update.
+# It never publishes: no tag, no GitHub Release, no public nationwide2.yml, so installed apps see no update.
 # The teacher-facing artifact is uploaded only after the real-installer update scenarios pass.
 name: Windows 검증용 설치 파일
 
@@ -44,8 +44,8 @@ jobs:
           $version = (Get-Content app/package.json -Raw | ConvertFrom-Json).version
           $setup = "dist/classroom-dashboard-nationwide-setup-$version-x64.exe"
           if (-not (Test-Path $setup)) { throw "Installer not found: $setup" }
-          if (-not (Select-String -Path dist/nationwide.yml -Pattern "^version: $version$" -Quiet)) { throw "nationwide.yml version mismatch" }
-          $files = @($setup, "$setup.blockmap", "dist/nationwide.yml")
+          if (-not (Select-String -Path dist/nationwide2.yml -Pattern "^version: $version$" -Quiet)) { throw "nationwide2.yml version mismatch" }
+          $files = @($setup, "$setup.blockmap", "dist/nationwide2.yml")
           New-Item -ItemType Directory -Force out | Out-Null
           Copy-Item $files out/
           Get-ChildItem out | ForEach-Object { "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name } | Set-Content out/SHA256SUMS.txt -Encoding utf8
@@ -55,8 +55,8 @@ jobs:
             "커밋: $env:GITHUB_SHA"
             "빌드: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
             ""
-            "검증 전용입니다. GitHub Release에 올리거나 nationwide.yml을 공개하지 마세요."
-            "nationwide.yml은 기록용이며 설치할 때는 classroom-dashboard-nationwide-setup-$version-x64.exe만 실행합니다."
+            "검증 전용입니다. GitHub Release에 올리거나 nationwide2.yml을 공개하지 마세요."
+            "nationwide2.yml은 기록용이며 설치할 때는 classroom-dashboard-nationwide-setup-$version-x64.exe만 실행합니다."
           ) | Set-Content out/README-검증용.txt -Encoding utf8
           Get-ChildItem out | Format-Table Name, Length
       - name: Keep build for the installer scenarios (internal)

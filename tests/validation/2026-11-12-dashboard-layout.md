@@ -1,0 +1,92 @@
+# 대시보드 배치 편집 (2026-11-12)
+
+두 판 모두 같은 코드로 고쳤다. 전국판 `feature/dashboard-layout-nationwide`(시작 `b9968d8`, v1.8.13), 옥구초판 `feature/dashboard-layout-okgu`(시작 `63428a7`, v1.8.11). appId, 데이터 폴더, 업데이트 채널(`app/update-config.json`)은 바꾸지 않았다. 버전은 마지막 release 커밋에서 두 판 모두 1.8.14로 올렸다.
+
+**요약: 두 판 모두 단위·E2E PASS, 1.8.14 빌드와 설치 파일 속 채널 확인 PASS, 두 판 배포 완료(아래 표). Windows 확인은 NOT RUN.**
+
+## 1. 바꾼 것
+
+| 파일 | 내용 |
+|---|---|
+| `app/layout-core.js` (새) | 12열×6행 배치 모델. 검증, 이동, 맞바꾸기, 크기 변경, 숨기기·다시 표시, 빈 칸 채우기, 기본 배치, 옛 설정 변환. 순수 함수 |
+| `app/layout-ui.js`, `app/layout.css` (새) | 저장된 배치로 칸을 놓고, [배치 편집] 모드(격자선, 빈 칸, 숨긴 칸 보관함, 숨기기, 크기 손잡이, 빈 칸 채우기·기본 배치로·취소·완료)를 담당 |
+| `app/style.css`, `app/okgu.css` | 고정 칸 자리(`grid-column/row`)와 열·행 비율 삭제. 여백·높이 규칙은 유지 |
+| `app/resize.js` | 날씨 칸 크기만 남김(손잡이는 배치 편집 중 표시). `boardSizes`의 옛 열·행 값은 그대로 둠 |
+| `app/extras.js` | 화면 설정의 시간표·급식·아침활동·안내사항 "표시" 체크가 `boardLayout.visible`을 읽고 씀. 문구 변경. 숨긴 날씨 칸은 머리글에 빈 공간을 남기지 않음 |
+| `app/screen-lock.js` | 잠금 중 [배치 편집] 비활성. 편집 중 잠그면 지금까지 배치를 저장하고 종료 |
+| `app/backup-core.js` | `boardLayout`을 백업·복원하고 형식 검증. 배치가 없는 예전 백업·예전 프로필은 그 안의 숨김·크기 설정으로 배치를 만들어 함께 복원 |
+| `app/index.html` | 스크립트 2개, 스타일 1개 추가(인라인 스크립트 없음) |
+| `app/desktop-ui.js`, `app/app.js` (전국판만) | 학교를 고르기 전 새 프로필에서 PIP 상태 계산(`snapshot()`, 120ms마다)이 학교 키를 만들다 `core.js` `schoolKey`에서 오류가 나던 문제 수정. 별도 세션 수정 `66bbc16`을 가져옴. `neis()`도 학교 없이는 조회하지 않음 |
+| `tests/e2e/first-run.e2e.cjs` (전국판, 새) | 새 프로필을 학교 선택 없이 처음 열고 다시 열기: 안내 화면, NEIS 조회 0회, 기본 배치 저장, 페이지 오류 0회 |
+
+### 결정한 것
+
+- **기본 배치:** 시간표 1–3열·1–6행, 아침활동 4–10열·1–4행, 안내사항 4–10열·5–6행, 급식 11–12열·1–6행. 이전 열 21:61:18, 행 1.45:.65에 가장 가깝다. 1440×960 칸 폭은 이전 277/804/237px → 지금 309/745/263px이다.
+- **제목 잘림 방지:** 격자 열을 `repeat(12,1fr)`로 두고 칸마다 제목 폭만큼 `min-width`를 준다. 좁은 창에서는 그 칸의 열이 늘어난다. 제목을 모두 나란히 놓을 폭이 안 되면 최소 폭을 풀고 잘리는 제목만 글자를 줄인다(14px까지). 격자상 최소 크기는 2열×2행이다.
+- **맞바꾸기:** 끌어서 다른 칸 위(포인터 아래 칸)에 놓으면 두 칸이 영역(위치와 크기)을 통째로 바꾼다. 그래서 크기 때문에 못 바꾸는 경우는 없다. 빈 곳에 놓을 때 칸 두 개 이상에 걸치면 빨간색으로 표시하고 놓지 않는다. 키보드 방향키는 빈 곳이면 한 칸 이동, 막히면 그쪽 옆 칸과 맞바꾼다.
+- **크기 손잡이:** 오른쪽·아래·오른쪽 아래 모서리. 왼쪽 위 모서리는 고정이다.
+- **편집 중 다른 탭으로 가거나 잠그면** [완료]처럼 저장한다. [취소]와 Esc만 되돌린다.
+- **저장 위치 통일:** 네 칸의 표시 여부는 `boardLayout`에만 저장한다. `boardPreferences`의 글씨 크기와 날씨 표시, `boardSizes`의 날씨 크기는 계속 쓰고, 옛 값은 지우지 않는다.
+
+## 2. 테스트
+
+환경: 교사의 Mac(Apple Silicon), Node 24, Electron 40.10.6. E2E는 매번 새 격리 프로필(`CLASSROOM_TEST_PROFILE`)을 쓰고, NEIS·날씨는 오프라인 대체.
+
+| 범위 | 전국판 | 옥구초판 |
+|---|---|---|
+| 구문 `npm run check` | **PASS** 107/107 | **PASS** 78/78 |
+| 단위 `npm test` (layout-core 13개, 백업 4개 추가, 전국판 PIP 학교 미설정 1개 추가) | **PASS** 107/107 | **PASS** 67/67 |
+| 배치 편집 E2E `dashboard-layout.e2e.cjs` | **PASS** 55/55 | **PASS** 55/55 |
+| 기존 E2E, 수정 없이 실행 | **PASS** board-titles 24, v182-features 43, hiclass-link 16, recovery 17, diary-drafts 17, hiclass-recipients 38, hiclass-submit 21, timer-startup 21, diary-layout 15, hiclass-window 11, photos 22, hiclass-photos 4, photo-boundaries 6, photo-transfer 5 | **PASS** (같은 14개, 같은 개수) |
+| 기존 E2E, [크기 조절] → [배치 편집]으로 바꿔 실행 | **PASS** regression 36/36, timetable-layout 8/8 | **PASS** regression 36/36, timetable-layout 8/8 |
+| 판 고유 E2E | **PASS** multischool 10/10(학교 미설정 검사 3개 추가), schoolbell 73/73(합성 사이트), first-run 6/6(새 파일) | 해당 없음 |
+| migration-v178 | **NOT RUN** — v1.7.8 원본 앱(`CLASSROOM_V178_APP`) 필요. 기대값만 새 방식으로 바꿈 | **NOT RUN** |
+| 업데이트 채널 | 소스 `update-config.json`·`electron-builder.json` 변경 없음(diff 0), `update-channel.test` PASS. 설치 파일 속 `update-config.json`·`app-update.yml` = generic `downloads/nationwide`, channel `nationwide` **PASS** | 소스 변경 없음(diff 0). 설치 파일 속 `update-config.json`·`app-update.yml` = github `rlasksk030/class` **PASS** |
+| 빌드 1.8.14 (이 Mac, `npm run dist:win`) | **PASS** `classroom-dashboard-nationwide-setup-1.8.14-x64.exe` 99,368,071바이트, SHA-256 `c752da72b3ff166e4455ed9b5612039482b15e8a69d39840107b07bf82e34edc`, app.asar 101/101 소스 일치. 소스 `9752dd5` | **PASS** `classroom-dashboard-setup-1.8.14.exe` 99,324,284바이트, SHA-256 `fb08960d2017b04627a4702cfd528b6132134e2e393c72318948a439617f7b49`, app.asar 80/80 소스 일치. 소스 `27ecbfb` |
+| 배포 | **완료** 2026-11-12 — `downloads/nationwide` `70a75a6`(설치 파일·blockmap·`nationwide.yml`·안내문·SHA-256·검증 JSON, 예전 설치 파일 유지), 태그 `nationwide-v1.8.14` → `9752dd5`, Release 게시(Latest 아님). 공개 raw 주소의 설치 파일·blockmap·피드 SHA-256 일치, Release 자산 5개 해시 일치. Actions 신규 0회 | **완료** 2026-11-12 — 태그 `v1.8.14` → `27ecbfb`, Release 게시(**Latest**). `releases/latest/download`의 설치 파일·blockmap·`latest.yml` SHA-256 일치, Release 자산 5개 해시 일치. v1.8.11 Release는 그대로. Actions 신규 0회 |
+| Windows 설치·업데이트·실행 | **NOT RUN** | **NOT RUN** |
+
+배치 편집 E2E가 확인한 것:
+- 기본 배치: 겹침·잘림 없음
+- 편집 모드: 격자선 72칸, 숨기기, 손잡이, 날씨 손잡이, 칸 크기 불변, [수정] 차단
+- 급식 숨기기 → 빈 칸. 안내사항을 오른쪽 끝까지 늘림, 겹치는 크기는 거부
+- [빈 칸 채우기] → [완료] 저장, 글씨 맞춤 재실행, 재시작 후 유지
+- 화면 설정 체크 연동(빈 자리가 없으면 거부), [기본 배치로]·[취소]
+- 마우스 맞바꾸기, 빈 자리 이동, 빨간색 거부. 보관함 끌어다 놓기·[다시 표시]
+- 키보드: Shift+방향키 크기, 방향키 이동·맞바꾸기, Esc
+- 터치(`pointerType: touch`, CDP 터치 입력) 맞바꾸기
+- 잠금 중 편집 불가, 편집 중 잠금
+- 화면 백업·복원, 배치 없는 예전 백업 복원
+- 업데이트 첫 실행 이전, 기존 키 보존. 깨진 값·겹친 값은 기본 배치로 대체
+- 1440×960·1100×800·900×650에서 기본 배치와 네 칸 나란히 배치 모두 겹침·제목 잘림 없음
+- 페이지 오류 없음
+
+기존 regression이 실제 결함 하나를 잡았다. 편집 모드의 크기 손잡이가 오른쪽 칸 밖으로 8px 나와 제목 최소 폭이 풀렸다(급식 245 → 211px). 칸 자체의 경계로 판단하도록 고쳤고, 배치 편집 E2E에 "편집 모드 진입 시 칸 크기 불변" 검사를 넣었다.
+
+전국판 새 프로필 첫 실행 오류: 학교를 고르지 않은 새 프로필로 처음 열면 `core.js`의 `schoolKey`가 `null` 학교로 오류를 초당 약 12회 냈다(v1.8.13에도 있던 문제, 원인은 `desktop-ui.js`의 PIP `snapshot()`). 1.8.14 전국판에서 고쳤다. `first-run.e2e.cjs`는 수정 직전 `a110851`에서 "페이지 오류 0회"로 실패하고 수정 후 통과한다. 배치 편집 E2E도 이제 첫 화면부터 페이지 오류를 센다(두 판 모두 0회).
+
+스크린샷(1440×960): `screenshots/dashboard-layout-default.jpg`(기본 배치), `dashboard-layout-edit.jpg`(편집 모드), `dashboard-layout-meal-hidden-wide.jpg`(급식 숨기고 넓힌 화면). 각 판 브랜치에 그 판 화면을 넣었다.
+
+## 3. Windows 확인 체크리스트 (학교 PC, 교사 확인)
+
+### 옥구초판
+
+1. v1.8.11이 설치된 PC에서 설정 → 업데이트로 새 버전 설치 후, 예전에 숨긴 칸은 숨겨진 채 **그 자리가 비어 있는지**, 칸 크기·글씨 크기·날씨 크기가 이어지는지
+2. [배치 편집]에서 마우스로 칸 옮기기, 다른 칸 위에 놓아 맞바꾸기, 오른쪽 아래 모서리로 크기 조절, [숨기기] → 빈 칸, 숨긴 칸 끌어다 놓기·[다시 표시]
+3. 전자칠판·터치 모니터에서 손가락으로 칸 제목 줄을 끌어 옮길 때 화면이 스크롤되지 않는지
+4. [완료] 후 앱을 껐다 켜고(재부팅 포함) 배치가 그대로인지, [취소]·Esc는 편집 전으로 돌아가는지
+5. 화면 잠금 중 [배치 편집]이 눌리지 않는지, 화면 설정 "○○ 표시" 체크와 배치가 함께 바뀌는지
+6. 설정 → 백업 → 배치 바꾸기 → 복원 후 백업 때 배치로 돌아오는지
+7. 학교 PC 해상도·배율(예: 1920×1080 125%/150%)에서 칸 겹침·제목 잘림이 없는지
+8. 업데이트 확인이 옥구초판 GitHub Release만 보는지(전국판 설치 파일을 받지 않는지)
+
+### 전국판
+
+1. 전국판 v1.8.13에서 설정 → 업데이트로 새 버전 설치 후, 숨긴 칸 자리가 비어 있고 칸 크기·글씨 크기·날씨 크기가 이어지는지
+2. [배치 편집]에서 마우스로 옮기기·맞바꾸기·크기 조절·숨기기·다시 꺼내기
+3. 전자칠판·터치 모니터에서 손가락으로 칸 옮기기(스크롤 없음)
+4. [완료] 후 재시작·재부팅해도 배치 유지, [취소]·Esc 되돌림
+5. 화면 잠금 중 편집 불가, 화면 설정 "○○ 표시"와 배치가 함께 바뀜
+6. 백업 → 복원 후 배치 유지
+7. 학교 PC 해상도·배율에서 겹침·제목 잘림 없음, 학교 검색·하이클래스·학교종이 알림장이 이전과 같은지
+8. 업데이트 확인이 전국판 채널(`downloads/nationwide`)만 보는지(옥구초판 Release를 받지 않는지)

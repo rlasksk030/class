@@ -1,0 +1,27 @@
+✔ runtime denies before opening a window without a code-owned official grant (0.949917ms)
+✔ an official grant does not substitute for UI identity evidence (1.493125ms)
+✔ permission is tied to method, target, approved test class and requested action (0.243541ms)
+✔ file transport rejects paths, hash mismatch, malformed bytes and limits before DOM access (4.778125ms)
+✔ cancellation during window opening closes the pending class window (0.701875ms)
+✔ same-URL navigation invalidates an in-flight identity read and releases session listeners (0.653208ms)
+✔ observed class route excludes school announcements, credentials and other origins (1.44725ms)
+✔ matching display names and empty slots cannot establish school, year, actor or notification authority (1.283917ms)
+✔ cancellation while the context reader is opening destroys only that reader and prevents reads (0.698291ms)
+✔ observed post ID and tooltip date do not claim virtual list coverage (14.298125ms)
+✔ missing list-end coverage cannot establish a baseline or enable result readback (155.123083ms)
+✔ empty unfiltered send-target table verifies no student/parent targets but cannot authorize administrator notifications (0.17875ms)
+✔ only official HTTPS hosts may be used (2.109584ms)
+✔ defaults deny before DOM inspection or mutation (3.157417ms)
+✔ reads match only unique observed controls without private account data (7.745208ms)
+✔ title and body text are passed as inert JSON, never HTML or source interpolation (7.696834ms)
+✔ denies disallowed binding, revoked permission, navigation, aborted signal (2.394209ms)
+✔ a main-process grant alone cannot replace atomic DOM identity evidence (2.076167ms)
+✔ closed or overlapping transports never queue stale input (0.658ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 274.77475

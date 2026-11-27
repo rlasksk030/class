@@ -1,0 +1,415 @@
+{
+  "schema": 1,
+  "date": "2026-11-09",
+  "base": "a841c5c012d023293db25102f83b50b3e7a14b22",
+  "codeCommit": "4d4f0a8af6eb3393436a9d6a6c893dc463db2428",
+  "platform": "darwin",
+  "arch": "arm64",
+  "node": "v24.14.1",
+  "electron": "40.10.6",
+  "verdict": {
+    "browserTrials": "PASS",
+    "productEndToEnd": "NOT RUN",
+    "release": "NO GO",
+    "productionCapability": false
+  },
+  "checks": [
+    {
+      "command": "npm run check",
+      "passed": 109,
+      "total": 109,
+      "log": "final-syntax.log"
+    },
+    {
+      "command": "npm test",
+      "passed": 183,
+      "total": 183,
+      "log": "final-unit.log",
+      "note": "Before final acknowledged-navigation adjustment; affected composer unit and native suite rerun below"
+    },
+    {
+      "command": "node --test app/schoolbell-observed-composer.test.cjs",
+      "passed": 7,
+      "total": 7,
+      "log": "final-composer-unit.log"
+    },
+    {
+      "command": "npm run test:e2e",
+      "passed": 375,
+      "total": 375,
+      "scripts": 22,
+      "log": "e2e.log",
+      "note": "One complete run during this work; before live-observation fixes; affected suites rerun, not added to this count"
+    },
+    {
+      "command": "node tests/e2e/schoolbell-electron.e2e.cjs",
+      "passed": 22,
+      "total": 22,
+      "log": "final-native.log"
+    },
+    {
+      "command": "node tests/e2e/schoolbell.e2e.cjs",
+      "passed": 18,
+      "total": 18,
+      "log": "final-ui.log"
+    },
+    {
+      "command": "node tests/e2e/schoolbell-completion.e2e.cjs",
+      "passed": 12,
+      "total": 12,
+      "log": "final-completion.log"
+    }
+  ],
+  "live": [
+    {
+      "trial": "A",
+      "status": "verified-ui-publication",
+      "titleMatched": true,
+      "bodyMatched": true,
+      "photoCount": 0,
+      "photos": [],
+      "refreshed": true,
+      "postIdRecordedLocally": true,
+      "copiedLinkReopened": true,
+      "driver": "connected-browser-ui; NOT product Electron session"
+    },
+    {
+      "trial": "B",
+      "status": "verified-ui-publication",
+      "titleMatched": true,
+      "bodyMatched": true,
+      "photoCount": 1,
+      "photos": [
+        {
+          "sha256": "42f53ca6f45208343a47e4b7e70e2bcb1a02457c5591c6d0476ba7d3f3987fe2",
+          "bytes": 1967
+        }
+      ],
+      "refreshed": true,
+      "postIdRecordedLocally": true,
+      "copiedLinkReopened": true,
+      "driver": "connected-browser-ui; NOT product Electron session"
+    },
+    {
+      "trial": "C",
+      "status": "verified-ui-publication",
+      "titleMatched": true,
+      "bodyMatched": true,
+      "photoCount": 2,
+      "photos": [
+        {
+          "sha256": "42f53ca6f45208343a47e4b7e70e2bcb1a02457c5591c6d0476ba7d3f3987fe2",
+          "bytes": 1967
+        },
+        {
+          "sha256": "04a29ccacf292e2a62fd4786aa17b09bcdc0ba3aeccb217a0a195241707b5b61",
+          "bytes": 1967
+        }
+      ],
+      "refreshed": true,
+      "postIdRecordedLocally": true,
+      "copiedLinkReopened": true,
+      "driver": "connected-browser-ui; NOT product Electron session"
+    }
+  ],
+  "windows": {
+    "tests": "NOT RUN",
+    "vm": "existing suspended",
+    "blocker": "Prior guest command path unresponsive; no new VM/build/install"
+  },
+  "github": {
+    "actionsRequested": 0,
+    "beforePushTotal": 19,
+    "beforePushLast": 41977391612,
+    "workflowBlob": "58613481272e59545c0c910d5d6e033a65f0247a",
+    "additionalSpend": 0
+  },
+  "sources": [
+    {
+      "file": "app/schoolbell-capability.cjs",
+      "sha256": "f8dd33d42aa0f17419293fab40068f98df10eb696d8b22294dc549d5b24aeee5"
+    },
+    {
+      "file": "app/schoolbell-editor-text.cjs",
+      "sha256": "355de105f33003e9770212597c39285e1f4ca4e5c9a75bddb202bd28c1a9b60e"
+    },
+    {
+      "file": "app/schoolbell-editor-text.test.cjs",
+      "sha256": "06a91fee901b2ec8d5cd4fc5691ea7b99fd65fd5a1fb66cda4208b1775f3f92d"
+    },
+    {
+      "file": "app/schoolbell-electron-driver.cjs",
+      "sha256": "343f71fcd0aec87e421dd20a81643b669966abbfdd3ad22ad15d7e69740fda63"
+    },
+    {
+      "file": "app/schoolbell-electron-driver.test.cjs",
+      "sha256": "dfa82d8e3fe302d6805286d397c4c977795a407636821f4d907bd3145a3d062e"
+    },
+    {
+      "file": "app/schoolbell-observed-composer.cjs",
+      "sha256": "24ec0d8567709a56e994ec26890a2636bd44d0ce3b50f7ffc229d01eefc22706"
+    },
+    {
+      "file": "app/schoolbell-observed-composer.test.cjs",
+      "sha256": "c6900bf45713bbcaa75f99f7d772428b6648c227f8950fc235e3486b76a83e77"
+    },
+    {
+      "file": "app/schoolbell-observed-post.cjs",
+      "sha256": "04ea62951f42eb774c414d9553b08a26d5e15dcde5682d9bec2cf2674e3a8329"
+    },
+    {
+      "file": "app/schoolbell-observed-post.test.cjs",
+      "sha256": "c9d0a6dad63c372c64bf88a5f0b3642aa8ff2e34c2bafac219943714f39b49bb"
+    },
+    {
+      "file": "app/schoolbell-prepared-driver.cjs",
+      "sha256": "10a46ea57661cd1502dd3e7b881f8565d659338fea7a39e236129664d5af89f7"
+    },
+    {
+      "file": "app/schoolbell-prepared-driver.test.cjs",
+      "sha256": "0156c4121f6519d72fd14fb15e9076143e6e87e24852736d287da998a197b86f"
+    },
+    {
+      "file": "app/schoolbell-ui-probe.cjs",
+      "sha256": "262af52bdbfe66b4dbbee6a9ea716d58ff9d3d866d3ab55d32e4f81bd0ff996e"
+    },
+    {
+      "file": "app/schoolbell-ui-probe.test.cjs",
+      "sha256": "5241f5c854d2fa0440470eef60a0642bead75e05249325acf32d2d8aad138317"
+    },
+    {
+      "file": "app/schoolbell.cjs",
+      "sha256": "5ace6326eb1063eed48a36170898ecd59dc2d97efc2115164229a5b088532873"
+    },
+    {
+      "file": "package.json",
+      "sha256": "bf1068fffd54227c7309e871407da1fb51a1d9a2ec1c1b1fb94c3956ba6d9011"
+    },
+    {
+      "file": "tests/e2e/schoolbell-electron.e2e.cjs",
+      "sha256": "8863a6ee7b2f90c47fb40dfa62f04eecbb08479ecc2301de9c66f410a5d3f0fe"
+    },
+    {
+      "file": "tests/schoolbell-electron-fixture.cjs",
+      "sha256": "7f47b493b99ee2159158a29fd11bf8cb2ac0f428975ee41c2bb591361a72ed9e"
+    }
+  ],
+  "logs": [
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/after-live-native.log",
+      "rawSha256": "c77941a82b88445029294960de8f05202253e994ce729c7a470ccc9e0f5ecb34",
+      "sanitizedSha256": "c77941a82b88445029294960de8f05202253e994ce729c7a470ccc9e0f5ecb34",
+      "bytes": 1639
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/after-live-syntax.log",
+      "rawSha256": "1e35b50a726f951c80be698e84d530f91d0902ed2bb5d3bb604ec4301fc19cf4",
+      "sanitizedSha256": "1e35b50a726f951c80be698e84d530f91d0902ed2bb5d3bb604ec4301fc19cf4",
+      "bytes": 60
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/after-live-unit.log",
+      "rawSha256": "3f167880e3203dd1e0568c8f24c5acedb6ee7bb578c22a37d30e352cdd091617",
+      "sanitizedSha256": "3f167880e3203dd1e0568c8f24c5acedb6ee7bb578c22a37d30e352cdd091617",
+      "bytes": 9792
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/e2e.log",
+      "rawSha256": "e80d90f3d56052a1007137abefb2cdd3b1840b78d4469edf389195afc4e1c67a",
+      "sanitizedSha256": "e80d90f3d56052a1007137abefb2cdd3b1840b78d4469edf389195afc4e1c67a",
+      "bytes": 30680
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/final-completion.log",
+      "rawSha256": "0f0c1b9e448b29faff2d7e63761dd49c02ace8a2b5f6aba033dc76a0ef933435",
+      "sanitizedSha256": "0f0c1b9e448b29faff2d7e63761dd49c02ace8a2b5f6aba033dc76a0ef933435",
+      "bytes": 1057
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/final-composer-unit.log",
+      "rawSha256": "ab0fc38860771807f1ac41a7b7a7b7d1d11fe212b14422593d04f7ab5ebdc3f4",
+      "sanitizedSha256": "ab0fc38860771807f1ac41a7b7a7b7d1d11fe212b14422593d04f7ab5ebdc3f4",
+      "bytes": 669
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/final-native.log",
+      "rawSha256": "03f7b8e304aad32830056dadab63354aa1837ac303ccf8bb91c1b62a324c968c",
+      "sanitizedSha256": "03f7b8e304aad32830056dadab63354aa1837ac303ccf8bb91c1b62a324c968c",
+      "bytes": 1880
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/final-syntax.log",
+      "rawSha256": "9822bd417da3363501c3ef3d31465f73bf14ccb37dc6191af09e97ec68cfd526",
+      "sanitizedSha256": "9822bd417da3363501c3ef3d31465f73bf14ccb37dc6191af09e97ec68cfd526",
+      "bytes": 60
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/final-ui.log",
+      "rawSha256": "8fa718fa120ca85501c25ec32b464296124ae54ca96d33ae8ade7864765b4aec",
+      "sanitizedSha256": "8fa718fa120ca85501c25ec32b464296124ae54ca96d33ae8ade7864765b4aec",
+      "bytes": 1225
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/final-unit.log",
+      "rawSha256": "1787e9e2579e81725556796d408487567e7ed70481515ca953c5c96208dafeeb",
+      "sanitizedSha256": "1787e9e2579e81725556796d408487567e7ed70481515ca953c5c96208dafeeb",
+      "bytes": 15960
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/live-final-syntax.log",
+      "rawSha256": "1e35b50a726f951c80be698e84d530f91d0902ed2bb5d3bb604ec4301fc19cf4",
+      "sanitizedSha256": "1e35b50a726f951c80be698e84d530f91d0902ed2bb5d3bb604ec4301fc19cf4",
+      "bytes": 60
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/live-final-ui-gate.log",
+      "rawSha256": "8fa718fa120ca85501c25ec32b464296124ae54ca96d33ae8ade7864765b4aec",
+      "sanitizedSha256": "8fa718fa120ca85501c25ec32b464296124ae54ca96d33ae8ade7864765b4aec",
+      "bytes": 1225
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/live-final-unit.log",
+      "rawSha256": "595522c2082c508edb67c6231efd5d8275d583e712b3982a1c97fc1d10904434",
+      "sanitizedSha256": "595522c2082c508edb67c6231efd5d8275d583e712b3982a1c97fc1d10904434",
+      "bytes": 1417
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/live-fix-native.log",
+      "rawSha256": "c77941a82b88445029294960de8f05202253e994ce729c7a470ccc9e0f5ecb34",
+      "sanitizedSha256": "c77941a82b88445029294960de8f05202253e994ce729c7a470ccc9e0f5ecb34",
+      "bytes": 1639
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/live-fix-unit.log",
+      "rawSha256": "d7c7642f84b45378d950e43d89d97e81f8d5947ae99bf2897559bdcd30d195ed",
+      "sanitizedSha256": "d7c7642f84b45378d950e43d89d97e81f8d5947ae99bf2897559bdcd30d195ed",
+      "bytes": 1422
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/live-ui-native.log",
+      "rawSha256": "c77941a82b88445029294960de8f05202253e994ce729c7a470ccc9e0f5ecb34",
+      "sanitizedSha256": "c77941a82b88445029294960de8f05202253e994ce729c7a470ccc9e0f5ecb34",
+      "bytes": 1639
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/native-empty-investigation.log",
+      "rawSha256": "a3f053713f70662901fd9a238ef3acd81d7b94eede963550678d3cf74676b57f",
+      "sanitizedSha256": "013a8cc817fbc962301be79c646f5482e8c7d8dc9f42431aed521ce6d0f8626b",
+      "bytes": 298
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/native-final-2.log",
+      "rawSha256": "c77941a82b88445029294960de8f05202253e994ce729c7a470ccc9e0f5ecb34",
+      "sanitizedSha256": "c77941a82b88445029294960de8f05202253e994ce729c7a470ccc9e0f5ecb34",
+      "bytes": 1639
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/native-final.log",
+      "rawSha256": "85a664e5518d1b9e28225bb5410ef42cbdf3c744f35daa68883a195300c07526",
+      "sanitizedSha256": "5cfd638d8f76bc29f3c9362430e64ab67dd086612665bfd4d828e1e04eba32f3",
+      "bytes": 327
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/native-first.log",
+      "rawSha256": "93d8346741cd45c1f986efc9e3c25eecbf50ec4c276d1c7377e6773802b872e1",
+      "sanitizedSha256": "647ed23eea18562e25ca6bc724fbfc9880552b66e0fad7fa65ab3539f2febb1a",
+      "bytes": 501
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/native-fourth.log",
+      "rawSha256": "50ace5a05781fe81d13ae4aaad6c0f4d6911aa174efd7755b8688c301ca08c85",
+      "sanitizedSha256": "1a24ad052ac09f5e3f641e6bd5fd9c7f2a7f7e60888985bb51e0841736682f24",
+      "bytes": 327
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/native-investigation-2.log",
+      "rawSha256": "f681eb7b209aa17c3f8f7b168f488cbabf3d3ae263e271980846ad37d4a7fae4",
+      "sanitizedSha256": "28968dc7ffa19eaa6746aa37128025dda955a915bf75e20900cb15b5f2a9b08d",
+      "bytes": 327
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/native-investigation-3.log",
+      "rawSha256": "7e5c5e2f0c2845dda620cc49abed8d279b8cbf9b7b2f4b55b063ffe1e78f0136",
+      "sanitizedSha256": "96a64f7b906b535f530b6f5104639a85fa4e6050794da9922df38052f7f90ad9",
+      "bytes": 808
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/native-investigation.log",
+      "rawSha256": "1ebf8ab16a727c87160d0ba73ff87f6e429a982b4492e02025d8fd9f20e4ef33",
+      "sanitizedSha256": "f2f3e4d2694bca2bdd32c77f7a5f245042a56314ddee5cec5bb9da3a33769b74",
+      "bytes": 496
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/native-second.log",
+      "rawSha256": "6e3909d02be4fd428fbba8c7302296bfd376e1afa0812c9c3438809dce2ec826",
+      "sanitizedSha256": "f8544c739644d548ee2c33c8061e903e0d9caf12dfd4a8184fa712d6287c9af1",
+      "bytes": 1018
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/native-third.log",
+      "rawSha256": "4411eadf00eeee63ce33f82ac181b374d3e912e4ba9ddd1e174b0b3413446b71",
+      "sanitizedSha256": "481e20ef34b0eb2f3608e8fd6a6c64ab6cdabead34c03e8df891e10279e1f2f4",
+      "bytes": 327
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/native-whitespace-investigation-2.log",
+      "rawSha256": "1277315ef9615a8adb0927ff32dc3380a0deb0aca11e7bc38bfd072db57ef33d",
+      "sanitizedSha256": "982275037165f5a6305e5ce5bc9fd8f84bdc9784c71198c170e3c88ca4c7c4c1",
+      "bytes": 325
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/native-whitespace-investigation.log",
+      "rawSha256": "1d4193f2f30e426713c1824fbe943df13df32a18399a574d5af01e459548965f",
+      "sanitizedSha256": "ffacdf7152030f20996f914599edce04cf73a3dab0b4687cb2698b991f7fc0c9",
+      "bytes": 325
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/post-download-final-2.log",
+      "rawSha256": "ec56743a4186ebcbb71e82a37d32bca6c8c5233a2b4fe22a307fd258572ac27c",
+      "sanitizedSha256": "ec56743a4186ebcbb71e82a37d32bca6c8c5233a2b4fe22a307fd258572ac27c",
+      "bytes": 1779
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/post-download-final.log",
+      "rawSha256": "ef4ebde5d42360e24db946f75e3ab6d99c6eef5ac15558f95d1b0cc6571995b1",
+      "sanitizedSha256": "ef101857deaa1e3ba0bd626e6cf4e33beb50b3dfb212744ee19698b292db17ed",
+      "bytes": 328
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/post-download-first.log",
+      "rawSha256": "5ed5229fc2361696af46babefde6aac8f81072cbc3ee0a12f45ed3a2d6ea8b55",
+      "sanitizedSha256": "5ed5229fc2361696af46babefde6aac8f81072cbc3ee0a12f45ed3a2d6ea8b55",
+      "bytes": 1666
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/post-download-syntax.log",
+      "rawSha256": "9822bd417da3363501c3ef3d31465f73bf14ccb37dc6191af09e97ec68cfd526",
+      "sanitizedSha256": "9822bd417da3363501c3ef3d31465f73bf14ccb37dc6191af09e97ec68cfd526",
+      "bytes": 60
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/post-download-unit.log",
+      "rawSha256": "d037256d89af20c89646e311e80f6793dcb89a1d38c099ff01729fdb4b6e2a64",
+      "sanitizedSha256": "d037256d89af20c89646e311e80f6793dcb89a1d38c099ff01729fdb4b6e2a64",
+      "bytes": 10064
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/syntax.log",
+      "rawSha256": "64e0f61024704be68f279aa6c2e67ae7f214c936b279fac7eecd1bb598d267f3",
+      "sanitizedSha256": "64e0f61024704be68f279aa6c2e67ae7f214c936b279fac7eecd1bb598d267f3",
+      "bytes": 60
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/unit-focused.log",
+      "rawSha256": "1b3ef8742bfaa09e22d8099f2b88bed6848160f2aba2f53e85ee6b6e81607fda",
+      "sanitizedSha256": "1b3ef8742bfaa09e22d8099f2b88bed6848160f2aba2f53e85ee6b6e81607fda",
+      "bytes": 1044
+    },
+    {
+      "file": "tests/validation/artifacts/2026-11-09-schoolbell-electron/unit.log",
+      "rawSha256": "80eec032d3dd71108c2e722d4de5883b8354f03c6ba6fbfccdc6b6a01e5b3a04",
+      "sanitizedSha256": "80eec032d3dd71108c2e722d4de5883b8354f03c6ba6fbfccdc6b6a01e5b3a04",
+      "bytes": 15198
+    }
+  ]
+}

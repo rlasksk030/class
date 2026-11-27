@@ -1,0 +1,69 @@
+{
+  "kind": "nonpublishing",
+  "steps": {
+    "context": true,
+    "blankComposer": true,
+    "teacherConsent": true,
+    "title": true,
+    "body": true,
+    "upload": true,
+    "original": true,
+    "finalContext": true
+  },
+  "sendCount": 0,
+  "scheduleCount": 0,
+  "saveCount": 0,
+  "identityVerified": false,
+  "authorityVerified": false,
+  "recipientsVerified": false,
+  "status": "nonpublishing-verified",
+  "publicationMode": "immediate",
+  "photos": [
+    {
+      "sha256": "4b710117b406cde8188ac5cd00c8c2853f73c11815a073463a9ce142ffb92c53",
+      "bytes": 79
+    }
+  ],
+  "evidenceSources": {
+    "classId": "observed-service-route",
+    "gradeClass": "observed-class-label-and-app-settings",
+    "schoolYear": "teacher-confirmation",
+    "teacherIdentity": "teacher-confirmation-only",
+    "roleSelection": "observed-service-controls",
+    "officialServicePermission": "unconfirmed"
+  },
+  "recipientCheck": {
+    "known": true,
+    "totalCount": 1,
+    "dialogCount": 1,
+    "hiddenCount": 0,
+    "unknownCount": 0,
+    "covered": false,
+    "recipientsVerified": false,
+    "empty": false,
+    "observedSearchClear": true,
+    "visibleRows": 18,
+    "totalStudents": null,
+    "totalParents": null,
+    "roles": {
+      "administrator": {
+        "checked": true,
+        "disabled": true
+      },
+      "guardian1": {
+        "checked": true,
+        "disabled": false
+      },
+      "guardian2": {
+        "checked": true,
+        "disabled": false
+      },
+      "student": {
+        "checked": true,
+        "disabled": false
+      }
+    },
+    "roleSelectionKnown": true,
+    "mandatoryAdministrator": true
+  }
+}

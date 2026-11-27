@@ -1,0 +1,18 @@
+PASS D-Day dashboard only
+PASS import excludes D-Day
+PASS retain draft: 등록 실패
+PASS retain draft: 로그인 만료
+PASS retain draft: network exception
+PASS retain draft: 학급 불일치
+PASS retain draft: 수신대상 불일치
+PASS retain draft: 결과 불확실
+PASS retain draft: 임시저장
+PASS retain draft: 취소
+PASS retain draft: 성공 여부 없음
+PASS success resets title/body and preserves date, recipients, link, hash
+PASS published v1.8.4 registration history retained
+PASS new draft saved across reload
+PASS pending registration preserves newer edits
+PASS success resets submitted date only
+PASS D-Day restored on dashboard
+17/17 passed

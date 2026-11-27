@@ -1,0 +1,16 @@
+✔ observed class route excludes school announcements, credentials and other origins (7.106ms)
+✔ matching display names and empty slots cannot establish school, year, actor or notification authority (7.540583ms)
+✔ cancellation while the context reader is opening destroys only that reader and prevents reads (5.004541ms)
+✔ observed post ID and tooltip date do not claim virtual list coverage (35.905625ms)
+✔ post provider keeps incomplete baseline blocked and revisits only its pinned class after send (1.99075ms)
+✔ observed diary route is bound to an official origin and class board (11.629166ms)
+✔ reads only the unique requested post and keeps file order without size labels (7.773792ms)
+✔ post reader cannot inspect without permission or move to another board (0.786541ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 483.174833

@@ -1,0 +1,56 @@
+{
+  "checks": {
+    "classPage": true,
+    "gradeClass": true,
+    "school": false,
+    "year": false,
+    "actor": false,
+    "accountContactAvailable": true,
+    "adminDisplayMatch": true,
+    "adminSettingsEditable": true,
+    "rosterEmpty": false,
+    "inviteEmpty": true,
+    "recipientTableEmpty": false
+  },
+  "recipientCheck": {
+    "known": true,
+    "totalCount": 1,
+    "dialogCount": 1,
+    "hiddenCount": 0,
+    "unknownCount": 0,
+    "covered": false,
+    "recipientsVerified": false,
+    "empty": false,
+    "observedSearchClear": true,
+    "visibleRows": 18,
+    "totalStudents": null,
+    "totalParents": null,
+    "roles": {
+      "administrator": {
+        "checked": true,
+        "disabled": true
+      },
+      "guardian1": {
+        "checked": true,
+        "disabled": false
+      },
+      "guardian2": {
+        "checked": true,
+        "disabled": false
+      },
+      "student": {
+        "checked": true,
+        "disabled": false
+      }
+    },
+    "roleSelectionKnown": true,
+    "mandatoryAdministrator": true
+  },
+  "publicationMode": {
+    "known": true,
+    "mode": "immediate",
+    "dateSelectable": false,
+    "dropdownKnown": true,
+    "availableWhenClosed": false
+  }
+}

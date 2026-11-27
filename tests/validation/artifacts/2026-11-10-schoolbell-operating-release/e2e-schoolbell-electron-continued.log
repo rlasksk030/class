@@ -1,0 +1,11 @@
+electronApplication.evaluate: AssertionError: Expected values to be strictly equal:
++ actual - expected
+
++ 'commit-action-mismatch'
+- 'publication-unverified'
+
+    at global.runSchoolbellElectronTests (/Users/kimnana/Documents/codex/2026-09-29/referenced-chatgpt-conversation-this-is-an-2/schoolbell-live-verified-20261109/tests/schoolbell-electron-fixture.cjs:179:10)
+    at async <anonymous>:337:30
+    at /Users/kimnana/Documents/codex/2026-09-29/referenced-chatgpt-conversation-this-is-an-2/schoolbell-live-verified-20261109/tests/e2e/schoolbell-electron.e2e.cjs:9:26 {
+  log: []
+}

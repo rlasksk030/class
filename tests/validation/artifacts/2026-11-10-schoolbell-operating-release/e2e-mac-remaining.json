@@ -1,0 +1,70 @@
+[
+  {
+    "test": "hiclass-link",
+    "exitCode": 0
+  },
+  {
+    "test": "recovery",
+    "exitCode": 0
+  },
+  {
+    "test": "timetable-layout",
+    "exitCode": 0
+  },
+  {
+    "test": "diary-drafts",
+    "exitCode": 0
+  },
+  {
+    "test": "hiclass-recipients",
+    "exitCode": 0
+  },
+  {
+    "test": "hiclass-submit",
+    "exitCode": 0
+  },
+  {
+    "test": "timer-startup",
+    "exitCode": 0
+  },
+  {
+    "test": "diary-layout",
+    "exitCode": 0
+  },
+  {
+    "test": "hiclass-window",
+    "exitCode": 0
+  },
+  {
+    "test": "photos",
+    "exitCode": 0
+  },
+  {
+    "test": "hiclass-photos",
+    "exitCode": 0
+  },
+  {
+    "test": "photo-boundaries",
+    "exitCode": 0
+  },
+  {
+    "test": "photo-transfer",
+    "exitCode": 0
+  },
+  {
+    "test": "multischool",
+    "exitCode": 0
+  },
+  {
+    "test": "schoolbell",
+    "exitCode": 0
+  },
+  {
+    "test": "schoolbell-automatic",
+    "exitCode": 0
+  },
+  {
+    "test": "schoolbell-completion",
+    "exitCode": 1
+  }
+]

@@ -1,0 +1,9 @@
+sandbox_extension_issue_file_to_process failed for <repo>/node_modules/electron/dist/Electron.app: 1 (Operation not permitted)
+PASS DOM click has no trusted mouse-down/up sequence (local comparison only)
+PASS focused native down/up at 125% zoom, trusted click delivered exactly once; repeat denied
+PASS content mutation between native down/up blocks final click
+PASS occluded target blocks all mouse input
+PASS waits for a closing overlay before the one native input; no click against the overlay
+PASS inherited disabled state blocks input
+PASS post-click UI diagnostics contain only structure and fixed error categories
+7 focused checks PASS; real service publication NOT RUN by this fixture

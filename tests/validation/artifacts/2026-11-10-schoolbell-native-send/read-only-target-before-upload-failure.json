@@ -1,0 +1,342 @@
+{
+  "status": "uncertain",
+  "reason": "upload-unverified",
+  "attachmentsVerified": false,
+  "publication": null,
+  "trace": [
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "writeTitle",
+      "state": "started"
+    },
+    {
+      "step": "writeTitle",
+      "state": "complete"
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "writeBodyText",
+      "state": "started"
+    },
+    {
+      "step": "writeBodyText",
+      "state": "complete"
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "readFields",
+      "state": "started"
+    },
+    {
+      "step": "readFields",
+      "state": "complete",
+      "sendTarget": {
+        "visible": true,
+        "enabled": true,
+        "centerHitsButton": false,
+        "visiblePoints": 0,
+        "hitTag": "DIV",
+        "hitDropdown": false
+      }
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    },
+    {
+      "step": "attachFiles",
+      "state": "started"
+    },
+    {
+      "step": "attachFiles",
+      "state": "complete"
+    },
+    {
+      "step": "context",
+      "checks": {
+        "classPage": true,
+        "gradeClass": true,
+        "school": false,
+        "year": false,
+        "actor": false,
+        "accountContactAvailable": true,
+        "adminDisplayMatch": false,
+        "adminSettingsEditable": true,
+        "rosterEmpty": true,
+        "inviteEmpty": true,
+        "recipientTableEmpty": true
+      },
+      "grantPresent": true,
+      "grantMatches": true,
+      "factsReady": true,
+      "attached": true,
+      "testContextAccepted": true
+    }
+  ]
+}

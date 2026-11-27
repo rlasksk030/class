@@ -1,0 +1,6 @@
+PASS diary pending photo blocks backup and restore without discarding it
+PASS whiteboard pending photo blocks backup and restore without discarding it
+PASS unsaved draft cannot be exported as a successful stale backup
+PASS after saving recovers, backup includes both editors and their photo bytes
+PASS unsaved font preference also blocks stale backup
+5/5 passed

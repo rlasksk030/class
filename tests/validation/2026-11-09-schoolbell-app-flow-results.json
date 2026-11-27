@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-09",
+  "baseCommit": "fe3784d9f511577264aef28066ee07a93a73848f",
+  "codeCommit": "33e3ac11c522d6248a319040d933af55c0372c9d",
+  "releaseDecision": "NO GO",
+  "productionEnabled": false,
+  "appLive": {
+    "input": "BLOCKED",
+    "publish": "NOT RUN / BLOCKED",
+    "serverReadback": "NOT RUN / BLOCKED",
+    "draftCompletion": "NOT RUN / BLOCKED",
+    "reason": "App-owned direct login unavailable; identity/date/prepublish originals/full-list evidence also incomplete"
+  },
+  "mac": {
+    "syntax": 112,
+    "unit": 188,
+    "focusedUnit": 8,
+    "e2eScripts": 22,
+    "e2ePassed": 378,
+    "e2eTotal": 378
+  },
+  "windows": "NOT RUN / guest execution environment BLOCKED; restored suspended",
+  "liveNewPosts": 0,
+  "priorABCPreserved": true,
+  "sources": {
+    "app/diary-schoolbell.js": "4a5a20dbb90f692bec9a176e7574e7c27a387bf4f86b4d585dfe51ec0ecf5eff",
+    "app/preload.cjs": "c5280737c7ce4483cc4179c8604a1b3e2863307c4f644a5010a36171704d1891",
+    "app/schoolbell-electron-driver.cjs": "c0ceab9e34e3180b96e43ec147ea7f33f5e28df3c3c277d58014dfe0f7493851",
+    "app/schoolbell-live-context.cjs": "7cd131c23f612e416bf2b96684502767c989fbfbf31a85847dbba32f2405d853",
+    "app/schoolbell-live-evidence.test.cjs": "1a94f5362a42887a72268b956e378355759c9b3604c47f59cdb6a31e432087c0",
+    "app/schoolbell-live-posts.cjs": "a59f3a5ca207dedfce622873de6ad8d02e0f675039b605d2a2e7dd64f882dc70",
+    "app/schoolbell-observed-post.cjs": "4cb73ee9b541aa12d4981c22d68e7d4a378e29700cf455aae6217a86c7976e58",
+    "app/schoolbell-prepared-driver.cjs": "41af9d7cec052678b672d3770f9c7dbffc8a7cd23ae3aee07ef2ef515c1ba2bd",
+    "app/schoolbell.cjs": "6cc436792d82e887b308eebad533c9812ce568d1bdafcfe41f3c7c4f36485bc3",
+    "tests/e2e/schoolbell.e2e.cjs": "a229ab28283af8e8daabcb434ae10cebf127d9df086f99f95610bf9a21fdb4df",
+    "tests/schoolbell-electron-fixture.cjs": "f2128d8ab3b71439cd1f61daf66b77c5a7c8d40f2f6f8885f3964d8d416a7a77"
+  },
+  "artifacts": {
+    "tests/validation/artifacts/2026-11-09-schoolbell-app-flow/e2e-mac.log": "65f8d92ef5f0f62401f42ec8c5984a5a2ba82f2e8db1a8ad492a45983a157f4a",
+    "tests/validation/artifacts/2026-11-09-schoolbell-app-flow/focused-unit-initial-failure.log": "d8411a9454bfeb6d460ca5c20eee1c4d55a1992eddb5f2eae64ec69bf0d46e21",
+    "tests/validation/artifacts/2026-11-09-schoolbell-app-flow/focused-unit.log": "d42eb3b2d065c472fc81a50c29afc27c2416b308801428b20e091d79be72b1d7",
+    "tests/validation/artifacts/2026-11-09-schoolbell-app-flow/syntax.log": "56bc4078dbe36eddf94b13462693163b446156b2d5922b5f701f52c6a7877e22",
+    "tests/validation/artifacts/2026-11-09-schoolbell-app-flow/unit.log": "7e0bc94fa9a3a22a63ee4204ed95057f1873fc2c8e152c04c6765062fe666a87",
+    "tests/validation/artifacts/2026-11-09-schoolbell-app-flow/windows-environment.json": "5324f02f2741dd1f9f4d3606c514158e9015f14ffe14bde715d21b2435ef791d"
+  },
+  "github": {
+    "actionsBefore": 19,
+    "lastRunBefore": 41977391612,
+    "newRunRequests": 0,
+    "paidResourcesCreated": 0,
+    "pushAfterValidation": true
+  }
+}

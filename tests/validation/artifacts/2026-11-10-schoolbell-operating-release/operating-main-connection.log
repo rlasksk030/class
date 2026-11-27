@@ -1,0 +1,2 @@
+PASS real main/preload/editor: confirmed class enables only its register button, without publishing
+PASS real navigation revokes class permission and disables registration; no test approval reused

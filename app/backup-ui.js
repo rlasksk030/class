@@ -88,7 +88,7 @@
   $('recoveryList').replaceChildren();$('recoveryStatus').textContent='찾는 중입니다…';recoveryDialog.showModal();
   let found=0;
   try{for(const s of await window.desktop.recoveryScan()){try{addItem(s.label,new Date(s.time).toLocaleString('ko-KR'),await load(await window.desktop.recoveryRead(s.id)));found++;}catch{}}}catch{}
-  $('recoveryStatus').textContent=found?'':'이 PC의 우리 교실 데이터 폴더에서 이전 백업을 찾지 못했습니다. 다른 폴더에서 찾을 수 있습니다.';
+  $('recoveryStatus').textContent=found?`이전 데이터 ${found}개를 찾았습니다.`:'이 PC의 우리 교실 데이터 폴더에서 이전 백업을 찾지 못했습니다. 다른 폴더에서 찾을 수 있습니다.';$('recoveryStatus').classList.toggle('is-found',found>0);
  });
  $('recoveryFolder').onclick=async()=>{
   $('recoveryStatus').textContent='폴더를 확인하는 중입니다…';

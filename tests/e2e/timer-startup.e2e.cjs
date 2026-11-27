@@ -9,33 +9,74 @@ async function launch(){
  await page.evaluate(()=>{if(!JSON.parse(localStorage.getItem('settings')||'{}').grade)localStorage.setItem('settings',JSON.stringify({grade:'6',classroom:'1'}));});
  await page.reload();await page.waitForLoadState('domcontentloaded');
 }
-async function preset(seconds){if(!await page.locator('#timerDialog').evaluate(e=>e.open))await page.click('#timerButton');await page.fill('#timerMinutes','0');await page.fill('#timerSeconds',String(seconds));await page.click('#timerSet');}
+async function preset(seconds){if(!await page.locator('#timerDialog').evaluate(e=>e.open))await page.click('#timerButton');await page.fill('#timerMinutes',String(Math.floor(seconds/60)));await page.fill('#timerSeconds',String(seconds%60));await page.click('#timerSet');}
 async function finished(){await preset(1);await page.check('#timerSound');await page.click('#timerStart');await page.waitForFunction(()=>classroomTools.timer().state==='finished');}
-async function idle(){await page.waitForFunction(()=>classroomTools.timer().state==='idle');const t=await state();assert.equal(t.remaining,t.duration);assert.equal(t.deadline,null);assert.equal(await page.textContent('#timerButton'),'⏱ 타이머');assert.equal(await page.isVisible('#timerFinished'),false);}
+async function idle(){await page.waitForFunction(()=>classroomTools.timer().state==='idle');const t=await state();assert.equal(t.remaining,t.duration);assert.equal(t.deadline,null);assert.equal(await page.textContent('#timerButton'),'타이머');assert.equal(await page.isVisible('#timerFinished'),false);}
 (async()=>{try{
  await launch();
  const registrations=async()=>app.evaluate(async({shell},module)=>process.mainModule.require(module).inventory(shell,process.env),path.join(ROOT,'app/startup-manager.cjs'));
  const startupBefore=process.platform==='win32'?await registrations():[];
- await preset(10);await page.click('#timerStart');const deadline=(await state()).deadline;await page.click('#timerDialog .close-extra');await page.waitForTimeout(1200);assert.equal((await state()).state,'running');assert.equal((await state()).deadline,deadline);assert.match(await page.textContent('#timerButton'),/⏱ 00:0[89]/);pass('running close preserves deadline and countdown');
+ await preset(10);await page.click('#timerStart');const deadline=(await state()).deadline;await page.click('#timerDialog .close-extra');await page.waitForTimeout(1200);assert.equal((await state()).state,'running');assert.equal((await state()).deadline,deadline);assert.match(await page.textContent('#timerButton'),/^00:0[89]$/);pass('running close preserves deadline and countdown');
  await page.click('#timerButton');await page.click('#timerPause');const paused=await state();await page.keyboard.press('Escape');await page.waitForTimeout(400);assert.deepEqual(await state(),paused);await page.click('#timerButton');assert.equal(await page.textContent('#timerStart'),'계속하기');pass('paused Escape preserves remaining time and resume');
  await page.click('#timerReset');await page.keyboard.press('Escape');await idle();
+ // Exercise the completion/close path in a short renderer, independent of host work area.
+ await page.setViewportSize({width:900,height:550});
  for(const mode of ['button','Escape','native close']){
   await finished();assert.ok(await page.isVisible('#timerFinished'));const pulses=await page.evaluate(()=>soundPulses);await page.waitForTimeout(400);assert.equal(await page.evaluate(()=>soundPulses),pulses);
   if(mode==='button')await page.click('#timerDialog .close-extra');else if(mode==='Escape')await page.keyboard.press('Escape');else await page.locator('#timerDialog').evaluate(e=>e.close());
   await idle();await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>soundPulses),pulses);pass('finished '+mode+' resets saved state, banner and button without another alarm');
  }
+ await page.setViewportSize({width:1280,height:900});
  await finished();await page.click('#timerFinished button');await idle();assert.equal(await page.inputValue('#timerSeconds'),'1');await page.click('#timerStart');assert.equal((await state()).state,'running');pass('acknowledge inside open dialog resets and immediately restarts configured time');
  await page.keyboard.press('Escape');await page.waitForFunction(()=>classroomTools.timer().state==='finished');await page.waitForTimeout(500);assert.ok(await page.isVisible('#timerFinished'));pass('closed-dialog completion keeps alert until user acknowledgement');
  await page.click('#timerFinished button');await idle();pass('banner acknowledgement outside dialog clears completion');
  await app.close();await launch();await idle();pass('acknowledged completion remains idle after relaunch');
  // Keep an unacknowledged completion visible across reload instead of silently discarding the alert.
  await finished();await page.reload();await page.waitForLoadState('domcontentloaded');assert.equal((await state()).state,'finished');assert.ok(await page.isVisible('#timerFinished'));await page.click('#timerFinished button');await idle();pass('unacknowledged alert survives reload, acknowledgement is persisted');
- await preset(20);await page.click('#timerStart');await page.keyboard.press('Escape');await page.evaluate(()=>desktop.openPip('dashboard'));let pip;for(let i=0;i<50;i++){pip=app.windows().find(p=>p.url().endsWith('/pip.html'));if(pip)break;await page.waitForTimeout(100);}assert.ok(pip,'PIP renderer opened');await pip.waitForSelector('.pip-timer');assert.match(await pip.textContent('.pip-timer'),/⏱ 00:/);pass('PIP running timer visible');
+ await preset(20);await page.click('#timerStart');await page.keyboard.press('Escape');await page.evaluate(()=>desktop.openPip('dashboard'));let pip;for(let i=0;i<50;i++){pip=app.windows().find(p=>p.url().endsWith('/pip.html'));if(pip)break;await page.waitForTimeout(100);}assert.ok(pip,'PIP renderer opened');await pip.waitForSelector('.pip-timer');assert.match(await pip.textContent('.pip-timer'),/^00:/);pass('PIP running timer visible');
  await page.click('#timerButton');await page.click('#timerPause');await page.keyboard.press('Escape');await pip.waitForFunction(()=>document.querySelector('.pip-timer')?.textContent.includes('일시정지'));pass('PIP paused timer preserved');
  await finished();await page.click('#timerFinished button');await idle();await pip.waitForFunction(()=>!document.querySelector('.pip-timer'));pass('PIP completion clears after acknowledgement');
  // Wait for the native closed event, not merely Playwright's renderer-close notification.
  await app.evaluate(({BrowserWindow})=>{const w=BrowserWindow.getAllWindows().find(w=>!w.isDestroyed()&&!w.webContents.isDestroyed()&&w.webContents.getURL().endsWith('/pip.html'));globalThis.pipNativeClosed=w?new Promise(resolve=>w.once('closed',resolve)):Promise.resolve();});
  await pip.close();await app.evaluate(()=>globalThis.pipNativeClosed);
+ // Standalone timer PIP uses the same persisted timer and never starts its own countdown.
+ async function timerPip(){
+  await page.click('#timerDialog [data-pip="timer"]');
+  let view;for(let i=0;i<50;i++){view=app.windows().find(p=>p.url().endsWith('/pip.html'));if(view)break;await page.waitForTimeout(100);}
+  assert.ok(view,'standalone timer PIP opened');await view.waitForSelector('#pipTimerDisplay');return view;
+ }
+ async function closeTimerPip(view){
+  await app.evaluate(({BrowserWindow})=>{const w=BrowserWindow.getAllWindows().find(w=>!w.isDestroyed()&&w.webContents.getURL().endsWith('/pip.html'));globalThis.timerPipClosed=new Promise(resolve=>w.once('closed',resolve));});
+  await view.close();await app.evaluate(()=>globalThis.timerPipClosed);
+ }
+ await preset(60);pip=await timerPip();assert.equal(await pip.textContent('#pipTimerDisplay'),'01:00');
+ assert.equal(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().endsWith('/pip.html')).isAlwaysOnTop()),true);
+ await page.click('#timerDialog .close-extra');await pip.click('[data-timer-action="start"]');await page.waitForFunction(()=>classroomTools.timer().state==='running');
+ const pipDeadline=(await state()).deadline;await closeTimerPip(pip);assert.equal((await state()).deadline,pipDeadline);
+ await page.click('#timerButton');pip=await timerPip();assert.equal((await state()).deadline,pipDeadline);pass('standalone PIP is always on top; close and reopen preserve the running timer');
+ await pip.click('[data-timer-action="pause"]');await page.waitForFunction(()=>classroomTools.timer().state==='paused');
+ const pipPaused=await state();await page.waitForTimeout(400);assert.deepEqual(await state(),pipPaused);
+ await pip.waitForFunction(()=>document.querySelector('[data-timer-action="start"]').textContent==='계속하기');
+ await pip.click('[data-timer-action="start"]');await page.waitForFunction(()=>classroomTools.timer().state==='running');
+ await pip.click('[data-timer-action="restart"]');await page.waitForFunction(()=>classroomTools.timer().deadline>0&&classroomTools.timer().remaining===60000);
+ await pip.click('[data-timer-action="reset"]');await idle();await pip.waitForFunction(()=>document.querySelector('#pipTimerDisplay').textContent==='01:00');pass('PIP pause, resume, restart and reset update the main timer');
+ await page.click('#timerStart');await page.waitForFunction(()=>classroomTools.timer().state==='running');await pip.waitForFunction(()=>document.querySelector('[data-timer-action="start"]').disabled);
+ await page.click('#timerPause');await pip.waitForFunction(()=>document.querySelector('#pipTimerMessage').textContent==='일시정지');pass('main-window controls update the standalone PIP');
+ await preset(1);await page.check('#timerSound');await page.click('#timerDialog .close-extra');
+ const beforePipAlarm=await page.evaluate(()=>soundPulses);
+ await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().find(w=>!w.webContents.getURL().endsWith('/pip.html')).minimize());
+ await pip.click('[data-timer-action="start"]');await page.waitForFunction(()=>classroomTools.timer().state==='finished');
+ await pip.waitForFunction(()=>document.querySelector('#pipTimerMessage').textContent==='시간이 다 되었습니다!');
+ assert.equal(await pip.textContent('#pipTimerDisplay'),'00:00');assert.equal(await page.evaluate(()=>soundPulses),beforePipAlarm+3);
+ await page.waitForTimeout(400);assert.equal(await page.evaluate(()=>soundPulses),beforePipAlarm+3);
+ await pip.click('#pipTimerDismiss');await idle();await pip.waitForFunction(()=>document.querySelector('#pipTimerDisplay').textContent==='00:01');pass('minimized main window finishes once; PIP acknowledgement clears the saved alert');
+ await app.evaluate(({BrowserWindow})=>{const w=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().endsWith('/pip.html'));w.setBounds({width:320,height:220});});
+ assert.equal(await pip.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.ok(await pip.isVisible('[data-timer-action="reset"]'));
+ await app.evaluate(({BrowserWindow})=>{const w=BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().endsWith('/pip.html'));globalThis.timerPipClosed=new Promise(resolve=>w.once('closed',resolve));});
+ await pip.click('#expand');await app.evaluate(()=>globalThis.timerPipClosed);await page.waitForFunction(()=>document.querySelector('#timerDialog').open);
+ assert.equal(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().find(w=>!w.webContents.getURL().endsWith('/pip.html')).isMinimized()),false);
+ assert.equal(await page.getAttribute('#dashboardTab','aria-selected'),'true');pass('small timer PIP fits horizontally; time settings restores main timer without switching to an invalid tab');
+ await page.click('#timerDialog .close-extra');
  // Both copies use the same profile lock even if their executable/app locations differ.
  const secondDir=path.join(PROFILE,'second-app');fs.mkdirSync(secondDir);fs.writeFileSync(path.join(secondDir,'package.json'),JSON.stringify({name:'alternate-copy',version:'1.8.5',main:'main.cjs'}));fs.writeFileSync(path.join(secondDir,'main.cjs'),'require('+JSON.stringify(path.join(ROOT,'app/main.cjs'))+')');
  const before=await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().length);
