@@ -29,6 +29,9 @@ jobs:
       run:
         shell: bash
     steps:
+      # 저장소와 같은 줄바꿈(LF)으로 받아, Mac에서 만든 설치 파일과 같은 내용을 빌드하고 시험합니다.
+      - name: 줄바꿈 그대로 받기
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
