@@ -2,6 +2,10 @@
 // Release maintainers: add an entry for the new version before building (newest first, 2–5 short lines).
 (function(root){
  const NOTES={
+  '1.8.18':{title:'랜덤 뽑기 모둠 화면을 크게 바꿨습니다',items:[
+   '모둠을 만들면 모둠 칸이 뽑기 자리를 꽉 채우고, 이름이 칸에 맞춰 크게 보입니다.',
+   '이름이 두 줄로 끊기지 않고, 창 크기를 바꾸면 글씨 크기도 다시 맞춥니다.'
+  ]},
   '1.8.17':{title:'화면 디자인을 새로 다듬었습니다',items:[
    '대시보드 · 작은 창 · 설정 창의 글씨, 색, 버튼 모양을 하나로 맞추고, 도구는 화면 아래 막대에 모았습니다.',
    '[화면 설정]에서 대시보드 구조를 A(위쪽 머리글)와 B(왼쪽 정보 기둥) 중에 고를 수 있습니다. 칸 배치는 구조마다 따로 기억합니다.',

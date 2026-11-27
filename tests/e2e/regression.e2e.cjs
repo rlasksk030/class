@@ -7,6 +7,8 @@ const results=[];const ok=(n,c,d='')=>{results.push([n,!!c]);console.log((c?'PAS
 const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date());
 const shift=(d,n)=>new Date(Date.parse(d+'T00:00:00Z')+n*86400000).toISOString().slice(0,10);
 async function launch(){const app=await _electron.launch({executablePath:electronPath,args:['--no-sandbox',path.join(ROOT,'app')],env:{...process.env,CLASSROOM_TEST_PROFILE:PROFILE}});const page=await app.firstWindow();page.on('dialog',d=>d.accept());await page.waitForLoadState('domcontentloaded');
+ // Measure at the design's base size (1440×900): a CI screen (1024×768) would shrink the window and every size check.
+ await page.setViewportSize({width:1440,height:900});
  await app.evaluate(({ipcMain})=>{globalThis.publishCalls=0;ipcMain.removeHandler('fetch');ipcMain.handle('fetch',async(_,url)=>{const ep=new URL(url).pathname.split('/').pop();
   if(ep==='elsTimetable')return {elsTimetable:[{head:[{list_total_count:6}]},{row:['국어','수학','사회','과학','체육','음악'].map((s,i)=>({PERIO:String(i+1),ITRT_CNTNT:s}))}]};
   if(ep==='mealServiceDietInfo')return {mealServiceDietInfo:[{head:[{list_total_count:1}]},{row:[{DDISH_NM:'잡곡밥<br/>미역국'}]}]};throw Error('offline');});

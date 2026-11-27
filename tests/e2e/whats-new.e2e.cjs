@@ -95,8 +95,11 @@ const seen=page=>page.evaluate(()=>JSON.parse(localStorage.getItem('lastSeenVers
  await close();
 
  // 6. Version without notes: nothing shown, version still remembered.
- ({app,page}=await launch(updated,'1.8.19'));
- await page.waitForTimeout(2500);assert.equal(await open(page),false);assert.equal(await seen(page),'1.8.19');pass('version without notes: nothing shown');
+ //    Taken right after the newest version that has notes, so this keeps working when later notes are added.
+ const WN=require('../../app/whats-new.js'),NEWEST=Object.keys(WN.NOTES).sort((a,b)=>WN.compare(b,a))[0],[MA,MI,PA]=WN.parse(NEWEST),NONE=`${MA}.${MI}.${PA+1}`;
+ ({app,page}=await launch(updated,NEWEST));await page.evaluate(v=>localStorage.setItem('lastSeenVersion',JSON.stringify(v)),NEWEST);await close();
+ ({app,page}=await launch(updated,NONE));
+ await page.waitForTimeout(2500);assert.equal(await open(page),false);assert.equal(await seen(page),NONE);pass('version without notes: nothing shown');
  await close();
  console.log(`${count}/${count} passed`);
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>current?.close().catch(()=>{}));
