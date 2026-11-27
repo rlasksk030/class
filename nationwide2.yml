@@ -1,8 +1,8 @@
-version: 1.8.17
+version: 1.8.18
 files:
-  - url: https://github.com/rlasksk030/class/releases/download/nationwide-v1.8.17/classroom-dashboard-nationwide-setup-1.8.17-x64.exe
-    sha512: Q9FXbRWjCX0J4UmXFd2jmM9Rk2vEt0RkPHZOYBaRiVlLgTfQgB+dP2ItgXH7whicCvWPdfMVX4+K7m+KcwEu4Q==
-    size: 99408437
-path: https://github.com/rlasksk030/class/releases/download/nationwide-v1.8.17/classroom-dashboard-nationwide-setup-1.8.17-x64.exe
-sha512: Q9FXbRWjCX0J4UmXFd2jmM9Rk2vEt0RkPHZOYBaRiVlLgTfQgB+dP2ItgXH7whicCvWPdfMVX4+K7m+KcwEu4Q==
-releaseDate: '2026-11-14T09:29:33.676Z'
+  - url: https://github.com/rlasksk030/class/releases/download/nationwide-v1.8.18/classroom-dashboard-nationwide-setup-1.8.18-x64.exe
+    sha512: /zN6sCkY8P2MIHGD1WgfV2IalS0T8gfHR1D4RgS46LubcpZt6toRYj4mVaMskO1gFaTUkczWPRy9z1dRtZ+jjw==
+    size: 99411424
+path: https://github.com/rlasksk030/class/releases/download/nationwide-v1.8.18/classroom-dashboard-nationwide-setup-1.8.18-x64.exe
+sha512: /zN6sCkY8P2MIHGD1WgfV2IalS0T8gfHR1D4RgS46LubcpZt6toRYj4mVaMskO1gFaTUkczWPRy9z1dRtZ+jjw==
+releaseDate: '2026-11-27T02:10:19.355Z'

@@ -1,0 +1,42 @@
+{
+ "source": "12516dfb9a071278c611081f2136f470544f7206",
+ "branch": "release/nationwide-v1.8.18",
+ "version": "1.8.18",
+ "edition": "nationwide",
+ "appId": "org.school.classroomdashboard",
+ "validationBuild": false,
+ "builtOn": "GitHub Actions windows-latest, npm run dist:win (run https://github.com/rlasksk030/class/actions/runs/45925880908)",
+ "updateChannel": {
+  "provider": "generic",
+  "url": "https://raw.githubusercontent.com/rlasksk030/class/refs/heads/downloads/nationwide/",
+  "channel": "nationwide2"
+ },
+ "artifacts": [
+  {
+   "name": "classroom-dashboard-nationwide-setup-1.8.18-x64.exe",
+   "bytes": 99411424,
+   "sha256": "066e4eda2c17b1c08edcbaa5201279d2a3b51d487e6d8955609338f50d08fabd"
+  },
+  {
+   "name": "classroom-dashboard-nationwide-setup-1.8.18-x64.exe.blockmap",
+   "bytes": 105086,
+   "sha256": "eb22d739dc1bfc2fbd6b619470d8a3b4b560018781f2a7e83a690e81f42ce50b"
+  },
+  {
+   "name": "nationwide2.yml",
+   "bytes": 545,
+   "sha256": "3ea37b6121d6a92b38c3d73565c92d59bb2c5b2616584cf3eb3c672b14c37f88"
+  }
+ ],
+ "checks": {
+  "syntax": "PASS (npm run check)",
+  "unit": "PASS (npm test)",
+  "e2eAll": "PASS (npm run test:e2e on Windows)",
+  "installerUnder100MiB": "PASS",
+  "feedMatchesInstaller": "PASS",
+  "packagedUpdateChannel": "PASS",
+  "windowsInstallUpdateReboot": "NOT RUN"
+ },
+ "releaseTag": "nationwide-v1.8.18",
+ "releaseLatest": false
+}

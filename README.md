@@ -1,6 +1,6 @@
 # 우리 교실 전국용 Windows 설치파일
 
-[v1.8.17 다운로드](https://github.com/rlasksk030/class/releases/download/nationwide-v1.8.17/classroom-dashboard-nationwide-setup-1.8.17-x64.exe)
+[v1.8.18 다운로드](https://github.com/rlasksk030/class/releases/download/nationwide-v1.8.18/classroom-dashboard-nationwide-setup-1.8.18-x64.exe)
 
 타이머 창에서 **PIP**를 누르면 작은 창을 항상 위에 표시할 수 있습니다. PIP에서 시작·일시정지·계속하기·다시 시작·초기화·완료 확인을 할 수 있고, 창을 닫아도 진행 중인 타이머는 유지됩니다. **시간 설정**을 누르면 본창으로 돌아갑니다.
 
@@ -10,6 +10,17 @@
 - 업데이트 전에 **설정 → 백업**을 한 번 해 두시면 안전합니다.
 
 옥구초 전용판은 별도 GitHub Release에서 업데이트됩니다. [옥구초 전용판 다운로드](https://github.com/rlasksk030/class/releases/latest)
+
+## v1.8.18 랜덤 뽑기 모둠 화면을 크게 바꿨습니다
+
+**업데이트 전에 설정 → 백업을 한 번 해 두세요.**
+
+- 모둠을 만들면 모둠 칸이 뽑기 자리를 꽉 채우고, 이름이 칸에 맞춰 크게 보입니다.
+- 이름이 두 줄로 끊기지 않고, 창 크기를 바꾸면 글씨 크기도 다시 맞춥니다.
+
+[Release 및 SHA-256](https://github.com/rlasksk030/class/releases/tag/nationwide-v1.8.18) · [검증 범위](v1.8.18-release-validation.json) · [릴리스 안내](v1.8.18-release-notes.md)
+
+GitHub Actions(Windows)에서 시험·빌드 후 자동 배포했습니다. Windows 설치·업데이트 실기 확인은 아직 하지 않았습니다(NOT RUN).
 
 ## v1.8.17 화면 디자인 다듬기
 
