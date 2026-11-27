@@ -2,6 +2,10 @@
 // Release maintainers: add an entry for the new version before building (newest first, 2–5 short lines).
 (function(root){
  const NOTES={
+  '1.8.18':{title:'랜덤 뽑기 모둠 화면을 크게 바꿨습니다',items:[
+   '모둠을 만들면 모둠 칸이 뽑기 자리를 꽉 채우고, 이름이 칸에 맞춰 크게 보입니다.',
+   '이름이 두 줄로 끊기지 않고, 창 크기를 바꾸면 글씨 크기도 다시 맞춥니다.'
+  ]},
   '1.8.17':{title:'업데이트 안내를 놓치지 않게 고쳤습니다',items:[
    '업데이트 안내가 다른 창에 가려 보이지 않던 문제를 고쳤습니다.',
    '처음 설정 창처럼 다른 창이 열려 있으면, 그 창을 닫은 뒤에 안내를 보여 드립니다.',
