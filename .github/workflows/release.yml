@@ -88,6 +88,8 @@ jobs:
             --notes-file release-notes.md --latest="$LATEST" \
             $(ls | grep -v '^release-notes\.md$')
       - name: 로그인 없이 공개 파일 확인
+        env:
+          GH_TOKEN: ${{ github.token }}   # releases/latest 조회에만 씀(파일은 로그인 없이 받음)
         run: node scripts/release-publish.cjs check-public
       - name: 전국판 업데이트 파일(nationwide2.yml) 갱신
         if: steps.info.outputs.edition == 'nationwide'
