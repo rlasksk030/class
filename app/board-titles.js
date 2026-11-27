@@ -1,7 +1,7 @@
 // Editable board titles. Titles live in their own store ('boardTitles'), apart from board content.
 (function(root){
  const MAX=30;
- const DEFAULTS={morning:'아침활동',notices:'안내사항'};
+ const DEFAULTS={timetable:'오늘 시간표',morning:'아침활동',notices:'안내사항',meal:'오늘의 급식'};
  const normalize=value=>typeof value==='string'?Array.from(value.replace(/\s+/g,' ').trim()).slice(0,MAX).join('').trim():'';
  const resolve=(saved,kind)=>normalize(saved?.[kind])||DEFAULTS[kind];
  const api={MAX,DEFAULTS,normalize,resolve};
@@ -12,7 +12,9 @@
  if(!saved||typeof saved!=='object'||Array.isArray(saved))saved={};
  const boards={};let active=null;
  const locked=()=>window.dashboardLocked===true||document.body.classList.contains('dashboard-locked');
- const pencil='<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20h4L19 9l-4-4L4 16v4z M13.5 6.5l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+ // Titles are changed only while [배치 편집] is on (the pencil sits in the title chip there);
+ // on the normal dashboard each board shows just its [수정]/[작성] button.
+ const allowed=()=>!locked()&&window.boardLayout?.editing?.()===true;
 
  function show(kind){const b=boards[kind],title=resolve(saved,kind);b.text.textContent=title;b.h2.title=title;}
  function store(kind,value){
@@ -29,7 +31,7 @@
  }
  function outside(e){if(active&&!active.editor.contains(e.target))finish(true);}
  function begin(kind){
-  if(locked()||active)return;
+  if(!allowed()||active)return;
   const b=boards[kind],h2=b.h2,cs=getComputedStyle(h2),hs=getComputedStyle(b.head);
   // Fill the existing header height exactly, so the board body never shifts while editing.
   const height=Math.max(h2.getBoundingClientRect().height,b.head.clientHeight-parseFloat(hs.paddingTop)-parseFloat(hs.paddingBottom));
@@ -40,7 +42,7 @@
   input.style.height=height+'px';
   const reset=document.createElement('button');reset.type='button';reset.className='board-title-reset';reset.textContent='기본 제목으로';
   editor.append(input,reset);
-  if(b.icon)editor.prepend(Object.assign(document.createElement('span'),{className:'board-title-icon',textContent:b.icon}));
+  if(b.icon)editor.prepend(Object.assign(b.icon.cloneNode(),{className:b.icon.className+' board-title-icon'}));
   h2.hidden=true;h2.after(editor);b.head.classList.add('title-editing');
   active={kind,editor,input};
   input.addEventListener('keydown',e=>{
@@ -60,30 +62,21 @@
  for(const kind of Object.keys(DEFAULTS)){
   const head=document.querySelector(`.${kind} .cardhead`),h2=head?.querySelector('h2');
   if(!h2)continue;
-  const original=h2.textContent,at=original.lastIndexOf(DEFAULTS[kind]),icon=at>0?original.slice(0,at):'';
+  // A board may start its title with a line icon (an element, kept in front of the text).
+  const original=h2.textContent.trim(),icon=h2.querySelector('.uc-ico');
   // Size limits keep measuring the original title, so a custom title never widens a column.
   h2.dataset.defaultTitle=original;h2.classList.add('board-title');
   const text=document.createElement('span');text.className='board-title-text';
   h2.replaceChildren(...(icon?[icon]:[]),text);
-  const edit=document.createElement('button');edit.type='button';edit.className='board-title-edit';edit.innerHTML=pencil;
-  edit.setAttribute('aria-label',`${DEFAULTS[kind]} 제목 바꾸기`);edit.title='제목 바꾸기 · 제목을 두 번 누르거나 길게 눌러도 됩니다';
+  const edit=document.createElement('button');edit.type='button';edit.className='board-title-edit';edit.append(ucIcon('edit'));
+  edit.setAttribute('aria-label',`${DEFAULTS[kind]} 제목 바꾸기`);edit.title='제목 바꾸기';
   h2.after(edit);
   boards[kind]={head,h2,text,icon};show(kind);
   edit.addEventListener('click',()=>begin(kind));
-  h2.addEventListener('dblclick',e=>{if(locked())return;e.preventDefault();begin(kind);});
-  let press=null,started=false;
-  const cancel=()=>{if(press){clearTimeout(press.timer);press=null;}};
-  h2.addEventListener('pointerdown',e=>{
-   if(e.pointerType==='mouse'||locked()||active)return;
-   cancel();press={x:e.clientX,y:e.clientY,id:e.pointerId,timer:setTimeout(()=>{press=null;started=true;begin(kind);},550)};
-  });
-  h2.addEventListener('pointermove',e=>{if(press&&e.pointerId===press.id&&Math.hypot(e.clientX-press.x,e.clientY-press.y)>10)cancel();});
-  for(const type of ['pointerup','pointercancel','pointerleave'])h2.addEventListener(type,cancel);
-  // Releasing a long press must not pull focus away from the new title field.
-  h2.addEventListener('touchend',e=>{if(!started)return;started=false;e.preventDefault();active?.input.focus({preventScroll:true});});
-  h2.addEventListener('contextmenu',e=>{if(!locked())e.preventDefault();});
  }
  // Screen lock ends any open edit; the lock keeps its own confirmation for unlocking.
  new MutationObserver(()=>{if(locked())finish(true);}).observe(document.body,{attributes:true,attributeFilter:['class']});
+ // Leaving [배치 편집] saves a title that is still being typed.
+ document.addEventListener('board-layout-change',e=>{if(!e.detail?.editing)finish(true);});
  fitContents();
 })(globalThis);

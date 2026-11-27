@@ -31,7 +31,7 @@ const USER={settings:{grade:'5',classroom:'3'},morningDefault:'복구 확인: �
  ({app,page}=await launch(P('C')));await page.evaluate(()=>{localStorage.setItem('settings',JSON.stringify({grade:'6',classroom:'1'}));localStorage.setItem('morningDefault',JSON.stringify('현재 데이터'));});await app.close();
  fs.mkdirSync(path.join(P('C'),'update-recovery','1790000000000'),{recursive:true});fs.writeFileSync(path.join(P('C'),'update-recovery','1790000000000','local-storage-backup.json'),JSON.stringify(original));
  ({app,page}=await launch(P('C')));await page.waitForTimeout(2000);ok('현재 데이터가 있으면 자동으로 덮어쓰지 않음',(await page.innerText('#morning'))==='현재 데이터');
- await page.click('#settings');await page.click('#recoveryFind');await page.waitForSelector('#recoveryList .recovery-item');
+ await page.click('#settings');await page.click('#settingsNavBackup');await page.click('#recoveryFind');await page.waitForSelector('#recoveryList .recovery-item');
  ok('수동: 업데이트 직전 자동 백업 목록·요약',(await page.innerText('#recoveryList')).includes('업데이트 직전 자동 백업')&&(await page.innerText('#recoveryList')).includes('5학년 3반')&&(await page.innerText('#recoveryList')).includes('복구 확인: 독서 20분'));
  await page.click('#recoveryList .recovery-item button');await page.waitForSelector('#backupConfirmDialog[open]');await page.click('#backupConfirmDialog button[value=cancel]');await page.waitForTimeout(300);
  ok('확인창 취소 시 변경 없음',(await page.evaluate(()=>localStorage.getItem('morningDefault')))==='"현재 데이터"');
@@ -40,7 +40,7 @@ const USER={settings:{grade:'5',classroom:'3'},morningDefault:'복구 확인: �
  const before=hashDir(path.join(P('A'),'Local Storage'));
  ({app,page}=await launch(P('D'),P('A')));
  // A fresh profile opens the class settings dialog by itself; the recovery button is inside it.
- await page.waitForSelector('#settingsDialog[open]');await page.click('#recoveryFind');await page.waitForTimeout(500);await page.click('#recoveryFolder');await page.waitForSelector('#recoveryList .recovery-item');
+ await page.waitForSelector('#settingsDialog[open]');ok('첫 실행 창에서도 백업 · 복원 묶음이 보임(옥구초: 학교 · 학급 아래)',await page.isVisible('#settingsDialog.settings-no-class #recoveryFind')&&await page.isVisible('#settingsPaneSchool #grade')&&!(await page.$('#settingsDialog.settings-first')));await page.click('#recoveryFind');await page.waitForTimeout(500);await page.click('#recoveryFolder');await page.waitForSelector('#recoveryList .recovery-item');
  ok('다른 폴더(Local Storage) 읽기·요약',(await page.innerText('#recoveryList')).includes('선택한 폴더')&&(await page.innerText('#recoveryList')).includes('5학년 3반'));
  await page.click('#recoveryList .recovery-item button');await page.waitForSelector('#backupConfirmDialog[open]');await page.click('#backupConfirmDialog button[value=restore]');
  await page.waitForTimeout(2500);await page.waitForLoadState('domcontentloaded');await page.waitForTimeout(800);
