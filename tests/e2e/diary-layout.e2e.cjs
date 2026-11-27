@@ -13,7 +13,10 @@ const measure=page=>page.evaluate(()=>{
   app=await _electron.launch({executablePath:require('electron'),args:['--force-device-scale-factor='+scale,path.join(ROOT,'app')],env:{...process.env,CLASSROOM_TEST_PROFILE:profile}});
   const page=await app.firstWindow();await page.waitForLoadState('domcontentloaded');
   await app.evaluate(({ipcMain})=>{ipcMain.removeHandler('fetch');ipcMain.handle('fetch',async()=>{throw Error('offline');});for(const name of ['diary:status','diary:session'])ipcMain.removeHandler(name);ipcMain.handle('diary:status',()=>({linked:true,title:'옥구초등학교 6학년 1반'}));ipcMain.handle('diary:session',()=>({status:'ok'}));});
-  await page.evaluate(()=>{localStorage.setItem('settings',JSON.stringify({grade:'6',classroom:'1'}));localStorage.setItem('dashboardLocked','false');});await page.reload();await page.click('#diaryTab');
+  await page.evaluate(()=>{localStorage.setItem('settings',JSON.stringify({grade:'6',classroom:'1'}));localStorage.setItem('dashboardLocked','false');});await page.reload();
+  // Open the tab through the button itself: on a small CI screen (1024×768) with a forced 1.25/1.5 scale the window is narrower
+  // than the app's minimum width, so the bottom bar overlaps the tabs. This test measures the diary screen, not the bar.
+  await page.evaluate(()=>document.getElementById('diaryTab').click());
   for(const [width,height] of [[1440,960],[1280,720],[900,650]]){
    await app.evaluate(({BrowserWindow},{width,height})=>{const w=BrowserWindow.getAllWindows()[0];w.setBounds({x:0,y:0,width,height});},{width,height});await page.waitForTimeout(150);
    await page.fill('#diaryTitle','긴 제목 '.repeat(35));await page.fill('#diaryBody',Array.from({length:100},(_,i)=>`${i+1}번째 학생과 가정에 전할 긴 본문입니다.`).join('\n'));
