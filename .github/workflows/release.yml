@@ -50,8 +50,8 @@ jobs:
         run: npm run check
       - name: npm test
         run: npm test
-      - name: npm run test:e2e
-        run: npm run test:e2e
+      - name: E2E 전체(npm run test:e2e의 모든 파일, 실패해도 끝까지 돌리고 모아서 보고)
+        run: node scripts/release-publish.cjs e2e
       - name: npm run dist:win
         run: npm run dist:win
       - name: 설치 파일 · 업데이트 파일 검사, 배포 파일 준비

@@ -6,9 +6,11 @@
 //   node scripts/release-publish.cjs check-public    -> downloads every Release asset without a login and compares SHA-256
 //   node scripts/release-publish.cjs downloads <dir> -> writes the nationwide feed files and README into a downloads checkout
 //   node scripts/release-publish.cjs check-feed      -> waits until the public nationwide2.yml shows this version
+//   node scripts/release-publish.cjs e2e             -> runs every file of npm run test:e2e and fails at the end if any failed
 const fs = require('node:fs');
 const path = require('node:path');
 const {createHash} = require('node:crypto');
+const {spawnSync} = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const REPO = 'rlasksk030/class';
@@ -161,7 +163,22 @@ async function checkFeed() {
   throw Error('public nationwide2.yml did not update within 10 minutes');
 }
 
+// Same files as `npm run test:e2e`, but one failure does not hide the results of the files after it.
+function e2e() {
+  const scripts = JSON.parse(read('package.json')).scripts;
+  const expand = line => line.split('&&').map(x => x.trim()).flatMap(x => {const m = /^npm run (\S+)$/.exec(x); return m ? expand(scripts[m[1]]) : [x];});
+  const failed = [];
+  for (const command of expand(scripts['test:e2e'])) {
+    console.log(`::group::${command}`);
+    const r = spawnSync(command, {shell: true, stdio: 'inherit', cwd: ROOT});
+    console.log('::endgroup::');
+    if (r.status !== 0) { failed.push(command); console.log(`::error::E2E failed: ${command}`); }
+  }
+  if (failed.length) throw Error(`E2E failed (${failed.length}):\n${failed.join('\n')}`);
+  console.log('E2E: all files passed');
+}
+
 const [cmd, arg] = process.argv.slice(2);
-const run = {info, prepare, 'check-public': checkPublic, downloads: () => downloads(path.resolve(arg)), 'check-feed': checkFeed}[cmd];
-if (!run) { console.error('usage: info | prepare | check-public | downloads <dir> | check-feed'); process.exit(2); }
+const run = {info, prepare, 'check-public': checkPublic, downloads: () => downloads(path.resolve(arg)), 'check-feed': checkFeed, e2e}[cmd];
+if (!run) { console.error('usage: info | prepare | check-public | downloads <dir> | check-feed | e2e'); process.exit(2); }
 Promise.resolve(run()).catch(e => { console.error(e.message); process.exit(1); });
