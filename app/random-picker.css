@@ -25,10 +25,14 @@
 #groupResults{width:100%;display:flex;flex-direction:column;gap:12px;text-align:left}
 #groupResults:empty{display:none}
 .group-summary{margin:0;font-size:17px;font-weight:700;color:var(--uc-text-2);text-align:center}
-.group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
-.group-card{border:1px solid var(--uc-line);border-radius:12px;background:var(--uc-surface);overflow:hidden}
-.group-card h3{margin:0;padding:8px 14px;font-family:var(--uc-font-main);font-size:18px;font-weight:700}
-.group-card p{margin:0;padding:10px 14px 12px;font-family:var(--uc-font-main);font-size:24px;font-weight:700;line-height:1.4;overflow-wrap:anywhere;word-break:keep-all}
+/* 모둠을 만들면 뽑기 자리를 꽉 채웁니다. 열 수(--group-cols)와 글씨(--group-font)는 random-picker.js가 칸 크기에 맞춰 정합니다. */
+.random-stage.has-groups{justify-content:flex-start;align-items:stretch;overflow:hidden}
+.random-stage.has-groups #groupResults{flex:1 1 auto;min-height:0}
+.random-stage.has-groups .random-result-actions:not(:has(>:not([hidden]))){display:none} /* 빈 버튼 줄이 아래 틈을 만들지 않게 */
+.group-grid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(var(--group-cols,3),minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:12px}
+.group-card{display:flex;flex-direction:column;min-width:0;min-height:0;border:1px solid var(--uc-line);border-radius:12px;background:var(--uc-surface);overflow:hidden}
+.group-card h3{flex:none;margin:0;padding:.3em .7em;font-family:var(--uc-font-main);font-size:clamp(18px,calc(var(--group-font,24px) * .6),44px);font-weight:700;line-height:1.3}
+.group-card p{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;margin:0;padding:.25em .55em .3em;overflow:hidden;white-space:pre;font-family:var(--uc-font-main);font-size:var(--group-font,24px);font-weight:700;line-height:var(--group-lh,1.3)}
 .group-card--0 h3{background:var(--uc-blue-tint);color:var(--uc-blue-text)}.group-card--1 h3{background:var(--uc-green-tint);color:var(--uc-green-text)}.group-card--2 h3{background:var(--uc-yellow-tint);color:var(--uc-yellow-text)}.group-card--3 h3{background:var(--uc-pink-tint);color:var(--uc-pink-text)}
 /* 아래 조작 줄 */
 .random-controls{flex:none;display:flex;flex-direction:column;gap:0;padding:0 24px;border-top:1px solid var(--uc-line)}
