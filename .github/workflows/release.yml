@@ -1,0 +1,110 @@
+# 자동 배포 (옥구초판 · 전국판 공통 파일, 판은 electron-builder.json으로 정해짐)
+#
+# 배포하려면 버전(app/package.json)과 새로워진 점(app/whats-new.js NOTES)을 올린 커밋을
+#   옥구초판: release/okgu-v<버전>        전국판: release/nationwide-v<버전>
+# 브랜치로 push합니다. 브랜치 이름의 판·버전이 소스와 다르면 아무것도 하지 않고 멈춥니다.
+#
+# 순서: 시험(check · test · test:e2e) → Windows 설치 파일 빌드 → 파일 검사 → 태그 + Release
+#   옥구초판: Release를 Latest로(옥구초 앱은 releases/latest를 봄)
+#   전국판: Release는 Latest 아님 → 공개 파일 확인이 끝난 뒤에 downloads/nationwide의 nationwide2.yml 갱신
+# 시험이나 검사 하나라도 실패하면 태그 · Release · 피드는 만들지 않습니다. 이미 있는 태그면 멈춥니다.
+name: 자동 배포
+
+on:
+  push:
+    branches: ['release/okgu-v*', 'release/nationwide-v*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: npm ci
+        run: npm ci
+      - name: 판 · 버전 · 태그 확인
+        id: info
+        run: node scripts/release-publish.cjs info | tee -a "$GITHUB_OUTPUT"
+      - name: 같은 태그가 없어야 함
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.info.outputs.tag }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then echo "태그 $TAG가 이미 있습니다."; exit 1; fi
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "Release $TAG가 이미 있습니다."; exit 1; fi
+      - name: npm run check
+        run: npm run check
+      - name: npm test
+        run: npm test
+      - name: npm run test:e2e
+        run: npm run test:e2e
+      - name: npm run dist:win
+        run: npm run dist:win
+      - name: 설치 파일 · 업데이트 파일 검사, 배포 파일 준비
+        run: node scripts/release-publish.cjs prepare
+      - name: 배포 파일 보관(실패해도 확인용)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ steps.info.outputs.tag }}
+          path: out/
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: 시험 기록 보관(실패할 때만)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-output-${{ steps.info.outputs.tag }}
+          path: tests/e2e/.out/
+          if-no-files-found: ignore
+          include-hidden-files: true
+          retention-days: 7
+      - name: 태그 + Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.info.outputs.tag }}
+          TITLE: ${{ steps.info.outputs.title }}
+          LATEST: ${{ steps.info.outputs.latest }}
+        run: |
+          cd out
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$TITLE" \
+            --notes-file release-notes.md --latest="$LATEST" \
+            $(ls | grep -v '^release-notes\.md$')
+      - name: 로그인 없이 공개 파일 확인
+        run: node scripts/release-publish.cjs check-public
+      - name: 전국판 업데이트 파일(nationwide2.yml) 갱신
+        if: steps.info.outputs.edition == 'nationwide'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.info.outputs.version }}
+        run: |
+          git clone --filter=blob:none --no-checkout --depth 1 --branch downloads/nationwide \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" downloads
+          cd downloads
+          git sparse-checkout set --no-cone 'README.md' '*.yml' '*.txt' '*.json' '*.md'
+          git checkout downloads/nationwide
+          node ../scripts/release-publish.cjs downloads .
+          git config user.name "Classroom Dashboard Release"
+          git config user.email "rlasksk030@users.noreply.github.com"
+          git add --sparse nationwide2.yml README.md "v${VERSION}-SHA256SUMS.txt" "v${VERSION}-release-notes.md" "v${VERSION}-release-validation.json"
+          git status --short
+          git commit -m "Publish nationwide ${VERSION}: nationwide2.yml, guide, SHA-256 list and validation record [skip ci]" \
+            -m "Built and released by ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          git push origin downloads/nationwide
+      - name: 공개 nationwide2.yml 확인
+        if: steps.info.outputs.edition == 'nationwide'
+        run: node scripts/release-publish.cjs check-feed
