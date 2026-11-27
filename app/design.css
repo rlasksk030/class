@@ -545,7 +545,7 @@ dialog .uc-spacer{flex:1 1 0}
 #diaryCandidates label{padding:12px 14px;border:1px solid var(--uc-line);border-radius:12px;font-weight:400;font-size:15px}
 /* 다른 탭 화면 아래로 대시보드 출처 줄이 비치지 않게 */
 body:is(.whiteboard-active,.random-active,.activity-active,.diary-active)>footer{visibility:hidden}
-.group-card p{white-space:pre-line}
+.group-card p{white-space:pre} /* 한 줄에 한 명, 이름은 끊지 않음(글씨 크기는 random-picker.js가 맞춤) */
 /* 보내기 칸: 좁고 낮은 창(확대 150%)에서도 [등록] 버튼은 늘 보이고, 수신 대상 쪽이 스크롤됩니다 */
 #diaryScreen>.diary-footer{overflow:hidden}
 #diaryScreen>.diary-footer>.diary-send-title,#diaryScreen>.diary-footer>.diary-registration{flex:none}
